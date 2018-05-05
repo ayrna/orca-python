@@ -35,17 +35,10 @@ class DSU:
 		print "Dataset:", self._dataset
 		print "Partition:", self._partition
 
-		#print "Train Inputs:\t", self._train_inputs
-		#print "Train Outputs:\t", self._train_outputs
-		#print "Test Inputs:\t", self._test_inputs
-		#print "Test Outputs:\t", self._test_outputs
-
-		print "Train Predicted:", self._train_predicted
-		print "Test Predicted:\t", self._test_predicted
-
-		print "Train Metrics:\t", self._train_metrics
-		print "Test Metrics:\t", self._test_metrics
-
+		print "Train Inputs:\t", self._train_inputs
+		print "Train Outputs:\t", self._train_outputs
+		print "Test Inputs:\t", self._test_inputs
+		print "Test Outputs:\t", self._test_outputs
 
 
 class ParamMetrics:

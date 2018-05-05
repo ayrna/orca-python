@@ -51,25 +51,18 @@ class Utilities:
 
 
 	def loadDataset(self, file_path):
-		"""
 
 		"""
 
+		"""
 
 		dsu_list = []
+		train_files = []
+		test_files = []
 
-		#TODO: Cuidado con los subdirectorios, Permitirlos o no permitirlos?
+		for filename in os.listdir(file_path):
 
-		# Check if dataset is fragmented
-		p = re.compile("\.[0-9]+$")
-		if all( p.search(filename) for filename in os.listdir(file_path) ):
-
-
-			# Segregate partition files by content
-			train_files = []
-			test_files = []
-
-			for filename in os.listdir(file_path):
+			if not os.path.isdir(filename):
 
 				if filename.startswith("train_"):
 					train_files.append(file_path + filename)
@@ -78,55 +71,35 @@ class Utilities:
 					test_files.append(file_path + filename)
 
 
-			for train_file, test_file in zip(train_files, test_files):
 
-				# Check if both sufixes are similar
-				if ( train_file[ train_file.find('.') : ] == test_file[ test_file.find('.') : ] ):
+		for train_file, test_file in zip(train_files, test_files):
 
-					#Declaring partition DSU
-					local_dsu = DSU.DSU(file_path, train_file[ train_file.find('.') + 1 : ])
-
-					# Get inputs and outputs from partition
-					local_dsu._train_inputs, local_dsu._train_outputs = self.readFile(train_file,\
-																					self._general_conf['clasification'],
-								  													self._general_conf['outputs'])
-
-					local_dsu._test_inputs, local_dsu._test_outputs = self.readFile(test_file,\
-																					self._general_conf['clasification'],
-								  													self._general_conf['outputs'])
-					# Append DSU to list
-					dsu_list.append(local_dsu)
-
-				else:
-
-					print train_file[ train_file.find('.') : ],  " =/= ", test_file[ test_file.find('.') : ]
+			#TODO: En vez de comprobar si los ficheros dentro del zip comparten el nombre, se podrian ordenar
+			# con anterioridad las listas train_file y test_file alfabeticamente, de esa manera estaria seguro
 
 
-
-		# No partitions found
-		else:
-
-			# Declaring partition DSU
-			local_dsu = DSU.DSU(file_path, "-1")
+			# Check if both sufixes are similar
+			if ( train_file[ train_file.find('.') : ] == test_file[ test_file.find('.') : ] ):
 
 
-			for filename in os.listdir(file_path):
+				#Declaring partition DSU
+				local_dsu = DSU.DSU(file_path, train_file[ train_file.find('.') + 1 : ])
 
+				# Get inputs and outputs from partition
+				local_dsu._train_inputs, local_dsu._train_outputs = self.readFile(train_file,\
+																				self._general_conf['clasification'],
+							  													self._general_conf['outputs'])
 
-				if filename.startswith("train_"):
+				local_dsu._test_inputs, local_dsu._test_outputs = self.readFile(test_file,\
+																				self._general_conf['clasification'],
+							  													self._general_conf['outputs'])
 
-					local_dsu._train_inputs, local_dsu._train_outputs = self.readFile(file_path + filename,\
-																					self._general_conf['clasification'],
-								  													self._general_conf['outputs'])
+				# Append DSU to list
+				dsu_list.append(local_dsu)
 
-				elif filename.startswith("test_"):
+			else:
 
-					local_dsu._test_inputs, local_dsu._test_outputs = self.readFile(file_path + filename,\
-																					self._general_conf['clasification'],
-								  													self._general_conf['outputs'])
-
-			# Append DSU to list
-			dsu_list.append(local_dsu)
+				print train_file[ train_file.find('.') : ],  " =/= ", test_file[ test_file.find('.') : ]
 
 
 		# Save info to dataset
