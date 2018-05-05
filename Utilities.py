@@ -12,6 +12,9 @@ class Utilities:
 
 
 	_api_path = ""
+	_general_conf = {}
+	_algorithm_parameters = {}
+	_algorithm_hyper_parameters = {}
 	_datasets = {}
 
 
@@ -23,6 +26,9 @@ class Utilities:
 
 		#TODO: Mejorar forma de obtener el path hasta la carpeta base
 		self._api_path = api_path
+		self._general_conf = general_conf
+		self._algorithm_parameters = algorithm_parameters
+		self._algorithm_hyper_parameters = algorithm_hyper_parameters
 
 
 		#TODO: Obtener el numero de salidas para cada dataset sin que se tenga que especificar en el fichero de
@@ -41,10 +47,10 @@ class Utilities:
 			file_path = general_conf['basedir'] + dataset_name + '/'
 
 			print "Loading dataset", dataset_name, "info..."
-			self.loadDataset(file_path, algorithm_parameters)
+			self.loadDataset(file_path)
 
 
-	def loadDataset(self, file_path, algorithm_parameters):
+	def loadDataset(self, file_path):
 		"""
 
 		"""
@@ -82,12 +88,12 @@ class Utilities:
 
 					# Get inputs and outputs from partition
 					local_dsu._train_inputs, local_dsu._train_outputs = self.readFile(train_file,\
-																					general_conf['clasification'],
-								  													general_conf['outputs'])
+																					self._general_conf['clasification'],
+								  													self._general_conf['outputs'])
 
 					local_dsu._test_inputs, local_dsu._test_outputs = self.readFile(test_file,\
-																					general_conf['clasification'],
-								  													general_conf['outputs'])
+																					self._general_conf['clasification'],
+								  													self._general_conf['outputs'])
 					# Append DSU to list
 					dsu_list.append(local_dsu)
 
@@ -110,14 +116,14 @@ class Utilities:
 				if filename.startswith("train_"):
 
 					local_dsu._train_inputs, local_dsu._train_outputs = self.readFile(file_path + filename,\
-																					general_conf['clasification'],
-								  													general_conf['outputs'])
+																					self._general_conf['clasification'],
+								  													self._general_conf['outputs'])
 
 				elif filename.startswith("test_"):
 
 					local_dsu._test_inputs, local_dsu._test_outputs = self.readFile(file_path + filename,\
-																					general_conf['clasification'],
-								  													general_conf['outputs'])
+																					self._general_conf['clasification'],
+								  													self._general_conf['outputs'])
 
 			# Append DSU to list
 			dsu_list.append(local_dsu)
@@ -151,7 +157,7 @@ class Utilities:
 
 
 
-	def runExperiment(self, general_conf, algorithm_parameters, algorithm_hyper_parameters):
+	def runExperiment(self):
 		"""
 
 		"""
@@ -165,11 +171,11 @@ class Utilities:
 		sys.path.insert(0, 'Algorithms/') # Import modules from different directory
 
 		# TODO: Comprobar que los algoritmos dados son correctos (y el resto de parametros), sino parar la ejecucion
-		algorithm_names = [x.strip(' ').upper() for x in algorithm_parameters['algorithms'].split(',')]
+		algorithm_names = [x.strip(' ').upper() for x in self._algorithm_parameters['algorithms'].split(',')]
 		algorithms = map(__import__, algorithm_names)
 
 
-		#TODO: Incorporar los distintos valores de los hiperparametros
+		# Running different datasets and partitions
 		for dataset_label, dsu_list in self._datasets.iteritems():
 			for local_dsu in dsu_list:
 
@@ -184,6 +190,7 @@ class Utilities:
 				test_set = {'inputs': local_dsu._test_inputs, 'outputs': local_dsu._test_outputs}
 
 
+				# Running different algorithms
 				for algorithm_name, algorithm in zip(algorithm_names, algorithms):
 
 					print "Running algorithm", algorithm_name
@@ -194,9 +201,9 @@ class Utilities:
 					# esta ejecucion (algorithm_parameters), las metricas a utilizar (como una lista) y los 
 					# hiperparametros a optimizar (como dict y ya obtener los valores dentro ?? )
 
-					# TODO: Obtener las metricas desde el fichero de configuracion y pasarselas a los algoritmos
-					# Al igual que los nombres de los algoritmos, primero convertirlo todo a mayusculas
-					local_dsu._metrics = algorithm.entrenar_rbf_total(train_set, test_set, algorithm_hyper_parameters)
+
+					local_dsu._metrics = algorithm.entrenar_rbf_total(train_set, test_set, self._algorithm_hyper_parameters,\
+																		self._general_conf["clasification"])
 
 
 	def writeReport(self):

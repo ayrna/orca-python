@@ -29,7 +29,7 @@ def main(general_conf, algorithm_parameters, algorithm_hyper_parameters):
 	api_path = os.path.dirname(os.path.abspath(__file__)) + "/"
 
 	interfaz = Utilities(api_path, general_conf, algorithm_parameters, algorithm_hyper_parameters)
-	interfaz.runExperiment(general_conf, algorithm_parameters, algorithm_hyper_parameters)
+	interfaz.runExperiment()
 	#interfaz.writeReport()
 
 

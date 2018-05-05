@@ -7,6 +7,7 @@ Created on Wed Oct 28 12:37:04 2016
 """
 
 # TODO Incluir todos los import necesarios
+import sys
 import click
 import math
 import time
@@ -23,13 +24,27 @@ from scipy.spatial.distance import pdist
 
 
 # TODO incluir el resto de parámetros...
-def entrenar_rbf_total(train_set, test_set, clasificacion, ratio_rbf, l2, eta, outputs):
+def entrenar_rbf_total(train_set, test_set, hyper_parameters, clasification):
 
-	train_metrics = {}
-	test_metrics = {}
 
-	#np.random.seed(100)
-	train_metrics["MSE"], test_metrics["MSE"], train_metrics["CCR"], test_metrics["CCR"] = entrenar_rbf(train_set, test_set, clasificacion, ratio_rbf, l2, eta, outputs)
+	metrics = []
+
+	sys.path.insert(0, '../') # Import modules from different directory
+	import DSU
+
+	for ratio_rbf in hyper_parameters["ratio_rbf"]:
+
+		for l2 in hyper_parameters["l2"]:
+
+			for eta in hyper_parameters["eta"]:
+
+				train_metrics = test_metrics = {}
+				train_metrics["MSE"], test_metrics["MSE"], train_metrics["CCR"], test_metrics["CCR"] = entrenar_rbf(train_set, test_set, clasification, ratio_rbf, l2, eta)
+
+				hyper_params = {"ratio_rbf": ratio_rbf, "l2": l2, "eta": eta}
+				conf_metrics = DSU.ParamMetrics(hyper_params, train_metrics, test_metrics)
+
+				metrics.append(conf_metrics)
 
 	"""
 	print("MSE de entrenamiento: %f" % train_mse)
@@ -39,9 +54,9 @@ def entrenar_rbf_total(train_set, test_set, clasificacion, ratio_rbf, l2, eta, o
 		print("CCR de test: %.2f%%" % test_ccr)
 	"""
 
-	return train_metrics, test_metrics
+	return metrics
 
-def entrenar_rbf(train_set, test_set, clasificacion, ratio_rbf, l2, eta, outputs):
+def entrenar_rbf(train_set, test_set, clasificacion, ratio_rbf, l2, eta):
 	""" Modelo de aprendizaje supervisado mediante red neuronal de tipo RBF.
 		Una única ejecución.
 		Recibe los siguientes parámetros:
