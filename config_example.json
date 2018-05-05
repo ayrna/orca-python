@@ -1,0 +1,25 @@
+{
+	"general_conf": {
+
+		"basedir": "/home/beelzebub/Escritorio/orca_python/Datasets/",
+		"datasets": "iris, nomnist, pruebas",
+		"standarize": "True",
+		"num_folds": 5,
+		"outputs": 1,
+		"clasification": "False"
+	},
+
+	"algorithm_parameters": {
+		
+		"algorithms": "ELMOP, RBF"
+	},
+
+	"algorithm_hyper_parameters": {
+
+		"c": [0.01, 0.1, 1, 10, 100],
+		"g": [0.01, 0.1, 1, 10, 100],
+		"ratio_rbf": [0.1, 0.2, 0.5, 0.7],
+		"l2": ["False", "True"],
+		"eta": [0.1]
+	}
+}
