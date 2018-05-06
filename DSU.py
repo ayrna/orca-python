@@ -2,9 +2,9 @@
 
 class DSU:
 	"""
-		DSU - Data Storage Unit
+	DSU - Data Storage Unit
 
-		Abstraction level which we will work with.
+	Abstraction level which we will work with.
 	"""
 
 	# Information about partition
@@ -21,7 +21,7 @@ class DSU:
 	_train_predicted = []
 	_test_predicted = []
 
-	# Obtained metrics (As many as algorithms)
+	# Obtained metrics ()
 	_metrics = None
 
 	def __init__(self, dataset, partition):
@@ -44,8 +44,12 @@ class DSU:
 class ParamMetrics:
 
 	"""
+	Storages run information for concrete hyper parameters of a given algorithm
 
 	"""
+
+	#TODO: En vez de hacer que _metrics de DSU sea un diccionario con los algoritmos como clave
+	# incluir el algoritmo como un parametro en esta clase (Quizas mas lioso de tratar en Utilities)
 
 	_hyper_parameters = {}
 	_train_metrics = {}

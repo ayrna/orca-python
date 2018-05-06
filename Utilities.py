@@ -196,7 +196,7 @@ class Utilities:
 
 		# Check if experiments folder exists
 		if not os.path.exists(self._api_path + "my_runs/"):
-			os.makedir(self._api_path + "my_runs/")
+			os.makedirs(self._api_path + "my_runs/")
 
 
 		# Getting name of folder where we will store info about the Experiment
@@ -245,7 +245,6 @@ class Utilities:
 						metrics_header.append("MSE")
 						metrics_header.append("CCR")
 
-						print metrics_header
 
 						train_writer = csv.DictWriter(train_csv, fieldnames=metrics_header)
 						test_writer = csv.DictWriter(test_csv, fieldnames=metrics_header)
