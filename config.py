@@ -30,7 +30,7 @@ def main(general_conf, algorithm_parameters, algorithm_hyper_parameters):
 
 	interfaz = Utilities(api_path, general_conf, algorithm_parameters, algorithm_hyper_parameters)
 	interfaz.runExperiment()
-	#interfaz.writeReport()
+	interfaz.writeReport()
 
 
 

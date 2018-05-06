@@ -4,7 +4,7 @@ class DSU:
 	"""
 		DSU - Data Storage Unit
 
-		Abstraction level which we will work with during all API.
+		Abstraction level which we will work with.
 	"""
 
 	# Information about partition
@@ -48,8 +48,8 @@ class ParamMetrics:
 	"""
 
 	_hyper_parameters = {}
-	_train_metrics = []
-	_test_metrics = []
+	_train_metrics = {}
+	_test_metrics = {}
 
 
 	def __init__(self, hyper_parameters, train_metrics, test_metrics):
@@ -62,6 +62,25 @@ class ParamMetrics:
 		self._hyper_parameters = hyper_parameters
 		self._train_metrics = train_metrics
 		self._test_metrics = test_metrics
+
+	def printInfo(self):
+
+		print self
+		print self._hyper_parameters
+		print self._train_metrics
+		print self._test_metrics
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

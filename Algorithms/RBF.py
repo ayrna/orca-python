@@ -38,7 +38,9 @@ def entrenar_rbf_total(train_set, test_set, hyper_parameters, clasification):
 
 			for eta in hyper_parameters["eta"]:
 
-				train_metrics = test_metrics = {}
+				train_metrics = {}
+				test_metrics = {}
+
 				train_metrics["MSE"], test_metrics["MSE"], train_metrics["CCR"], test_metrics["CCR"] = entrenar_rbf(train_set, test_set, clasification, ratio_rbf, l2, eta)
 
 				hyper_params = {"ratio_rbf": ratio_rbf, "l2": l2, "eta": eta}
@@ -46,15 +48,12 @@ def entrenar_rbf_total(train_set, test_set, hyper_parameters, clasification):
 
 				metrics.append(conf_metrics)
 
-	"""
-	print("MSE de entrenamiento: %f" % train_mse)
-	print("MSE de test: %f" % test_mse)
-	if clasificacion:
-		print("CCR de entrenamiento: %.2f%%" % train_ccr)
-		print("CCR de test: %.2f%%" % test_ccr)
-	"""
-
 	return metrics
+
+
+
+
+
 
 def entrenar_rbf(train_set, test_set, clasificacion, ratio_rbf, l2, eta):
 	""" Modelo de aprendizaje supervisado mediante red neuronal de tipo RBF.
@@ -123,7 +122,8 @@ def entrenar_rbf(train_set, test_set, clasificacion, ratio_rbf, l2, eta):
 		train_mse = ((train_outputs - salidas_train)**2).mean()
 		test_mse = ((test_outputs - salidas_test)**2).mean()
 		
-		train_ccr = test_ccr = 0.0
+		train_ccr = 0.0
+		test_ccr = 0.0
 		
 	else:
 		"""

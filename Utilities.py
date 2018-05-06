@@ -12,10 +12,10 @@ class Utilities:
 
 
 	_api_path = ""
+	_datasets = {}
 	_general_conf = {}
 	_algorithm_parameters = {}
 	_algorithm_hyper_parameters = {}
-	_datasets = {}
 
 
 	def __init__(self, api_path, general_conf, algorithm_parameters, algorithm_hyper_parameters):
@@ -135,6 +135,7 @@ class Utilities:
 
 		"""
 
+
 		print "\n###############################"
 		print "\tRunning Experiment"
 		print "###############################"
@@ -161,7 +162,7 @@ class Utilities:
 
 				train_set = {'inputs': local_dsu._train_inputs, 'outputs': local_dsu._train_outputs}
 				test_set = {'inputs': local_dsu._test_inputs, 'outputs': local_dsu._test_outputs}
-
+				metrics_dict = {}
 
 				# Running different algorithms
 				for algorithm_name, algorithm in zip(algorithm_names, algorithms):
@@ -175,29 +176,23 @@ class Utilities:
 					# hiperparametros a optimizar (como dict y ya obtener los valores dentro ?? )
 
 
-					local_dsu._metrics = algorithm.entrenar_rbf_total(train_set, test_set, self._algorithm_hyper_parameters,\
-																		self._general_conf["clasification"])
+					metrics_dict[algorithm_name] = algorithm.entrenar_rbf_total(train_set, test_set,\
+															self._algorithm_hyper_parameters,\
+															self._general_conf["clasification"])
+
+
+				local_dsu._metrics = metrics_dict
+
 
 
 	def writeReport(self):
 
 		"""
 
-		file_path = folder_path + "results.csv"
 
-		# Writing results metrics to CSV
-		with open(file_path, 'w') as csvfile:
-
-			# Obtain name of the different metrics used in this experiment
-			metrics = []
-			for keys in train_metrics:
-				metrics.append(keys)
-			writer = csv.DictWriter(csvfile, fieldnames=metrics)
-
-			writer.writeheader()
-			writer.writerow(train_metrics)
-			writer.writerow(test_metrics)
 		"""
+
+
 
 		# Check if experiments folder exists
 		if not os.path.exists(self._api_path + "my_runs/"):
@@ -213,18 +208,56 @@ class Utilities:
 			os.makedirs(folder_path)
 
 
+		#TODO: Una vez implementadas las diferentes metricas y que se puedan decidir cuales usar desde el fichero
+		# de configuracion, hacer que esta lista sean unicamente las metricas a utilizar. Ademas habra que contemplar
+		# los distintos nombres de las variables utilizadas (esto ultimo con un for y un append)
 
 		for dataset_label, dsu_list in self._datasets.iteritems():
 
 			# Creates subfolders for each dataset
 			os.makedirs(folder_path + dataset_label)
-			
+
+			# One file per partition
 			for local_dsu in dsu_list:
 
-				pass
+				for algorithm_name, metrics in local_dsu._metrics.iteritems():
+
+					# Get name of csv file
+					if (local_dsu._partition == "csv"):
+						file_path_train = folder_path + dataset_label + "/train-" + dataset_label + "-" + \
+											algorithm_name + "." + local_dsu._partition
+						file_path_test = folder_path + dataset_label + "/test-" + dataset_label + "-" + \
+											algorithm_name + "." + local_dsu._partition
+
+					else:
+						file_path_train = folder_path + dataset_label + "/train-" + dataset_label + "-" + \
+											algorithm_name + "." + local_dsu._partition + ".csv"
+						file_path_test = folder_path + dataset_label + "/test-" + dataset_label + "-" + \
+											algorithm_name + "." + local_dsu._partition + ".csv"
 
 
 
+					# Writing results metrics to CSV
+					with open(file_path_train, 'w') as train_csv, open(file_path_test, 'w') as test_csv:
+
+
+						metrics_header = list(metrics[0]._hyper_parameters)
+						metrics_header.append("MSE")
+						metrics_header.append("CCR")
+
+						print metrics_header
+
+						train_writer = csv.DictWriter(train_csv, fieldnames=metrics_header)
+						test_writer = csv.DictWriter(test_csv, fieldnames=metrics_header)
+
+						train_writer.writeheader()
+						test_writer.writeheader()
+
+						# Writing one row per different configuration of hyper parameters
+						for param_metrics in metrics:
+
+							train_writer.writerow( dict(param_metrics._hyper_parameters, **param_metrics._train_metrics) )
+							test_writer.writerow( dict(param_metrics._hyper_parameters, **param_metrics._test_metrics) )
 
 
 

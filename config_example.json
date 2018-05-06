@@ -6,7 +6,7 @@
 		"standarize": "True",
 		"num_folds": 5,
 		"outputs": 1,
-		"clasification": "False"
+		"clasification": "True"
 	},
 
 	"algorithm_parameters": {
@@ -16,8 +16,8 @@
 
 	"algorithm_hyper_parameters": {
 
-		"c": [0.01, 0.1, 1, 10, 100],
-		"g": [0.01, 0.1, 1, 10, 100],
+		"c": [0.1, 1, 10],
+		"g": [0.1, 1, 10],
 		"ratio_rbf": [0.1, 0.2],
 		"l2": ["False", "True"],
 		"eta": [0.1]
