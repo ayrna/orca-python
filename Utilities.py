@@ -14,11 +14,9 @@ class Utilities:
 	_api_path = ""
 	_datasets = {}
 	_general_conf = {}
-	_algorithm_parameters = {}
-	_algorithm_hyper_parameters = {}
 
 
-	def __init__(self, api_path, general_conf, algorithm_parameters, algorithm_hyper_parameters):
+	def __init__(self, api_path, general_conf, algorithms):
 
 		"""
 
@@ -27,8 +25,6 @@ class Utilities:
 		#TODO: Mejorar forma de obtener el path hasta la carpeta base
 		self._api_path = api_path
 		self._general_conf = general_conf
-		self._algorithm_parameters = algorithm_parameters
-		self._algorithm_hyper_parameters = algorithm_hyper_parameters
 
 
 		#TODO: Obtener el numero de salidas para cada dataset sin que se tenga que especificar en el fichero de
@@ -86,13 +82,9 @@ class Utilities:
 				local_dsu = DSU.DSU(file_path, train_file[ train_file.find('.') + 1 : ])
 
 				# Get inputs and outputs from partition
-				local_dsu._train_inputs, local_dsu._train_outputs = self.readFile(train_file,\
-																				self._general_conf['clasification'],
-							  													self._general_conf['outputs'])
+				local_dsu._train_inputs, local_dsu._train_outputs = self.readFile(train_file)
 
-				local_dsu._test_inputs, local_dsu._test_outputs = self.readFile(test_file,\
-																				self._general_conf['clasification'],
-							  													self._general_conf['outputs'])
+				local_dsu._test_inputs, local_dsu._test_outputs = self.readFile(test_file)
 
 				# Append DSU to list
 				dsu_list.append(local_dsu)
@@ -108,23 +100,15 @@ class Utilities:
 
 
 
-	def readFile(self, filename, clasification, outputs):
+	def readFile(self, filename):
 		"""
 
 		"""
 
 		f = pd.read_csv(filename, header=None)
 
-		if clasification:
-
-			inputs = f.values[:,0:(-1)]
-			outputs = f.values[:,(-1)]
-
-		else:
-
-			inputs = f.values[:,0:(-outputs)]
-			outputs = f.values[:,(-outputs):]
-
+		inputs = f.values[:,0:(-1)]
+		outputs = f.values[:,(-1)]
 
 		return inputs, outputs
 
@@ -136,6 +120,20 @@ class Utilities:
 		"""
 
 
+		
+
+
+
+
+
+
+
+
+
+
+
+
+		"""
 		print "\n###############################"
 		print "\tRunning Experiment"
 		print "###############################"
@@ -182,6 +180,7 @@ class Utilities:
 
 
 				local_dsu._metrics = metrics_dict
+		"""
 
 
 

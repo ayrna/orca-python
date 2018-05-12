@@ -1,25 +1,34 @@
 {
 	"general_conf": {
 
-		"basedir": "/home/beelzebub/Escritorio/orca_python/Datasets/",
+		"basedir": "~/Escritorio/orca_python/Datasets/",
 		"datasets": "iris, nomnist, pruebas",
 		"standarize": "True",
 		"num_folds": 5,
 		"outputs": 1,
-		"clasification": "True"
+		"metrics": "mae, ms, ccr",
+		"crossvalidation_metric": "ccr"
 	},
 
-	"algorithm_parameters": {
+	"algortihms": {
+
+		"configuration_1": {
 		
-		"algorithms": "ELMOP, RBF"
-	},
+			"algorithm": "SVM",
+			"parameters": {
+				"c": [0.1, 1, 10],
+				"g": [0.1, 1, 10]
+			}
+		},
 
-	"algorithm_hyper_parameters": {
-
-		"c": [0.1, 1, 10],
-		"g": [0.1, 1, 10],
-		"ratio_rbf": [0.1, 0.2],
-		"l2": ["False", "True"],
-		"eta": [0.1]
+		"configuration_2": {
+		
+			"algorithm": "LR",
+			"parameters": {
+				"C": [0.1, 1, 10],
+				"l2": ["False", "True"],
+			}
+		}
 	}
+
 }

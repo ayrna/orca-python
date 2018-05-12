@@ -15,22 +15,18 @@ def default_config():
 					"dataset": "",
 					}
 
-	algorithm_parameters =	{
-							}
+	algorithms = {}
 
-
-	algorithm_hyper_parameters =	{
-									}
 
 @ex.automain
-def main(general_conf, algorithm_parameters, algorithm_hyper_parameters):
+def main(general_conf, algorithms):
 
 
 	api_path = os.path.dirname(os.path.abspath(__file__)) + "/"
 
-	interfaz = Utilities(api_path, general_conf, algorithm_parameters, algorithm_hyper_parameters)
-	interfaz.runExperiment()
-	interfaz.writeReport()
+	interfaz = Utilities(api_path, general_conf, algorithms)
+	#interfaz.runExperiment()
+	#interfaz.writeReport()
 
 
 
