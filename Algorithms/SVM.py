@@ -26,7 +26,7 @@ class SVM(BaseEstimator, ClassifierMixin):
 
 		# Fit model
 		svm_model = svm.SVC(kernel='rbf',C=self.C,gamma=self.gamma)
-		self.svm_model = svm_model.fit(self.X_, self.y_)
+		self.svm_model_ = svm_model.fit(self.X_, self.y_)
 
 		# Return the classifier
 		return self
@@ -40,9 +40,9 @@ class SVM(BaseEstimator, ClassifierMixin):
 		X = check_array(X)
 
 		# Outputs predicted to given data by fitted model
-		predicted_y_ = self.svm_model.predict(X)
+		predicted_y = self.svm_model_.predict(X)
 
-		return precited_y_
+		return predicted_y
 
 
 	def score(self, X, y):
@@ -50,7 +50,7 @@ class SVM(BaseEstimator, ClassifierMixin):
 		check_is_fitted(self, ['X_','y_'])
 		X = check_array(X)
 
-		return self.svm_model.score(X, y)
+		return self.svm_model_.score(X, y)
 
 
 

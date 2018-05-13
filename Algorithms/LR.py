@@ -10,8 +10,8 @@ class LR(BaseEstimator, ClassifierMixin):
 
 	def __init__(self, C=0.1, l2="True"):
 		
-		self.C_ = C
-		self.l2_ = l2
+		self.C = C
+		self.l2 = l2
 
 
 	def fit(self, X, y):
@@ -26,7 +26,7 @@ class LR(BaseEstimator, ClassifierMixin):
 
 		# Fit model
 		penalty = 'l1'
-		if self.l2_:
+		if self.l2:
 			penalty = 'l2'
 
 		lr_model = linear_model.LogisticRegression(solver='liblinear', C=self.C, penalty=penalty)
@@ -46,7 +46,7 @@ class LR(BaseEstimator, ClassifierMixin):
 		# Outputs predicted to given data by fitted model
 		predicted_y = self.lr_model_.predict(X)
 
-		return precited_y
+		return predicted_y
 
 
 	def score(self, X, y):
