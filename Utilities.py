@@ -3,17 +3,15 @@ import os, sys, csv, json, time, datetime, re
 import pandas as pd
 import numpy as np
 
+from sklearn.grid_search import GridSearchCV
+
 import DSU
+from Results import Results
 
 class Utilities:
 	"""
 
 	"""
-
-
-	_api_path = ""
-	_datasets = {}
-	_general_conf = {}
 
 
 	def __init__(self, api_path, general_conf, algorithms):
@@ -23,8 +21,9 @@ class Utilities:
 		"""
 
 		#TODO: Mejorar forma de obtener el path hasta la carpeta base
-		self._api_path = api_path
-		self._general_conf = general_conf
+		self.api_path_ = api_path
+		self.general_conf_ = general_conf
+		self.algorithms_ = algorithms
 
 
 		#TODO: Obtener el numero de salidas para cada dataset sin que se tenga que especificar en el fichero de
@@ -34,6 +33,7 @@ class Utilities:
 		print "\tLoading Start"
 		print "###############################"
 
+		self.datasets_ = {}
 		# Process each dataset provided by user
 		for x in general_conf['datasets'].split(','):
 
@@ -42,17 +42,18 @@ class Utilities:
 			#TODO: Check if basedir has a final backslash or not
 			file_path = general_conf['basedir'] + dataset_name + '/'
 
+
+			# TODO: Hacer que la funcion devuelva un solo dataset cargado y aqui hacer el append (Para mejor encapsulacion)
 			print "Loading dataset", dataset_name, "info..."
-			self.loadDataset(file_path)
+			self._loadDataset(file_path)
 
 
-	def loadDataset(self, file_path):
-
-		"""
+	def _loadDataset(self, file_path):
 
 		"""
 
-		dsu_list = []
+		"""
+
 		train_files = []
 		test_files = []
 
@@ -68,6 +69,8 @@ class Utilities:
 
 
 
+		partition_list = []
+
 		for train_file, test_file in zip(train_files, test_files):
 
 			#TODO: En vez de comprobar si los ficheros dentro del zip comparten el nombre, se podrian ordenar
@@ -75,32 +78,31 @@ class Utilities:
 
 
 			# Check if both sufixes are similar
-			if ( train_file[ train_file.find('.') : ] == test_file[ test_file.find('.') : ] ):
-
-
-				#Declaring partition DSU
-				local_dsu = DSU.DSU(file_path, train_file[ train_file.find('.') + 1 : ])
-
-				# Get inputs and outputs from partition
-				local_dsu._train_inputs, local_dsu._train_outputs = self.readFile(train_file)
-
-				local_dsu._test_inputs, local_dsu._test_outputs = self.readFile(test_file)
-
-				# Append DSU to list
-				dsu_list.append(local_dsu)
-
-			else:
-
+			if ( train_file[ train_file.find('.') : ] != test_file[ test_file.find('.') : ] ):
 				print train_file[ train_file.find('.') : ],  " =/= ", test_file[ test_file.find('.') : ]
 
 
+			else:
+
+				#Declaring partition DSU
+				partition = DSU.DSU(file_path, train_file[ train_file.find('.') + 1 : ])
+
+				# Get inputs and outputs from partition
+				partition.train_inputs, partition.train_outputs = self._readFile(train_file)
+
+				partition.test_inputs, partition.test_outputs = self._readFile(test_file)
+
+				# Append DSU to list
+				partition_list.insert(0, partition)
+
+
 		# Save info to dataset
-		self._datasets[os.path.basename(os.path.normpath(file_path))] = dsu_list
+		self.datasets_[os.path.basename(os.path.normpath(file_path))] = partition_list
 
 
 
 
-	def readFile(self, filename):
+	def _readFile(self, filename):
 		"""
 
 		"""
@@ -120,67 +122,113 @@ class Utilities:
 		"""
 
 
-		
-
-
-
-
-
-
-
-
-
-
-
-
-		"""
 		print "\n###############################"
 		print "\tRunning Experiment"
 		print "###############################"
 
 
-		# Dinamically importing algorithm modules needed for actual experiment
-		sys.path.insert(0, 'Algorithms/') # Import modules from different directory
+		# Adding algorithm folder to sys path. Needed to import modules from different folders
+		sys.path.insert(0, 'Algorithms/')
 
-		# TODO: Comprobar que los algoritmos dados son correctos (y el resto de parametros), sino parar la ejecucion
-		algorithm_names = [x.strip(' ').upper() for x in self._algorithm_parameters['algorithms'].split(',')]
-		algorithms = map(__import__, algorithm_names)
+		self.results_ = Results()	# Creates results object, that will store al different metrics for each algorithm and dataset
 
 
-		# Running different datasets and partitions
-		for dataset_label, dsu_list in self._datasets.iteritems():
-			for local_dsu in dsu_list:
+		# Iterating over all different datasets
+		for dataset_name, dataset in self.datasets_.iteritems():
 
-				if (local_dsu._partition == "-1"):
-					print "\nRunning", dataset_label, "dataset..."
-					print "--------------------------"
-				else:
-					print "\nRunning", dataset_label, "dataset, Partition", local_dsu._partition, "..."
-					print "--------------------------"
+			print "\nRunning", dataset_name, "dataset..."
+			print "--------------------------"
 
-				train_set = {'inputs': local_dsu._train_inputs, 'outputs': local_dsu._train_outputs}
-				test_set = {'inputs': local_dsu._test_inputs, 'outputs': local_dsu._test_outputs}
-				metrics_dict = {}
+			# Iterating over all different algorithm configurations
+			for conf_name, configuration in self.algorithms_.iteritems():
 
-				# Running different algorithms
-				for algorithm_name, algorithm in zip(algorithm_names, algorithms):
+				print "Running", configuration["algorithm"], "algorithm"
 
-					print "Running algorithm", algorithm_name
+				# TODO: Comprobar que los algoritmos dados son correctos (y el resto de parametros), sino parar la ejecucion
+				module = __import__(configuration["algorithm"])
+				algorithm = getattr(module, configuration["algorithm"])
 
+				optimal_params = self._getOptimalParameters(dataset, algorithm, configuration["parameters"])
 
-					# TODO: Todos los algoritmos tienen que tener la funcion principal con el mismo nombre (runAlgorithm) y 
-					# recibir los mismos parametros: los dos diccionarios con los diferentes parametros fijos en 
-					# esta ejecucion (algorithm_parameters), las metricas a utilizar (como una lista) y los 
-					# hiperparametros a optimizar (como dict y ya obtener los valores dentro ?? )
+				# TODO: Si no estan ordenados correctamente en el fichero de configuracion no funcionara como es debido
+				algorithm_model = algorithm(*optimal_params.values())
+				metrics_list = []
 
+				# Iterating over all partitions in each dataset
+				for partition in dataset:
 
-					metrics_dict[algorithm_name] = algorithm.entrenar_rbf_total(train_set, test_set,\
-															self._algorithm_hyper_parameters,\
-															self._general_conf["clasification"])
+					print "  Running Partition", partition.partition
+					algorithm_model.fit(partition.train_inputs, partition.train_outputs)
 
 
-				local_dsu._metrics = metrics_dict
+					# Creating tuples with each specified tuple and passing it to specified dataframe
+
+					metrics = {}
+					for metric_name in self.general_conf_['metrics'].split(','):
+
+						module = __import__("Metrics")
+						metric = getattr(module, metric_name.strip())
+
+						predicted_y = algorithm_model.predict(partition.test_inputs)
+						partition_score = metric(partition.test_outputs, predicted_y)
+
+						metrics[metric_name] = partition_score
+
+					metrics_list.append(metrics)
+
+				self.results_.addRecord(dataset_name, configuration['algorithm'], metrics_list)
+
+
+		for dfs in self.results_.dataframes_:
+
+			print dfs.dataset_, "-", dfs.algorithm_
+			print dfs.df_
+
+
+
+	def _getOptimalParameters(self, dataset, algorithm, parameters):
+
 		"""
+
+		"""
+
+		# TODO: Dividir el conjunto de entrenamiento en entrenamiento y validacion (o ya lo hace gridsearch solo ?? )
+		best_params = []
+		for partition in dataset:
+
+			algorithm_model = algorithm()
+
+			# TODO: Seleccionar medida de precision en base a fichero de configuracion (make_scorer para crearla uno mismo)
+ 
+			optimal = GridSearchCV(estimator=algorithm_model, param_grid=parameters, scoring='accuracy', n_jobs=1, cv=5)
+			optimal.fit(partition.train_inputs, partition.train_outputs)
+
+			params = optimal.best_params_
+			score =  optimal.score(partition.train_inputs, partition.train_outputs)
+			partition_params = {'params': params, 'score': score}
+			best_params.append(partition_params)
+
+		optimal_params = self._selectOptimalParameters(best_params)
+
+		return optimal_params
+
+
+
+	def _selectOptimalParameters(self, best_params):
+
+		"""
+		For now, selecting only the combination of parameters that gave best score value for crossvalidation_metric
+		between all different partitions
+		"""
+
+		optimal_params = best_params.pop()
+		for partition_params in best_params:
+
+			if partition_params['score'] > optimal_params['score']:
+				optimal_params = partition_params
+
+
+		return optimal_params['params']
 
 
 
@@ -211,7 +259,7 @@ class Utilities:
 		# de configuracion, hacer que esta lista sean unicamente las metricas a utilizar. Ademas habra que contemplar
 		# los distintos nombres de las variables utilizadas (esto ultimo con un for y un append)
 
-		for dataset_label, dsu_list in self._datasets.iteritems():
+		for dataset_label, dsu_list in self.datasets_.iteritems():
 
 			# Creates subfolders for each dataset
 			os.makedirs(folder_path + dataset_label)

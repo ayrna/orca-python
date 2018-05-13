@@ -7,85 +7,14 @@ class DSU:
 	Abstraction level which we will work with.
 	"""
 
-	# Information about partition
-	_dataset = ""
-	_partition = ""
-
-	# Data loaded from file
-	_train_inputs = []
-	_train_outputs = []
-	_test_inputs = []
-	_test_outputs = []
-
-	# Predicted outputs from algorithms
-	_train_predicted = []
-	_test_predicted = []
-
-	# Obtained metrics ()
-	_metrics = None
-
 	def __init__(self, dataset, partition):
 
-		self._dataset = dataset
-		self._partition = partition
+		self.dataset = dataset
+		self.partition = partition
 
-
-	def printInfo(self):
-
-		print "Dataset:", self._dataset
-		print "Partition:", self._partition
-
-		print "Train Inputs:\t", self._train_inputs
-		print "Train Outputs:\t", self._train_outputs
-		print "Test Inputs:\t", self._test_inputs
-		print "Test Outputs:\t", self._test_outputs
-
-
-class ParamMetrics:
-
-	"""
-	Storages run information for concrete hyper parameters of a given algorithm
-
-	"""
-
-	#TODO: En vez de hacer que _metrics de DSU sea un diccionario con los algoritmos como clave
-	# incluir el algoritmo como un parametro en esta clase (Quizas mas lioso de tratar en Utilities)
-
-	_hyper_parameters = {}
-	_train_metrics = {}
-	_test_metrics = {}
-
-
-	def __init__(self, hyper_parameters, train_metrics, test_metrics):
-
-
-		"""
-
-		"""
-
-		self._hyper_parameters = hyper_parameters
-		self._train_metrics = train_metrics
-		self._test_metrics = test_metrics
-
-	def printInfo(self):
-
-		print self
-		print self._hyper_parameters
-		print self._train_metrics
-		print self._test_metrics
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		self.train_inputs = []
+		self.train_outputs = []
+		self.test_inputs = []
+		self.test_outputs = []
 
 

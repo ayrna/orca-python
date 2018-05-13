@@ -25,7 +25,7 @@ def main(general_conf, algorithms):
 	api_path = os.path.dirname(os.path.abspath(__file__)) + "/"
 
 	interfaz = Utilities(api_path, general_conf, algorithms)
-	#interfaz.runExperiment()
+	interfaz.runExperiment()
 	#interfaz.writeReport()
 
 
