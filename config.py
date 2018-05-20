@@ -26,7 +26,7 @@ def main(general_conf, algorithms):
 
 	interfaz = Utilities(api_path, general_conf, algorithms)
 	interfaz.runExperiment()
-	#interfaz.writeReport()
+	interfaz.writeReport()
 
 
 

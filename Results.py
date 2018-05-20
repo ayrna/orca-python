@@ -1,4 +1,6 @@
 
+import os, datetime
+
 import pandas as pd
 
 
@@ -9,14 +11,14 @@ class DataFrameStorage:
 
 	"""
 
-	def __init__(self, dataset, algorithm):
+	def __init__(self, dataset_name, algorithm_name):
 
 		"""
 
 		"""
 
-		self.dataset_ = dataset
-		self.algorithm_ = algorithm
+		self.dataset_ = dataset_name
+		self.algorithm_ = algorithm_name
 		self.df_ = None
 
 
@@ -70,11 +72,28 @@ class Results:
 
 		"""
 
-		pass
+		# Check if experiments folder exists
+		if not os.path.exists(api_path + "my_runs/"):
+			os.makedirs(api_path + "my_runs/")
+
+		# Getting name of folder where we will store info about the Experiment
+		folder_name = "exp-" + datetime.date.today().strftime("%y-%m-%d") + "-" + datetime.datetime.now().strftime("%H-%M-%S") + "/"
+
+		# Check if folder already exists
+		folder_path = api_path + "my_runs/" + folder_name
+		if not os.path.exists(folder_path):
+			os.makedirs(folder_path)
 
 
+		for dataframe in self.dataframes_:
+		
+			# Creates subfolders for each dataset
+			dataset_folder = folder_path + dataframe.dataset_ + "/"
+	
+			if not os.path.exists(dataset_folder):
+				os.makedirs(dataset_folder)
 
-
+			dataframe.df_.to_csv(dataset_folder + dataframe.dataset_ + "-" + dataframe.algorithm_ + ".csv")
 
 
 

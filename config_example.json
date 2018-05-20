@@ -4,10 +4,10 @@
 		"basedir": "/home/beelzebub/Escritorio/orca_python/Datasets/",
 		"datasets": "iris, pruebas",
 		"standarize": "True",
-		"num_folds": 5,
+		"folds": 5,
 		"outputs": 1,
-		"metrics": "CCR",
-		"crossvalidation_metric": "ccr"
+		"metrics": "CCR, MAE",
+		"cv_metric": "CCR"
 	},
 
 	"algorithms": {

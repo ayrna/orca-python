@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.grid_search import GridSearchCV
+from sklearn.metrics.scorer import make_scorer
 
 import DSU
 from Results import Results
@@ -102,6 +103,7 @@ class Utilities:
 
 
 
+	#TODO: Como se comporta cuando hay mas salidas?
 	def _readFile(self, filename):
 		"""
 
@@ -130,7 +132,7 @@ class Utilities:
 		# Adding algorithm folder to sys path. Needed to import modules from different folders
 		sys.path.insert(0, 'Algorithms/')
 
-		self.results_ = Results()	# Creates results object, that will store al different metrics for each algorithm and dataset
+		self.results_ = Results()	# Creates results object, that will store all different metrics for each algorithm and dataset
 
 
 		# Iterating over all different datasets
@@ -148,18 +150,18 @@ class Utilities:
 				module = __import__(configuration["algorithm"])
 				algorithm = getattr(module, configuration["algorithm"])
 
-				optimal_params = self._getOptimalParameters(dataset, algorithm, configuration["parameters"])
-
-				# TODO: Si no estan ordenados correctamente en el fichero de configuracion no funcionara como es debido
-				algorithm_model = algorithm(*optimal_params.values())
-				metrics_list = []
-
 				# Iterating over all partitions in each dataset
+				metrics_list = []
 				for partition in dataset:
 
 					print "  Running Partition", partition.partition
-					algorithm_model.fit(partition.train_inputs, partition.train_outputs)
 
+					optimal_params = self._getOptimalParameters(partition, algorithm, configuration["parameters"],\
+																self.general_conf_['cv_metric'], self.general_conf_['folds'])
+
+					# TODO: Si no estan ordenados correctamente en el fichero de configuracion no funcionara como es debido
+					algorithm_model = algorithm(*optimal_params.values())
+					algorithm_model.fit(partition.train_inputs, partition.train_outputs)
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
 
@@ -179,56 +181,24 @@ class Utilities:
 				self.results_.addRecord(dataset_name, configuration['algorithm'], metrics_list)
 
 
-		for dfs in self.results_.dataframes_:
-
-			print dfs.dataset_, "-", dfs.algorithm_
-			print dfs.df_
 
 
-
-	def _getOptimalParameters(self, dataset, algorithm, parameters):
+	def _getOptimalParameters(self, partition, algorithm, parameters, cv_metric, folds):
 
 		"""
 
 		"""
+		module = __import__("Metrics")
+		metric = getattr(module, cv_metric.strip())
 
-		# TODO: Dividir el conjunto de entrenamiento en entrenamiento y validacion (o ya lo hace gridsearch solo ?? )
-		best_params = []
-		for partition in dataset:
+		# TODO: Cuidado con el greater is better
+		scoring_function = make_scorer(metric, greater_is_better=True)
 
-			algorithm_model = algorithm()
+		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function, n_jobs=1, cv=folds)
+		optimal.fit(partition.train_inputs, partition.train_outputs)
 
-			# TODO: Seleccionar medida de precision en base a fichero de configuracion (make_scorer para crearla uno mismo)
- 
-			optimal = GridSearchCV(estimator=algorithm_model, param_grid=parameters, scoring='accuracy', n_jobs=1, cv=5)
-			optimal.fit(partition.train_inputs, partition.train_outputs)
+		return optimal.best_params_
 
-			params = optimal.best_params_
-			score =  optimal.score(partition.train_inputs, partition.train_outputs)
-			partition_params = {'params': params, 'score': score}
-			best_params.append(partition_params)
-
-		optimal_params = self._selectOptimalParameters(best_params)
-
-		return optimal_params
-
-
-
-	def _selectOptimalParameters(self, best_params):
-
-		"""
-		For now, selecting only the combination of parameters that gave best score value for crossvalidation_metric
-		between all different partitions
-		"""
-
-		optimal_params = best_params.pop()
-		for partition_params in best_params:
-
-			if partition_params['score'] > optimal_params['score']:
-				optimal_params = partition_params
-
-
-		return optimal_params['params']
 
 
 
@@ -239,72 +209,6 @@ class Utilities:
 
 		"""
 
-
-
-		# Check if experiments folder exists
-		if not os.path.exists(self._api_path + "my_runs/"):
-			os.makedirs(self._api_path + "my_runs/")
-
-
-		# Getting name of folder where we will store info about the Experiment
-		folder_name = "exp-" + datetime.date.today().strftime("%y-%m-%d") + "-" + datetime.datetime.now().strftime("%H-%M-%S") + "/"
-
-		# Check if folder already exists
-		folder_path = self._api_path + "my_runs/" + folder_name
-		if not os.path.exists(folder_path):
-			os.makedirs(folder_path)
-
-
-		#TODO: Una vez implementadas las diferentes metricas y que se puedan decidir cuales usar desde el fichero
-		# de configuracion, hacer que esta lista sean unicamente las metricas a utilizar. Ademas habra que contemplar
-		# los distintos nombres de las variables utilizadas (esto ultimo con un for y un append)
-
-		for dataset_label, dsu_list in self.datasets_.iteritems():
-
-			# Creates subfolders for each dataset
-			os.makedirs(folder_path + dataset_label)
-
-			# One file per partition
-			for local_dsu in dsu_list:
-
-				for algorithm_name, metrics in local_dsu._metrics.iteritems():
-
-					# Get name of csv file
-					if (local_dsu._partition == "csv"):
-						file_path_train = folder_path + dataset_label + "/train-" + dataset_label + "-" + \
-											algorithm_name + "." + local_dsu._partition
-						file_path_test = folder_path + dataset_label + "/test-" + dataset_label + "-" + \
-											algorithm_name + "." + local_dsu._partition
-
-					else:
-						file_path_train = folder_path + dataset_label + "/train-" + dataset_label + "-" + \
-											algorithm_name + "." + local_dsu._partition + ".csv"
-						file_path_test = folder_path + dataset_label + "/test-" + dataset_label + "-" + \
-											algorithm_name + "." + local_dsu._partition + ".csv"
-
-
-
-					# Writing results metrics to CSV
-					with open(file_path_train, 'w') as train_csv, open(file_path_test, 'w') as test_csv:
-
-
-						metrics_header = list(metrics[0]._hyper_parameters)
-						metrics_header.append("MSE")
-						metrics_header.append("CCR")
-
-
-						train_writer = csv.DictWriter(train_csv, fieldnames=metrics_header)
-						test_writer = csv.DictWriter(test_csv, fieldnames=metrics_header)
-
-						train_writer.writeheader()
-						test_writer.writeheader()
-
-						# Writing one row per different configuration of hyper parameters
-						for param_metrics in metrics:
-
-							train_writer.writerow( dict(param_metrics._hyper_parameters, **param_metrics._train_metrics) )
-							test_writer.writerow( dict(param_metrics._hyper_parameters, **param_metrics._test_metrics) )
-
-
+		self.results_.saveResults(self.api_path_)
 
 
