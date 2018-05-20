@@ -21,14 +21,14 @@ class Utilities:
 
 		"""
 
-		#TODO: Mejorar forma de obtener el path hasta la carpeta base
+		#TODO: Mejorar forma de obtener el path hasta la carpeta base (para que no dependa de la ubicacion del fichero config)
+		#		Por ejemplo, del api path, quitando carpetas por la derecha hasta llegar a el nombre de la carpeta .../orca_python/
 		self.api_path_ = api_path
 		self.general_conf_ = general_conf
 		self.algorithms_ = algorithms
 
 
-		#TODO: Obtener el numero de salidas para cada dataset sin que se tenga que especificar en el fichero de
-		# configuracion, y almacenarlo como una lista o como un diccionario
+		#TODO: Obtener el numero de salidas para cada dataset sin que se tenga que especificar en el fichero de configuracion
 
 		print "\n###############################"
 		print "\tLoading Start"
@@ -40,13 +40,16 @@ class Utilities:
 
 			dataset_name = x.strip()
 
-			#TODO: Check if basedir has a final backslash or not
-			file_path = general_conf['basedir'] + dataset_name + '/'
+			#Check if basedir has a final backslash or not
+			if general_conf['basedir'][-1] == '/':
+				file_path = general_conf['basedir'] + dataset_name + '/'
+			else:
+				file_path = general_conf['basedir'] + "/" + dataset_name + '/'
 
 
-			# TODO: Hacer que la funcion devuelva un solo dataset cargado y aqui hacer el append (Para mejor encapsulacion)
 			print "Loading dataset", dataset_name, "info..."
-			self._loadDataset(file_path)
+			self.datasets_[os.path.basename(os.path.normpath(file_path))] = self._loadDataset(file_path)
+
 
 
 	def _loadDataset(self, file_path):
@@ -69,36 +72,26 @@ class Utilities:
 					test_files.append(file_path + filename)
 
 
+		train_files.sort(), test_files.sort()
+
 
 		partition_list = []
-
 		for train_file, test_file in zip(train_files, test_files):
 
-			#TODO: En vez de comprobar si los ficheros dentro del zip comparten el nombre, se podrian ordenar
-			# con anterioridad las listas train_file y test_file alfabeticamente, de esa manera estaria seguro
 
+			#Declaring partition DSU
+			partition = DSU.DSU(file_path, train_file[ train_file.find('.') + 1 : ])
 
-			# Check if both sufixes are similar
-			if ( train_file[ train_file.find('.') : ] != test_file[ test_file.find('.') : ] ):
-				print train_file[ train_file.find('.') : ],  " =/= ", test_file[ test_file.find('.') : ]
+			# Get inputs and outputs from partition
+			partition.train_inputs, partition.train_outputs = self._readFile(train_file)
+			partition.test_inputs, partition.test_outputs = self._readFile(test_file)
 
-
-			else:
-
-				#Declaring partition DSU
-				partition = DSU.DSU(file_path, train_file[ train_file.find('.') + 1 : ])
-
-				# Get inputs and outputs from partition
-				partition.train_inputs, partition.train_outputs = self._readFile(train_file)
-
-				partition.test_inputs, partition.test_outputs = self._readFile(test_file)
-
-				# Append DSU to list
-				partition_list.insert(0, partition)
+			# Append DSU to begining of list
+			partition_list.append(partition)
 
 
 		# Save info to dataset
-		self.datasets_[os.path.basename(os.path.normpath(file_path))] = partition_list
+		return partition_list
 
 
 
@@ -160,11 +153,11 @@ class Utilities:
 																self.general_conf_['cv_metric'], self.general_conf_['folds'])
 
 					# TODO: Si no estan ordenados correctamente en el fichero de configuracion no funcionara como es debido
+					#		Pasarle los parametros de otra forma distinta
 					algorithm_model = algorithm(*optimal_params.values())
 					algorithm_model.fit(partition.train_inputs, partition.train_outputs)
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
-
 					metrics = {}
 					for metric_name in self.general_conf_['metrics'].split(','):
 

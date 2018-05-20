@@ -4,6 +4,10 @@ import os, datetime
 import pandas as pd
 
 
+#TODO: Ordenar mejor la informacion en estas dos clases:
+#		Hacer que DFS alamcene una lista de dataframes (uno por cada algoritmo para un dataset)
+#		De manera que Results solo tenga que almacenar una lista de DFS (uno por cada dataset)
+#		(Si lo consideramos al reves daria lo mismo)
 
 class DataFrameStorage:
 
