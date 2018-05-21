@@ -4,11 +4,6 @@ import os, datetime
 import pandas as pd
 
 
-#TODO: Ordenar mejor la informacion en estas dos clases:
-#		Hacer que DFS alamcene una lista de dataframes (uno por cada algoritmo para un dataset)
-#		De manera que Results solo tenga que almacenar una lista de DFS (uno por cada dataset)
-#		(Si lo consideramos al reves daria lo mismo)
-
 class DataFrameStorage:
 
 	"""
@@ -54,9 +49,14 @@ class Results:
 		return False
 
 
+
 	def addRecord(self, dataset, algorithm, metrics):
 
 		"""
+			Stores all info about the run of a dataset with specified algorithm.
+
+			The info will be stored as a pandas DataFrame in a class named DataFrameStorage built in
+			for the purpose of keeping additional information.
 
 		"""
 

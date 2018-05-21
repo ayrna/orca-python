@@ -58,6 +58,7 @@ class Utilities:
 
 		"""
 
+		# Looks for all files specified as part of dataset in given folder and orders 'em
 		train_files = []
 		test_files = []
 
@@ -71,10 +72,10 @@ class Utilities:
 				elif filename.startswith("test_"):
 					test_files.append(file_path + filename)
 
-
 		train_files.sort(), test_files.sort()
 
 
+		# Get input and output variables from dataset files
 		partition_list = []
 		for train_file, test_file in zip(train_files, test_files):
 
@@ -140,17 +141,19 @@ class Utilities:
 				print "Running", configuration["algorithm"], "algorithm"
 
 				# TODO: Comprobar que los algoritmos dados son correctos (y el resto de parametros), sino parar la ejecucion
+				#		Hacer que todas las metricas y algoritmos sean upper
 				module = __import__(configuration["algorithm"])
-				algorithm = getattr(module, configuration["algorithm"])
+				algorithm = getattr(module, configuration["algorithm"].upper())
 
 				# Iterating over all partitions in each dataset
 				metrics_list = []
 				for partition in dataset:
 
-					print "  Running Partition", partition.partition
+					if partition.partition != "csv":
+						print "  Running Partition", partition.partition
 
 					optimal_params = self._getOptimalParameters(partition, algorithm, configuration["parameters"],\
-																self.general_conf_['cv_metric'], self.general_conf_['folds'])
+																self.general_conf_['cv_metric'].upper(), self.general_conf_['folds'])
 
 					# TODO: Si no estan ordenados correctamente en el fichero de configuracion no funcionara como es debido
 					#		Pasarle los parametros de otra forma distinta
@@ -162,7 +165,7 @@ class Utilities:
 					for metric_name in self.general_conf_['metrics'].split(','):
 
 						module = __import__("Metrics")
-						metric = getattr(module, metric_name.strip())
+						metric = getattr(module, metric_name.strip().upper())
 
 						predicted_y = algorithm_model.predict(partition.test_inputs)
 						partition_score = metric(partition.test_outputs, predicted_y)
@@ -187,7 +190,7 @@ class Utilities:
 		# TODO: Cuidado con el greater is better
 		scoring_function = make_scorer(metric, greater_is_better=True)
 
-		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function, n_jobs=1, cv=folds)
+		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function, n_jobs=3, cv=folds)
 		optimal.fit(partition.train_inputs, partition.train_outputs)
 
 		return optimal.best_params_
