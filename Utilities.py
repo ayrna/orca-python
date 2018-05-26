@@ -29,6 +29,8 @@ class Utilities:
 
 
 		#TODO: Obtener el numero de salidas para cada dataset sin que se tenga que especificar en el fichero de configuracion
+		# ---> En principio no es necesario, pero se puede conseguir tras leer las salidas de los datos, restando al mayor valor
+		#		de las salidas el menor valor y se le suma 1.
 
 		print "\n###############################"
 		print "\tLoading Start"
@@ -97,7 +99,6 @@ class Utilities:
 
 
 
-	#TODO: Como se comporta cuando hay mas salidas?
 	def _readFile(self, filename):
 		"""
 
@@ -186,7 +187,7 @@ class Utilities:
 		module = __import__("Metrics")
 		metric = getattr(module, self.general_conf_['cv_metric'].upper().strip())
 
-		# TODO: Cuidado con el greater is better
+		# TODO: Cuidado con el greater is better (MAE es un indicador que funciona a la inversa - menor es mejor)
 		scoring_function = make_scorer(metric, greater_is_better=True)
 
 		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function,\

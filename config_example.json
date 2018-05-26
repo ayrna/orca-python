@@ -2,12 +2,11 @@
 	"general_conf": {
 
 		"basedir": "/home/beelzebub/Escritorio/orca_python/Datasets/",
-		"datasets": "iris, nomnist, pruebas",
+		"datasets": "nomnist",
 		"standarize": "True",
 		"folds": 5,
-		"jobs": 3,
-		"outputs": 1,
-		"metrics": "CCR",
+		"jobs": 5,
+		"metrics": "CCR, MAE",
 		"cv_metric": "CCR"
 	},
 

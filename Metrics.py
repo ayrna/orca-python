@@ -23,5 +23,5 @@ def MAE(real_y, predicted_y):
 	if(len(real_y) != len(predicted_y)):
 		print "Real and Predicted outputs lists have different sizes"
 
-	return np.count_nonzero(real_y == predicted_y) / float( len(real_y) )
+	return np.sum(abs(real_y - predicted_y)) / float( len(real_y) )
 
