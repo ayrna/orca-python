@@ -54,4 +54,15 @@ class SVM(BaseEstimator, ClassifierMixin):
 
 
 
+	def setParameters(self, parameters):
+
+		if 'C' in parameters:
+
+			self.C = parameters['C']
+
+		if 'gamma' in parameters:
+
+			self.gamma = parameters['gamma']
+
+
 

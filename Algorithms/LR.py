@@ -58,4 +58,28 @@ class LR(BaseEstimator, ClassifierMixin):
 
 
 
+	def setParameters(self, parameters):
+
+		if 'C' in parameters:
+
+			self.C = parameters['C']
+
+		if 'l2' in parameters:
+
+			self.l2 = parameters['l2']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

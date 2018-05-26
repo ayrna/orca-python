@@ -152,12 +152,12 @@ class Utilities:
 					if partition.partition != "csv":
 						print "  Running Partition", partition.partition
 
-					optimal_params = self._getOptimalParameters(partition, algorithm, configuration["parameters"],\
-																self.general_conf_['cv_metric'].upper(), self.general_conf_['folds'])
+					# Finding optimal parameters
+					optimal_params = self._getOptimalParameters(partition, algorithm, configuration["parameters"])
 
-					# TODO: Si no estan ordenados correctamente en el fichero de configuracion no funcionara como es debido
-					#		Pasarle los parametros de otra forma distinta
-					algorithm_model = algorithm(*optimal_params.values())
+					# Declaring and training specified algorithm with obtained parameters
+					algorithm_model = algorithm()
+					algorithm_model.setParameters(optimal_params)
 					algorithm_model.fit(partition.train_inputs, partition.train_outputs)
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
@@ -178,19 +178,19 @@ class Utilities:
 
 
 
-
-	def _getOptimalParameters(self, partition, algorithm, parameters, cv_metric, folds):
+	def _getOptimalParameters(self, partition, algorithm, parameters):
 
 		"""
 
 		"""
 		module = __import__("Metrics")
-		metric = getattr(module, cv_metric.strip())
+		metric = getattr(module, self.general_conf_['cv_metric'].upper().strip())
 
 		# TODO: Cuidado con el greater is better
 		scoring_function = make_scorer(metric, greater_is_better=True)
 
-		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function, n_jobs=3, cv=folds)
+		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function,\
+								n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'])
 		optimal.fit(partition.train_inputs, partition.train_outputs)
 
 		return optimal.best_params_
