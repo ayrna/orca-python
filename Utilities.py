@@ -15,7 +15,7 @@ class Utilities:
 	"""
 
 
-	def __init__(self, api_path, general_conf, algorithms):
+	def __init__(self, api_path, general_conf, configurations):
 
 		"""
 
@@ -25,7 +25,7 @@ class Utilities:
 		#		Por ejemplo, del api path, quitando carpetas por la derecha hasta llegar a el nombre de la carpeta .../orca_python/
 		self.api_path_ = api_path
 		self.general_conf_ = general_conf
-		self.algorithms_ = algorithms
+		self.configurations_ = configurations
 
 
 		#TODO: Obtener el numero de salidas para cada dataset sin que se tenga que especificar en el fichero de configuracion
@@ -137,7 +137,7 @@ class Utilities:
 			print "--------------------------"
 
 			# Iterating over all different algorithm configurations
-			for conf_name, configuration in self.algorithms_.iteritems():
+			for conf_name, configuration in self.configurations_.iteritems():
 
 				print "Running", configuration["algorithm"], "algorithm"
 
@@ -154,12 +154,8 @@ class Utilities:
 						print "  Running Partition", partition.partition
 
 					# Finding optimal parameters
-					optimal_params = self._getOptimalParameters(partition, algorithm, configuration["parameters"])
+					optimal_estimator = self._getOptimalEstimator(partition, algorithm, configuration["parameters"])
 
-					# Declaring and training specified algorithm with obtained parameters
-					algorithm_model = algorithm()
-					algorithm_model.setParameters(optimal_params)
-					algorithm_model.fit(partition.train_inputs, partition.train_outputs)
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
 					metrics = {}
@@ -168,7 +164,7 @@ class Utilities:
 						module = __import__("Metrics")
 						metric = getattr(module, metric_name.strip().upper())
 
-						predicted_y = algorithm_model.predict(partition.test_inputs)
+						predicted_y = optimal_estimator.predict(partition.test_inputs)
 						partition_score = metric(partition.test_outputs, predicted_y)
 
 						metrics[metric_name] = partition_score
@@ -179,7 +175,7 @@ class Utilities:
 
 
 
-	def _getOptimalParameters(self, partition, algorithm, parameters):
+	def _getOptimalEstimator(self, partition, algorithm, parameters):
 
 		"""
 
@@ -194,7 +190,7 @@ class Utilities:
 								n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'])
 		optimal.fit(partition.train_inputs, partition.train_outputs)
 
-		return optimal.best_params_
+		return optimal
 
 
 
