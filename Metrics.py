@@ -1,27 +1,113 @@
+from __future__ import division
 
-
+import warnings
 import numpy as np
 
+from sklearn.metrics.classification import confusion_matrix
 
-def CCR(real_y, predicted_y):
+# This really need to be imported if it is merged with sklearn
+import scipy.stats
 
-	"""
+def ccr(y, ypred):
+	return np.count_nonzero(y == ypred) / float( len(y) )
 
-	"""
+def amae(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cm = confusion_matrix(y, ypred)
+        n_class = cm.shape[0]
+        costes = np.reshape(np.tile(range(n_class),n_class),(n_class,n_class))
+        costes = np.abs(costes - np.transpose(costes))
+        errores = costes*cm
+        amaes = np.sum(errores,axis=1)/np.sum(cm,axis=1).astype('double')
+        amaes = amaes[~np.isnan(amaes)]
+        return np.mean(amaes)
 
-	if(len(real_y) != len(predicted_y)):
-		print "Real and Predicted outputs lists have different sizes"
+def gm(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cm = confusion_matrix(y, ypred)
+        sum_byclass = np.sum(cm,axis=1)
+        sensitivities = np.diag(cm)/sum_byclass.astype('double')
+        sensitivities[sum_byclass==0] = 1
+        gm_result = pow(np.prod(sensitivities),1.0/cm.shape[0])
+        return gm_result
 
-	return np.count_nonzero(real_y == predicted_y) / float( len(real_y) )
+def mae(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        y = np.asarray(y)
+        ypred = np.asarray(ypred)
+        return abs(y - ypred).sum() / len(y)
 
+def mmae(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cm = confusion_matrix(y, ypred)
+        n_class = cm.shape[0]
+        costes=np.reshape(np.tile(range(n_class),n_class),(n_class,n_class))
+        costes = np.abs(costes - np.transpose(costes))
+        errores = costes*cm
+        amaes = np.sum(errores,axis=1)/np.sum(cm,axis=1).astype('double')
+        amaes = amaes[~np.isnan(amaes)]
+        return amaes.max()
 
-def MAE(real_y, predicted_y):
-	"""
+def ms(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cm = confusion_matrix(y, ypred)
+        sum_byclass = np.sum(cm,axis=1)
+        sensitivities = np.diag(cm)/sum_byclass.astype('double')
+        sensitivities[sum_byclass==0] = 1
+        ms = np.min(sensitivities)
 
-	"""
+        return ms
 
-	if(len(real_y) != len(predicted_y)):
-		print "Real and Predicted outputs lists have different sizes"
+def mze(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
 
-	return np.sum(abs(real_y - predicted_y)) / float( len(real_y) )
+        confusion = confusion_matrix(y, ypred)
+        return 1 - np.diagonal(confusion).sum() / confusion.sum()
+
+def tkendall(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        corr, pvalue = scipy.stats.kendalltau(y, ypred)
+        return corr
+
+def wkappa(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        cm = confusion_matrix(y, ypred)
+        n_class = cm.shape[0]
+        costes=np.reshape(np.tile(range(n_class),n_class),(n_class,n_class))
+        costes = np.abs(costes - np.transpose(costes))
+        f = 1 - costes
+
+        n = cm.sum()
+        x = cm/n
+
+        r = x.sum(axis=1) # Row sum
+        s = x.sum(axis=0) # Col sum
+        Ex = r.reshape(-1, 1) * s
+        po = (x * f).sum()
+        pe = (Ex * f).sum()
+        return (po - pe) / (1 - pe)
+
+def spearman(y, ypred):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        n = len(y)
+        num = ((y - np.repeat(np.mean(y), n)) * (ypred - np.repeat(np.mean(ypred), n))).sum()
+        div = np.sqrt((pow(y - np.repeat(np.mean(y), n), 2)).sum() * (pow(ypred - np.repeat(np.mean(ypred), n), 2)).sum())
+
+        if num == 0:
+            return 0
+        else:
+            return num / div
+
 

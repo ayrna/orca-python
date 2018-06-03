@@ -105,6 +105,3 @@ class Results:
 
 
 
-
-
-

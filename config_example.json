@@ -6,7 +6,7 @@
 		"standarize": "True",
 		"folds": 5,
 		"jobs": 5,
-		"metrics": "CCR, MAE",
+		"metrics": "ccr, mae, amae, ms",
 		"cv_metric": "CCR"
 	},
 

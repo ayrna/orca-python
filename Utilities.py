@@ -1,5 +1,5 @@
 
-import os, sys, csv, json, time, datetime, re
+import os, sys, csv, json, time, datetime, re, collections
 import pandas as pd
 import numpy as np
 
@@ -158,16 +158,20 @@ class Utilities:
 
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
-					metrics = {}
+					metrics = collections.OrderedDict()
 					for metric_name in self.general_conf_['metrics'].split(','):
 
 						module = __import__("Metrics")
-						metric = getattr(module, metric_name.strip().upper())
+						metric = getattr(module, metric_name.strip().lower())
 
-						predicted_y = optimal_estimator.predict(partition.test_inputs)
-						partition_score = metric(partition.test_outputs, predicted_y)
+						train_predicted_y = optimal_estimator.predict(partition.train_inputs)
+						train_score = metric(partition.train_outputs, train_predicted_y)
 
-						metrics[metric_name] = partition_score
+						test_predicted_y = optimal_estimator.predict(partition.test_inputs)
+						test_score = metric(partition.test_outputs, test_predicted_y)
+
+						metrics['train_' + metric_name.strip()] = train_score
+						metrics['test_' + metric_name.strip()] = test_score
 
 					metrics_list.append(metrics)
 
@@ -181,7 +185,7 @@ class Utilities:
 
 		"""
 		module = __import__("Metrics")
-		metric = getattr(module, self.general_conf_['cv_metric'].upper().strip())
+		metric = getattr(module, self.general_conf_['cv_metric'].lower().strip())
 
 		# TODO: Cuidado con el greater is better (MAE es un indicador que funciona a la inversa - menor es mejor)
 		scoring_function = make_scorer(metric, greater_is_better=True)
