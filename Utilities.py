@@ -127,7 +127,7 @@ class Utilities:
 		# Adding algorithm folder to sys path. Needed to import modules from different folders
 		sys.path.insert(0, 'Algorithms/')
 
-		self.results_ = Results()	# Creates results object, that will store all different metrics for each algorithm and dataset
+		self.results_ = Results()	# Creates results object, that will store all different metrics for each configuration and dataset
 
 
 		# Iterating over all different datasets
@@ -136,7 +136,7 @@ class Utilities:
 			print "\nRunning", dataset_name, "dataset..."
 			print "--------------------------"
 
-			# Iterating over all different algorithm configurations
+			# Iterating over all different configurations
 			for conf_name, configuration in self.configurations_.iteritems():
 
 				print "Running", configuration["algorithm"], "algorithm"
@@ -146,8 +146,11 @@ class Utilities:
 				module = __import__(configuration["algorithm"])
 				algorithm = getattr(module, configuration["algorithm"].upper())
 
+
+				train_metrics_list = []
+				test_metrics_list = []
+
 				# Iterating over all partitions in each dataset
-				metrics_list = []
 				for partition in dataset:
 
 					if partition.partition != "csv":
@@ -158,7 +161,9 @@ class Utilities:
 
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
-					metrics = collections.OrderedDict()
+					train_metrics = collections.OrderedDict()
+					test_metrics = collections.OrderedDict()
+
 					for metric_name in self.general_conf_['metrics'].split(','):
 
 						module = __import__("Metrics")
@@ -170,12 +175,14 @@ class Utilities:
 						test_predicted_y = optimal_estimator.predict(partition.test_inputs)
 						test_score = metric(partition.test_outputs, test_predicted_y)
 
-						metrics['train_' + metric_name.strip()] = train_score
-						metrics['test_' + metric_name.strip()] = test_score
+						train_metrics['train_' + metric_name.strip()] = train_score
+						test_metrics['test_' + metric_name.strip()] = test_score
 
-					metrics_list.append(metrics)
+					train_metrics_list.append(train_metrics)
+					test_metrics_list.append(test_metrics)
 
-				self.results_.addRecord(dataset_name, configuration['algorithm'], metrics_list)
+				self.results_.addRecord(dataset_name, configuration['algorithm'], train_metrics_list, test_metrics_list,\
+										self.general_conf_['metrics'].split(','))
 
 
 
@@ -205,7 +212,12 @@ class Utilities:
 
 
 		"""
+		summary_index = []
+		for dataset_name in self.datasets_.keys():
+			for conf_name in self.configurations_.keys():
 
-		self.results_.saveResults(self.api_path_)
+				summary_index.append(dataset_name + "-" + conf_name)
+
+		self.results_.saveResults(self.api_path_, summary_index)
 
 
