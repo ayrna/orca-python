@@ -34,7 +34,7 @@ class Utilities:
 
 		print "\n###############################"
 		print "\tLoading Start"
-		print "###############################"
+		print "###############################\n"
 
 		self.datasets_ = {}
 		# Process each dataset provided by user
@@ -149,6 +149,7 @@ class Utilities:
 
 				train_metrics_list = []
 				test_metrics_list = []
+				best_params_list = []
 
 				# Iterating over all partitions in each dataset
 				for partition in dataset:
@@ -180,9 +181,10 @@ class Utilities:
 
 					train_metrics_list.append(train_metrics)
 					test_metrics_list.append(test_metrics)
+					best_params_list.append(optimal_estimator.best_params_)
 
 				self.results_.addRecord(dataset_name, configuration['algorithm'], train_metrics_list, test_metrics_list,\
-										self.general_conf_['metrics'].split(','))
+										best_params_list, self.general_conf_['metrics'].split(','))
 
 
 

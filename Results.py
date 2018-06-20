@@ -52,7 +52,7 @@ class Results:
 
 
 
-	def addRecord(self, dataset, configuration, train_metrics, test_metrics, metrics_names):
+	def addRecord(self, dataset, configuration, train_metrics, test_metrics, best_parameters, metrics_names):
 
 		"""
 			Stores all info about the run of a dataset with specified configuration.
@@ -82,10 +82,11 @@ class Results:
 
 		# Mixing train and test metrics in one only dataframe - Will show info for each partition for configuration and DB
 		list_of_series = []
-		for train_row, test_row in zip(train_metrics, test_metrics):
+		for train_row, test_row, param_row in zip(train_metrics, test_metrics, best_parameters):
 
 			train_row.update(test_row)
-			full_row = pd.Series(train_row)
+			param_row.update(train_row)
+			full_row = pd.Series(param_row)
 			list_of_series.append(full_row)
 
 		dfs = DataFrameStorage(dataset, configuration)
