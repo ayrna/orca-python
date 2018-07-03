@@ -2,7 +2,7 @@
 	"general_conf": {
 
 		"basedir": "/home/beelzebub/Escritorio/orca-python/Datasets/",
-		"datasets": "iris, pruebas",
+		"datasets": "iris, pruebas, nomnist_reducido",
 		"standarize": "True",
 		"folds": 5,
 		"jobs": 5,
@@ -22,6 +22,18 @@
 		},
 
 		"configuration_2": {
+		
+			"algorithm": "OneVsPrevious",
+			"parameters": {
+				"algorithm": ["SVM"],
+				"parameters": [{
+					"C": [0.001, 0.1, 1, 10, 100],
+					"gamma": [0.1, 1, 10]
+				}]
+			}
+		},
+
+		"configuration_3": {
 		
 			"algorithm": "LR",
 			"parameters": {

@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.grid_search import GridSearchCV
 from sklearn.metrics.scorer import make_scorer
 
-import DSU
+from DSU import DSU
 from Results import Results
 
 class Utilities:
@@ -83,7 +83,7 @@ class Utilities:
 
 
 			#Declaring partition DSU
-			partition = DSU.DSU(file_path, train_file[ train_file.find('.') + 1 : ])
+			partition = DSU(file_path, train_file[ train_file.find('.') + 1 : ])
 
 			# Get inputs and outputs from partition
 			partition.train_inputs, partition.train_outputs = self._readFile(train_file)
@@ -133,18 +133,18 @@ class Utilities:
 		# Iterating over all different datasets
 		for dataset_name, dataset in self.datasets_.iteritems():
 
-			print "\nRunning", dataset_name, "dataset..."
+			print "\nRunning", dataset_name, "dataset"
 			print "--------------------------"
 
 			# Iterating over all different configurations
 			for conf_name, configuration in self.configurations_.iteritems():
 
-				print "Running", configuration["algorithm"], "algorithm"
+				print "Running", conf_name, "Algorithm..."
 
 				# TODO: Comprobar que los algoritmos dados son correctos (y el resto de parametros), sino parar la ejecucion
 				#		Hacer que todas las metricas y algoritmos sean upper
 				module = __import__(configuration["algorithm"])
-				algorithm = getattr(module, configuration["algorithm"].upper())
+				algorithm = getattr(module, configuration["algorithm"])
 
 
 				train_metrics_list = []
@@ -158,7 +158,8 @@ class Utilities:
 						print "  Running Partition", partition.partition
 
 					# Finding optimal parameters
-					optimal_estimator = self._getOptimalEstimator(partition, algorithm, configuration["parameters"])
+					optimal_estimator = self._getOptimalEstimator(partition.train_inputs, partition.train_outputs,\
+																algorithm, configuration["parameters"])
 
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
@@ -188,7 +189,7 @@ class Utilities:
 
 
 
-	def _getOptimalEstimator(self, partition, algorithm, parameters):
+	def _getOptimalEstimator(self, train_inputs, train_outputs, algorithm, parameters):
 
 		"""
 
@@ -199,9 +200,10 @@ class Utilities:
 		# TODO: Cuidado con el greater is better (MAE es un indicador que funciona a la inversa - menor es mejor)
 		scoring_function = make_scorer(metric, greater_is_better=True)
 
+		# TODO: What if jobs or folds are not given?
 		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function,\
 								n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'])
-		optimal.fit(partition.train_inputs, partition.train_outputs)
+		optimal.fit(train_inputs, train_outputs)
 
 		return optimal
 
