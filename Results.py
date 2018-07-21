@@ -80,7 +80,7 @@ class Results:
 		self.test_summary_.append(test_series)
 
 
-		# Mixing train and test metrics in one only dataframe - Will show info for each partition for configuration and DB
+		# Mixing train and test metrics in only one dataframe - Will show info for each partition for configuration and DB
 		list_of_series = []
 		for train_row, test_row, param_row in zip(train_metrics, test_metrics, best_parameters):
 

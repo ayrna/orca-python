@@ -8,6 +8,17 @@ from sklearn.metrics.classification import confusion_matrix
 # This really need to be imported if it is merged with sklearn
 import scipy.stats
 
+def greater_is_better(metric_name):
+
+	#TODO: Determinar todas las metricas que deben ir en la lista
+	greater_is_better_metrics = ["ccr", "ms"]
+
+	if metric_name in greater_is_better_metrics:
+		return True
+	else:
+		return False
+
+
 def ccr(y, ypred):
 	return np.count_nonzero(y == ypred) / float( len(y) )
 

@@ -139,7 +139,7 @@ class Utilities:
 			# Iterating over all different configurations
 			for conf_name, configuration in self.configurations_.iteritems():
 
-				print "Running", conf_name, "Algorithm..."
+				print "Running", conf_name, "..."
 
 				# TODO: Comprobar que los algoritmos dados son correctos (y el resto de parametros), sino parar la ejecucion
 				#		Hacer que todas las metricas y algoritmos sean upper
@@ -184,7 +184,7 @@ class Utilities:
 					test_metrics_list.append(test_metrics)
 					best_params_list.append(optimal_estimator.best_params_)
 
-				self.results_.addRecord(dataset_name, configuration['algorithm'], train_metrics_list, test_metrics_list,\
+				self.results_.addRecord(dataset_name, conf_name, train_metrics_list, test_metrics_list,\
 										best_params_list, self.general_conf_['metrics'].split(','))
 
 
@@ -197,8 +197,17 @@ class Utilities:
 		module = __import__("Metrics")
 		metric = getattr(module, self.general_conf_['cv_metric'].lower().strip())
 
-		# TODO: Cuidado con el greater is better (MAE es un indicador que funciona a la inversa - menor es mejor)
-		scoring_function = make_scorer(metric, greater_is_better=True)
+		#TODO: ADD ALL METRICS THAT ARE GIB TO THE LIST
+		gib = module.greater_is_better(self.general_conf_['cv_metric'].lower().strip())
+		scoring_function = make_scorer(metric, greater_is_better=gib)
+
+
+		#TODO: Other way of doing this w/out using a for loop ?
+		for param_name, param in parameters.iteritems():
+
+			if type(param) != list:
+				parameters[param_name] = [param]
+
 
 		# TODO: What if jobs or folds are not given?
 		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function,\
