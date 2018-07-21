@@ -8,10 +8,11 @@ from sklearn import svm
 
 class SVM(BaseEstimator, ClassifierMixin):
 
-	def __init__(self, C=0.1, gamma=0.1):
+	def __init__(self, C=0.1, gamma=0.1, probability=False):
 		
 		self.C = C
 		self.gamma = gamma
+		self.probability = probability
 
 
 	def fit(self, X, y):
@@ -25,7 +26,7 @@ class SVM(BaseEstimator, ClassifierMixin):
 		self.y_ = y
 
 		# Fit model
-		svm_model = svm.SVC(kernel='rbf',C=self.C,gamma=self.gamma)
+		svm_model = svm.SVC(kernel='rbf',C=self.C,gamma=self.gamma,probability=self.probability)
 		self.svm_model_ = svm_model.fit(self.X_, self.y_)
 
 		# Return the classifier
@@ -43,6 +44,19 @@ class SVM(BaseEstimator, ClassifierMixin):
 		predicted_y = self.svm_model_.predict(X)
 
 		return predicted_y
+
+	def predict_proba(self, X):
+
+		# Check is fit had been called
+		check_is_fitted(self, ['X_', 'y_'])
+
+		# Input validation
+		X = check_array(X)
+
+		# Outputs predicted to given data by fitted model
+		predicted_y_proba = self.svm_model_.predict_proba(X)
+
+		return predicted_y_proba
 
 
 	def score(self, X, y):

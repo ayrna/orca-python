@@ -49,6 +49,20 @@ class LR(BaseEstimator, ClassifierMixin):
 		return predicted_y
 
 
+	def predict_proba(self, X):
+
+		# Check is fit had been called
+		check_is_fitted(self, ['X_', 'y_'])
+
+		# Input validation
+		X = check_array(X)
+
+		# Outputs predicted to given data by fitted model
+		predicted_y_proba = self.lr_model_.predict_proba(X)
+
+		return predicted_y_proba
+
+
 	def score(self, X, y):
 
 		check_is_fitted(self, ['X_','y_'])
