@@ -28,96 +28,14 @@ class Utilities:
 		self.configurations_ = configurations
 
 
-		#TODO: Obtener el numero de salidas para cada dataset sin que se tenga que especificar en el fichero de configuracion
-		# ---> En principio no es necesario, pero se puede conseguir tras leer las salidas de los datos, restando al mayor valor
-		#		de las salidas el menor valor y se le suma 1.
-
-		print "\n###############################"
-		print "\tLoading Start"
-		print "###############################\n"
-
-		self.datasets_ = {}
-		# Process each dataset provided by user
-		for x in general_conf['datasets'].split(','):
-
-			dataset_name = x.strip()
-
-			#Check if basedir has a final backslash or not
-			if general_conf['basedir'][-1] == '/':
-				file_path = general_conf['basedir'] + dataset_name + '/'
-			else:
-				file_path = general_conf['basedir'] + "/" + dataset_name + '/'
-
-
-			print "Loading dataset", dataset_name, "info..."
-			self.datasets_[os.path.basename(os.path.normpath(file_path))] = self._loadDataset(file_path)
-
-
-
-	def _loadDataset(self, file_path):
-
-		"""
-
-		"""
-
-		# Looks for all files specified as part of dataset in given folder and orders 'em
-		train_files = []
-		test_files = []
-
-		for filename in os.listdir(file_path):
-
-			if not os.path.isdir(filename):
-
-				if filename.startswith("train_"):
-					train_files.append(file_path + filename)
-
-				elif filename.startswith("test_"):
-					test_files.append(file_path + filename)
-
-		train_files.sort(), test_files.sort()
-
-
-		# Get input and output variables from dataset files
-		partition_list = []
-		for train_file, test_file in zip(train_files, test_files):
-
-
-			#Declaring partition DSU
-			partition = DSU(file_path, train_file[ train_file.find('.') + 1 : ])
-
-			# Get inputs and outputs from partition
-			partition.train_inputs, partition.train_outputs = self._readFile(train_file)
-			partition.test_inputs, partition.test_outputs = self._readFile(test_file)
-
-			# Append DSU to begining of list
-			partition_list.append(partition)
-
-
-		# Save info to dataset
-		return partition_list
-
-
-
-
-	def _readFile(self, filename):
-		"""
-
-		"""
-
-		f = pd.read_csv(filename, header=None)
-
-		inputs = f.values[:,0:(-1)]
-		outputs = f.values[:,(-1)]
-
-		return inputs, outputs
-
-
 
 	def runExperiment(self):
 		"""
 
 		"""
 
+		# Loading and Storing all datasets
+		self._processDatasets()
 
 		print "\n###############################"
 		print "\tRunning Experiment"
@@ -127,7 +45,8 @@ class Utilities:
 		# Adding algorithm folder to sys path. Needed to import modules from different folders
 		sys.path.insert(0, 'Algorithms/')
 
-		self.results_ = Results()	# Creates results object, that will store all different metrics for each configuration and dataset
+		# Creates results object, that will store all different metrics for each configuration and dataset
+		self.results_ = Results()
 
 
 		# Iterating over all different datasets
@@ -182,10 +101,97 @@ class Utilities:
 
 					train_metrics_list.append(train_metrics)
 					test_metrics_list.append(test_metrics)
+
+					#TODO: Hay que hacer que si el estimador es OrdinalDecomposition, se devuelva los mejores parametros
+					# del gridSearch interno (una funcion quizas) de dicha clase
+
 					best_params_list.append(optimal_estimator.best_params_)
 
 				self.results_.addRecord(dataset_name, conf_name, train_metrics_list, test_metrics_list,\
 										best_params_list, self.general_conf_['metrics'].split(','))
+
+
+
+
+	def _processDatasets(self):
+
+		print "\n###############################"
+		print "\tLoading Start"
+		print "###############################\n"
+
+
+		# Process each dataset provided by user
+
+		self.datasets_ = {}
+		for x in self.general_conf_['datasets'].split(','):
+
+			dataset_name = x.strip()
+
+			#Check if basedir has a final backslash or not
+			if self.general_conf_['basedir'][-1] == '/':
+				file_path = self.general_conf_['basedir'] + dataset_name + '/'
+			else:
+				file_path = self.general_conf_['basedir'] + "/" + dataset_name + '/'
+
+
+			print "Loading dataset", dataset_name, "info..."
+			self.datasets_[os.path.basename(os.path.normpath(file_path))] = self._loadDataset(file_path)
+
+
+
+	def _loadDataset(self, file_path):
+
+		"""
+
+		"""
+
+		# Looks for all files specified as part of dataset in given folder and orders them
+
+		train_files = []; test_files = []
+		for filename in os.listdir(file_path):
+
+			if not os.path.isdir(filename):
+
+				if filename.startswith("train_"):
+					train_files.append(file_path + filename)
+
+				elif filename.startswith("test_"):
+					test_files.append(file_path + filename)
+
+		train_files.sort(), test_files.sort()
+
+
+		# Get input and output variables from dataset files
+		partition_list = []
+		for train_file, test_file in zip(train_files, test_files):
+
+
+			#Declaring partition DSU
+			partition = DSU(file_path, train_file[ train_file.find('.') + 1 : ])
+
+			# Get inputs and outputs from partition
+			partition.train_inputs, partition.train_outputs = self._readFile(train_file)
+			partition.test_inputs, partition.test_outputs = self._readFile(test_file)
+
+			# Append DSU to begining of list
+			partition_list.append(partition)
+
+		# Save info to dataset
+		return partition_list
+
+
+
+	def _readFile(self, filename):
+		"""
+
+		"""
+
+		f = pd.read_csv(filename, header=None)
+
+		inputs = f.values[:,0:(-1)]
+		outputs = f.values[:,(-1)]
+
+		return inputs, outputs
 
 
 
@@ -197,7 +203,6 @@ class Utilities:
 		module = __import__("Metrics")
 		metric = getattr(module, self.general_conf_['cv_metric'].lower().strip())
 
-		#TODO: ADD ALL METRICS THAT ARE GIB TO THE LIST
 		gib = module.greater_is_better(self.general_conf_['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
 
