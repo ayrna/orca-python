@@ -11,7 +11,7 @@ import scipy.stats
 def greater_is_better(metric_name):
 
 	#TODO: Determinar todas las metricas que deben ir en la lista
-	greater_is_better_metrics = ["ccr", "ms"]
+	greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
 
 	if metric_name in greater_is_better_metrics:
 		return True
