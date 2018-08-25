@@ -3,11 +3,10 @@
 
 		"basedir": "/home/beelzebub/Escritorio/orca-python/Datasets/",
 		"datasets": "iris, pruebas",
-		"standarize": "True",
 		"folds": 5,
 		"jobs": 5,
 		"metrics": "ccr, mae, amae, ms",
-		"cv_metric": "amae"
+		"cv_metric": "ccr"
 	},
 
 	"configurations": {

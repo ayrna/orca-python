@@ -12,6 +12,10 @@ def default_config():
 
 	general_conf = {"basedir": "",
 					"dataset": "",
+					"folds": 3,
+					"jobs": 1,
+					"metrics": "ccr",
+					"cv_metric": "ccr"
 					}
 
 	algorithms = {}

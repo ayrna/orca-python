@@ -218,12 +218,6 @@ class Utilities:
 		parameters = self._extractParams(parameters)
 
 
-		# Check if folds and jobs parameters have been given
-		if 'folds' not in self.general_conf_:
-			self.general_conf_['folds'] = 2
-		if 'jobs' not in self.general_conf_:
-			self.general_conf_['jobs'] = 1
-
 		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function,\
 								n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'])
 		optimal.fit(train_inputs, train_outputs)
