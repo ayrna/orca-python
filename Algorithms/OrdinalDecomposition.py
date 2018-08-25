@@ -1,8 +1,8 @@
 
-import sys
+from sys import exit
 import numpy as np
 
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics.scorer import make_scorer
 
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -13,11 +13,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	"""
 	"""
 
-	def __init__(self, algorithm="", dtype="OrderedPartitions", parameters={}):
+	def __init__(self, algorithm="", dtype="", parameters={}):
 
+		self.dtype = dtype
 		self.algorithm = algorithm
 		self.parameters = parameters
-		self.dtype = dtype
 
 	def fit(self, X, y):
 		"""
@@ -30,27 +30,23 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		self.X_ = X
 		self.y_ = y
 
-		#TODO: Otra forma de cargar la carpeta donde esta el fichero de utilities
-		sys.path.insert(0, '../')
-
-		module = __import__(self.algorithm)
-		algorithm = getattr(module, self.algorithm)
+		# Loading algorithm given as parameter
+		algorithm = self._loadAlgorithm()
 
 		# Gives each train input its corresponding output label for each binary classifier
 		self.coding_matrix_ = self._codingMatrix( len(np.unique(y)), self.dtype )
 		class_labels = self.coding_matrix_[y.astype(int),:]
 
 
-		#TODO:	Hay tres clases para OneVsNext/Previous/Followers, o los algoritmos manejan los 0s como si fueran patrones
-		#		no validos ?
-
 		self.classifiers_ = []
 		for n in range(len(class_labels[0,:])):
 
-			optimal_estimator = self._getOptimalEstimator(X, class_labels[:,n], algorithm, self.parameters)
-			self.classifiers_.append(optimal_estimator)
+			estimator = algorithm.fit( X[ np.where(class_labels[:,n] != 0) ], \
+										np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T) )
+			self.classifiers_.append(estimator)
 
 		return self
+
 
 	def predict(self, X):
 		"""
@@ -62,40 +58,34 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		# Input validation
 		X = check_array(X)
 
+		#TODO: Mirar cual es la positiva c.predict_proba(X)[:,0] o c.predict_proba(X)[:,1] (Cuando solo haya 2)
 		predictions = np.array([np.interp( c.predict_proba(X)[:,0], (0, 1), (-1, +1) ) for c in self.classifiers_]).T
 		eLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
 
 		for i in range(self.coding_matrix_.shape[0]):
 
-			eLosses[:,i] = np.sum(np.exp( predictions * np.matlib.repmat(self.coding_matrix_[i,:], predictions.shape[0], 1) ), axis=1)
+			eLosses[:,i] = np.sum(np.exp( predictions * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) ), axis=1)
 
 		predicted_y = np.argmin(eLosses, axis=1)
 		return predicted_y
 
 
-	"""
-	def predict(self, X):
+	def _loadAlgorithm(self):
 
-		X = check_array(X)
+		# Loading modules to execute algorithm given in configuration file
+		modules = [x for x in self.algorithm.split('.')]
+		algorithm = __import__(modules[0])
+		if (len(modules) == 1):
+			algorithm = getattr(algorithm, modules[0])
 
-		# Outputs predicted to given data by fitted model
-		predicted_proba_y = np.empty( [X.shape[0], len(self.classifiers_) + 1] )
+		else:
+			for m in modules[1:]:
+				algorithm = getattr(algorithm, m)
 
-		for i, c in enumerate(self.classifiers_):
-
-			if i == 0:
-				predicted_proba_y[:,i] = 1 - c.predict_proba(X)[:,0]
-			else:
-				predicted_proba_y[:,i] = previous_proba_y - c.predict_proba(X)[:,0]
-
-			# Storing actual prediction for next iteration
-			previous_proba_y = c.predict_proba(X)[:,1]
-
-		predicted_proba_y[:,-1] = self.classifiers_[-1].predict_proba(X)[:,0]
-		predicted_y = np.argmax(predicted_proba_y, axis=1)
-
-		return predicted_y
-	"""
+		#TODO: Manejar este parametro internamente o hacer que se deba poner en el .JSON y se gestione en Utilities
+		#self.parameters['probability'] = True
+		algorithm = algorithm(**self.parameters)
+		return algorithm
 
 	def _codingMatrix(self, nClasses, dType):
 
@@ -143,24 +133,34 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		else:
 
 			print "Decomposition type", dType, "does not exist."
-			#sys.exit()
+			#exit()
 
 		return coding_matrix.astype(int)
 
-	def _getOptimalEstimator(self, train_inputs, train_outputs, algorithm, parameters):
 
+	"""
+	def predict(self, X):
 
-		module = __import__("Metrics")
-		metric = getattr(module, "ccr")
+		X = check_array(X)
 
-		gib = module.greater_is_better("ccr".lower().strip())
-		scoring_function = make_scorer(metric, greater_is_better=gib)
+		# Outputs predicted to given data by fitted model
+		predicted_proba_y = np.empty( [X.shape[0], len(self.classifiers_) + 1] )
 
-		optimal = GridSearchCV(estimator=algorithm(probability=True), param_grid=parameters, scoring=scoring_function, cv=5)
-		optimal.fit(train_inputs, train_outputs)
-		return optimal
+		for i, c in enumerate(self.classifiers_):
 
+			if i == 0:
+				predicted_proba_y[:,i] = 1 - c.predict_proba(X)[:,0]
+			else:
+				predicted_proba_y[:,i] = previous_proba_y - c.predict_proba(X)[:,0]
 
+			# Storing actual prediction for next iteration
+			previous_proba_y = c.predict_proba(X)[:,1]
+
+		predicted_proba_y[:,-1] = self.classifiers_[-1].predict_proba(X)[:,0]
+		predicted_y = np.argmax(predicted_proba_y, axis=1)
+
+		return predicted_y
+	"""
 
 
 

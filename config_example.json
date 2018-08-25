@@ -7,7 +7,7 @@
 		"folds": 5,
 		"jobs": 5,
 		"metrics": "ccr, mae, amae, ms",
-		"cv_metric": "CCR"
+		"cv_metric": "amae"
 	},
 
 	"configurations": {
@@ -24,13 +24,15 @@
 		"configuration_2": {
 		
 			"algorithm": "OrdinalDecomposition",
-			"dtype": "OrderedPartitions",
 			"parameters": {
-				"algorithm": "SVM",
+				"dtype": "OneVsPrevious",
+				"algorithm": "sklearn.svm.SVC",
 				"parameters": {
-					"C": [0.001, 0.1, 1, 10, 100],
-					"gamma": [0.1, 1, 10]
+					"C": [0.001, 0.01, 0.1, 1, 10, 100],
+					"gamma": [0.001, 0.01, 0.1, 1, 10, 100],
+					"probability": ["True"]
 				}
+
 			}
 		},
 
