@@ -1,3 +1,0 @@
-,C,gamma,ccr_train,ccr_test,mae_train,mae_test,amae_train,amae_test,ms_train,ms_test
-0,1,0.1,1.0,0.935483870968,0.0,0.0645161290323,0.0,0.0833333333333,1.0,0.75
-1,1,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1.0,1.0
