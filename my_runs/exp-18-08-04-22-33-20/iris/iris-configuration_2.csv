@@ -1,0 +1,2 @@
+,dtype,C,probability,gamma,algorithm,ccr_train,ccr_test,mae_train,mae_test,amae_train,amae_test,ms_train,ms_test
+0,OneVsPrevious,0.1,True,0.1,sklearn.svm.SVC,0.660714285714,0.684210526316,0.339285714286,0.315789473684,0.333333333333,0.333333333333,0.0,0.0

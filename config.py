@@ -6,7 +6,6 @@ from Utilities import Utilities
 
 
 ex = Experiment('Experiment Configuration')
-#ex.observers.append(FileStorageObserver.create('my_runs', template='/custom/template.txt'))
 
 @ex.config
 def default_config():
