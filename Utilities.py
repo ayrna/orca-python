@@ -120,6 +120,11 @@ class Utilities:
 
 		"""
 
+		if base_path.startswith("~"):
+
+			base_path = base_path.replace('~', os.path.expanduser('~'), 1)
+			self.general_conf_['basedir'] = base_path
+
 		#Check if basedir has a final backslash or not
 		if base_path[-1] == '/':
 			dataset_path = base_path + dataset_name + '/'

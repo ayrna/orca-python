@@ -1,7 +1,7 @@
 {
 	"general_conf": {
 
-		"basedir": "/home/beelzebub/Escritorio/orca-python/Datasets/",
+		"basedir": "~/Escritorio/orca-python/Datasets/",
 		"datasets": "iris, pruebas",
 		"folds": 5,
 		"jobs": 5,
