@@ -2,7 +2,6 @@
 from sys import exit
 import numpy as np
 
-from sklearn.model_selection import GridSearchCV
 from sklearn.metrics.scorer import make_scorer
 
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -30,18 +29,17 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		self.X_ = X
 		self.y_ = y
 
-		# Loading algorithm given as parameter
-		algorithm = self._loadAlgorithm()
-
 		# Gives each train input its corresponding output label for each binary classifier
-		self.coding_matrix_ = self._codingMatrix( len(np.unique(y)), self.dtype )
-		class_labels = self.coding_matrix_[y.astype(int),:]
+		self.unique_y_ = np.unique(y)
+
+		self.coding_matrix_ = self._codingMatrix( len(self.unique_y_), self.dtype )
+		class_labels = self.coding_matrix_[ (np.digitize(y, self.unique_y_) - 1), :]
 
 
 		self.classifiers_ = []
 		for n in range(len(class_labels[0,:])):
 
-			estimator = algorithm.fit( X[ np.where(class_labels[:,n] != 0) ], \
+			estimator = self._loadAlgorithm().fit( X[ np.where(class_labels[:,n] != 0) ], \
 										np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T) )
 			self.classifiers_.append(estimator)
 
@@ -58,15 +56,20 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		# Input validation
 		X = check_array(X)
 
-		#TODO: Mirar cual es la positiva c.predict_proba(X)[:,0] o c.predict_proba(X)[:,1] (Cuando solo haya 2)
-		predictions = np.array([np.interp( c.predict_proba(X)[:,0], (0, 1), (-1, +1) ) for c in self.classifiers_]).T
+
+		#TODO: Cual es la clase positiva ??
+		positive_class = -1
+		predictions = np.array([np.interp( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == positive_class) ]), (0, 1), (-1, +1) )\
+						for c in self.classifiers_]).T
+		#predictions = np.array([np.interp( c.predict_proba(X)[:,0], (0, 1), (-1, +1) ) for c in self.classifiers_]).T
+
 		eLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
 
 		for i in range(self.coding_matrix_.shape[0]):
 
 			eLosses[:,i] = np.sum(np.exp( predictions * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) ), axis=1)
 
-		predicted_y = np.argmin(eLosses, axis=1)
+		predicted_y = self.unique_y_[np.argmin(eLosses, axis=1)]
 		return predicted_y
 
 
@@ -74,18 +77,23 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		# Loading modules to execute algorithm given in configuration file
 		modules = [x for x in self.algorithm.split('.')]
-		algorithm = __import__(modules[0])
+
 		if (len(modules) == 1):
+			algorithm = __import__(modules[0])
 			algorithm = getattr(algorithm, modules[0])
 
+		elif (len(modules) == 3):
+			algorithm = __import__(modules[0] + '.' + modules[1], fromlist=[str(modules[2])])
+			algorithm = getattr(algorithm, modules[2])
+
 		else:
-			for m in modules[1:]:
-				algorithm = getattr(algorithm, m)
+			pass
 
 		#TODO: Manejar este parametro internamente o hacer que se deba poner en el .JSON y se gestione en Utilities
 		#self.parameters['probability'] = True
 		algorithm = algorithm(**self.parameters)
 		return algorithm
+
 
 	def _codingMatrix(self, nClasses, dType):
 
