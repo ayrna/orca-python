@@ -5,8 +5,8 @@ from itertools import product
 import pandas as pd
 import numpy as np
 
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics.scorer import make_scorer
+from sklearn.model_selection import GridSearchCV		#FutureWarning just by loading this module!
+from sklearn.metrics.scorer import make_scorer			#This line return the same warning
 
 from Results import Results
 
@@ -25,8 +25,7 @@ class Utilities:
 		self.api_path_ = api_path
 		self.general_conf_ = general_conf
 		self.configurations_ = configurations
-
-
+		
 
 	def runExperiment(self):
 		"""
@@ -44,10 +43,11 @@ class Utilities:
 
 
 
-		#TODO: Comprobar que dos configuraciones no tengan el mismo nombre, porque sino se sobreescribiran
+		#TODO: Comprobar que dos configuraciones no tengan el mismo nombre, porque sino se sobreescribiran (Try catch exception)
 
 		# Iterating over Datasets
 		for x in self.general_conf_['datasets'].split(','):
+
 
 			# Getting dataset name and path, stripped out of whitespaces
 			dataset_name = x.strip()
@@ -56,7 +56,7 @@ class Utilities:
 			# Loading dataset into a list of partitions. Each partition represented as a dictionary
 			# containing train and test inputs/outputs. It also stores its partition number
 
-			print "Loading dataset", dataset_name, "info..."
+			print "\nLoading dataset", dataset_name, "info..."
 			dataset = self._loadDataset(dataset_path)
 
 
@@ -113,8 +113,6 @@ class Utilities:
 
 
 
-
-
 	def _getDatasetPath(self, base_path, dataset_name):
 		"""
 
@@ -140,6 +138,7 @@ class Utilities:
 		"""
 
 		"""
+		#TODO: Comprobar que existe el fichero de test y de train, sino obrar en consecuencia
 
 		# Looks for all files specified as part of dataset in given folder and orders them
 
@@ -162,14 +161,14 @@ class Utilities:
 		for train_file, test_file in zip(train_files, test_files):
 
 
-			#Declaring partition DSU
+			#Declaring partition
 			partition = {"partition": train_file[ train_file.find('.') + 1 : ], "path": dataset_path}
 
 			# Get inputs and outputs from partition
 			partition["train_inputs"], partition["train_outputs"] = self._readFile(train_file)
 			partition["test_inputs"], partition["test_outputs"] = self._readFile(test_file)
 
-			# Append DSU to begining of list
+			# Append to begining of list
 			partition_list.append(partition)
 
 		# Save info to dataset
@@ -191,19 +190,22 @@ class Utilities:
 
 
 
-	#TODO: Falla al cargar los algoritmos desde sklearn directamente -> Ya ha cargado ese modulo antes ??
+	#TODO: Funciona como debe en todos los casos??
 	def _loadAlgorithm(self, algorithm_path):
 
 		# Loading modules to execute algorithm given in configuration file
 		modules = [x for x in algorithm_path.split('.')]
-		algorithm = __import__(modules[0])
+
 		if (len(modules) == 1):
+			algorithm = __import__(modules[0])
 			algorithm = getattr(algorithm, modules[0])
 
+		elif (len(modules) == 3):
+			algorithm = __import__(modules[0] + '.' + modules[1], fromlist=[str(modules[2])])
+			algorithm = getattr(algorithm, modules[2])
+
 		else:
-			for m in modules[1:]:
-				print algorithm
-				algorithm = getattr(algorithm, m)
+			pass
 
 		return algorithm
 
@@ -223,8 +225,13 @@ class Utilities:
 		parameters = self._extractParams(parameters)
 
 
+		#TODO: 	Parametro iid devuelve un Warning si no se especifica el valor (por defecto en warn)
+		#		Que valor indicar, True o False??
+
 		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function,\
-								n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'])
+								n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'], iid=True)
+
+		#TODO: 	FutureWarning "numpy not_equal will not check object identity in the future." salta aqui con cualquier metodo
 		optimal.fit(train_inputs, train_outputs)
 
 		return optimal
@@ -239,7 +246,7 @@ class Utilities:
 			if (type(param) != list) and (type(param) != dict):
 				parameters[param_name] = [param]
 
-			# If parameter is a dict named 'parameters', then it's used inside an ensemble method
+			# If parameter is a dict named 'parameters', then an ensemble method it's been used
 			# we need to transform a dict of lists, into a list of dicts.
 			elif (type(param) == dict) and (param_name == 'parameters'):
 

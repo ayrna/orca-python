@@ -4,7 +4,6 @@ from sacred import Experiment
 
 from Utilities import Utilities
 
-
 ex = Experiment('Experiment Configuration')
 
 @ex.config
