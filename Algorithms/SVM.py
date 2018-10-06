@@ -28,7 +28,6 @@ class SVM(BaseEstimator, ClassifierMixin):
 		# Fit model
 		svm_model = svm.SVC(kernel='rbf',C=self.C,gamma=self.gamma,probability=self.probability)
 		self.svm_model_ = svm_model.fit(self.X_, self.y_)
-
 		# Return the classifier
 		return self
 

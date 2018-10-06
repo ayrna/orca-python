@@ -29,7 +29,7 @@ class LR(BaseEstimator, ClassifierMixin):
 		if self.l2:
 			penalty = 'l2'
 
-		lr_model = linear_model.LogisticRegression(solver='liblinear', C=self.C, penalty=penalty)
+		lr_model = linear_model.LogisticRegression(solver='liblinear', C=self.C, penalty=penalty, multi_class='ovr')
 		self.lr_model_ = lr_model.fit(self.X_, self.y_)
 
 		# Return the classifier
