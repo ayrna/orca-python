@@ -183,7 +183,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	def _loadAlgorithm(self):
 
 		"""
-
 		Loads and return a classifier.
 
 		Arguments for this function are received globally from class's constructor
