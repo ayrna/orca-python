@@ -195,7 +195,7 @@ class Results:
 
 		# Getting name of folder where we will store info about the Experiment
 		folder_name = "exp-" + datetime.date.today().strftime("%y-%m-%d") + "-" \
-					 		 + datetime.datetime.now().strftime("%H-%M-%S") + "/"
+				+ datetime.datetime.now().strftime("%H-%M-%S") + "/"
 
 		# Check if folder already exists
 		folder_path = fw_path + runs_folder + folder_name
@@ -289,9 +289,9 @@ class Results:
 
 		# Mixing avg and std dataframe columns results from metrics summaries
 		train_summary_row = train_summary_row[list(sum(zip(	train_summary_row.iloc[:len(avg_index)].keys(),\
-											 				train_summary_row.iloc[len(std_index):].keys()), ()))]
+									train_summary_row.iloc[len(std_index):].keys()), ()))]
 		test_summary_row = test_summary_row[list(sum(zip(test_summary_row.iloc[:len(avg_index)].keys(),\
-											 			 test_summary_row.iloc[len(std_index):].keys()), ()))]
+								test_summary_row.iloc[len(std_index):].keys()), ()))]
 		return train_summary_row, test_summary_row
 		
 
