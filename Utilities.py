@@ -1,41 +1,86 @@
 
-import os, sys, csv, json, time, datetime, re, collections
+import os, sys, collections
 from itertools import product
 
 import pandas as pd
 import numpy as np
 
-from sklearn.model_selection import GridSearchCV		#FutureWarning just by loading this module!
-from sklearn.metrics.scorer import make_scorer			#This line return the same warning
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics.scorer import make_scorer
 
 from Results import Results
 
 class Utilities:
 	"""
 
+	Utilities
+
+	Class in charge of running an experiment over N datasets, where we
+	apply M different configurations over each one of them.
+
+	Configurations are composed of an algorithm and different parameters,
+	where it may be multiple values for every parameter.
+
+	This function will find, for all dataset-configuration pairs, the best
+	value for each parameter of classifier applying cross-validation, after 
+	what it will train that model and test it's accurancy over the dataset.
+
+
+	Parameters
+	----------
+
+	general_conf: dict
+		Dictionary that contains values needed to run the experiment
+		itself. It gives this class info as to where are located the
+		different datasets, which one are going to be tested, the metrics
+		to use, etc.
+
+	configurations: dict
+		Dictionary in which are stated the different classifiers
+		to build methods upon the selected datasets, as well as
+		parameters with different possible values of which found the
+		best combination through cross-validation.
+
+	For more usage information, read User Guide of this framework.
+
+
+	Attributes
+	----------
+
+	results_: Results object
+		Class used to manage and store all info obtained when testing
+		the different built models during the run of an experiment.
 	"""
 
 
-	def __init__(self, api_path, general_conf, configurations):
+	def __init__(self, general_conf, configurations):
 
-		"""
 
-		"""
-
-		self.api_path_ = api_path
 		self.general_conf_ = general_conf
 		self.configurations_ = configurations
 		
 
 	def runExperiment(self):
+
 		"""
+		Main function of this class. Runs an experiment.
+
+		Builds one model for each possible combination of dataset and 
+		config entry stated in it's corresponding configuration file.
+
+		Loads every dataset, which can be fragmented in different partitions.
+		Builds a model for every dataset, using cross-validation for finding
+		the best possible values for the different parameters of that actual
+		configuration entry.
+		Get train and test metrics for each dataset-config pair.
+
 
 		"""
 
+
+		self.results_ = Results()
 		# Adding algorithm folder to sys path. Needed to import modules from different folders
 		sys.path.insert(0, 'Algorithms/')
-		# Creates results object, that will store all different metrics for each configuration and dataset
-		self.results_ = Results()
 
 		print "\n###############################"
 		print "\tRunning Experiment"
@@ -56,7 +101,6 @@ class Utilities:
 			# Loading dataset into a list of partitions. Each partition represented as a dictionary
 			# containing train and test inputs/outputs. It also stores its partition number
 
-			print "\nLoading dataset", dataset_name, "info..."
 			dataset = self._loadDataset(dataset_path)
 
 
@@ -70,7 +114,7 @@ class Utilities:
 				# TODO: Comprobar que los algoritmos dados son correctos (y el resto de parametros), sino parar la ejecucion
 				#		Hacer que todas las metricas y algoritmos sean upper
 
-				# Loading Algorithm given in configuration JSON
+				# Loading Algorithm stated in configuration
 				algorithm = self._loadAlgorithm(configuration["algorithm"])
 				# Iterating over all partitions in each dataset
 				for partition in dataset:
@@ -114,16 +158,34 @@ class Utilities:
 
 
 	def _getDatasetPath(self, base_path, dataset_name):
-		"""
 
 		"""
+		Gets path to actual dataset.
 
+		Parameters
+		----------
+
+		base_path: string
+			Base path in which dataset folder can be found
+
+		dataset_name: string
+			Name given to dataset folder
+
+
+		Returns
+		-------
+
+		dataset_path: string
+			Absolute path to folder containing dataset files
+		"""
+
+		# Check if path it's relative or absolute
 		if base_path.startswith("~"):
 
 			base_path = base_path.replace('~', os.path.expanduser('~'), 1)
 			self.general_conf_['basedir'] = base_path
 
-		#Check if basedir has a final backslash or not
+		# Check if basedir has a final backslash or not
 		if base_path[-1] == '/':
 			dataset_path = base_path + dataset_name + '/'
 		else:
@@ -136,8 +198,24 @@ class Utilities:
 	def _loadDataset(self, dataset_path):
 
 		"""
+		Loads all datasets files, divided into train and test.
 
+		Parameters
+		----------
+
+		dataset_path: string
+			Absolute path to dataset folder
+
+
+		Returns
+		-------
+
+		partition_list: list of dicts
+			List of partitions found inside a dataset folder.
+			Each partition is stored into a dictionary, disjoining
+			train and test inputs, and outputs
 		"""
+
 		#TODO: Comprobar que existe el fichero de test y de train, sino obrar en consecuencia
 
 		# Looks for all files specified as part of dataset in given folder and orders them
@@ -177,7 +255,27 @@ class Utilities:
 
 
 	def _readFile(self, filename):
+
 		"""
+		Reads a CSV containing a partition or the entirety of a 
+		dataset (train and test files must be previously divided for 
+		the experiment to run though).
+
+		Parameters
+		----------
+
+		filename: string
+			Full path to train or test file.
+
+
+		Returns
+		-------
+
+		inputs: {array-like, sparse-matrix}, shape (n_samples, n_features)
+			vector of sample's features.
+
+		outputs: array-like, shape (n_samples)
+			Target vector relative to inputs.
 
 		"""
 
@@ -190,8 +288,28 @@ class Utilities:
 
 
 
-	#TODO: Funciona como debe en todos los casos??
 	def _loadAlgorithm(self, algorithm_path):
+
+		"""
+		Loads and returns a classifier.
+
+		Parameters
+		----------
+
+		algorithm_path: string
+			Relative path to which package the classifier class is located in.
+			That module can be local if the classifier is built inside the
+			framework, or relative to scikit-learn package.
+
+
+		Returns
+		-------
+
+		algorithm: object
+			Returns a loaded classifier, either from an scikit-learn module, or from
+			a module of this framework.
+
+		"""
 
 		# Loading modules to execute algorithm given in configuration file
 		modules = [x for x in algorithm_path.split('.')]
@@ -214,8 +332,28 @@ class Utilities:
 	def _getOptimalEstimator(self, train_inputs, train_outputs, algorithm, parameters):
 
 		"""
+		Perform cross-validation technique for finding best
+		hyper-parameters out of the set given by configuration file.
 
+		Parameters
+		----------
+
+		train_inputs: {array-like, sparse-matrix}, shape (n_samples, n_features)
+			vector of features for each sample for this dataset.
+
+		train_outputs: array-like, shape (n_samples)
+			Target vector relative to train_inputs.
+
+		Returns
+		-------
+
+		optimal: GridSearchCV object
+			An already fitted model of the given classifier,
+			with the best found parameters after performing cross-validation
+			over train samples from given partition (or dataset)
 		"""
+
+		
 		module = __import__("Metrics")
 		metric = getattr(module, self.general_conf_['cv_metric'].lower().strip())
 
@@ -229,9 +367,8 @@ class Utilities:
 		#		Que valor indicar, True o False??
 
 		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function,\
-								n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'], iid=True)
+					n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'], iid=True)
 
-		#TODO: 	FutureWarning "numpy not_equal will not check object identity in the future." salta aqui con cualquier metodo
 		optimal.fit(train_inputs, train_outputs)
 
 		return optimal
@@ -239,6 +376,31 @@ class Utilities:
 
 
 	def _extractParams(self, parameters):
+
+		"""
+		Performs two different transformations over parameters dict
+		when needed. Those consist of:
+
+		- If one parameter's values are not inside a list, GridSearchCV will not be
+		  able to handle them, so they must be enclosed into a list.
+
+		- When an ensemble method, as OrderedPartitions, is chosen as classifier,
+		  transforms the dict of lists in which the parameters for the internal
+		  classifier are stated into a list of dicts (all possible combiantions of
+		  those different parameters).
+
+		Parameters
+		----------
+
+		parameters: dict of list
+			Dictionary which contains parameters to cross-validate.
+
+		Returns
+		-------
+
+		parameters: dict of list
+			Dictionary properly formatted if necessary.
+		"""
 
 		for param_name, param in parameters.iteritems():
 
@@ -274,6 +436,20 @@ class Utilities:
 
 	def _isFloat(self, value):
 
+		"""
+		Check if an string can be converted to float
+
+		Parameters
+		----------
+
+		value: string
+
+		Returns
+		-------
+
+		Boolean
+		"""
+
 		try:
 			float(value)
 			return True
@@ -282,8 +458,22 @@ class Utilities:
 
 
 
-	# If Boolean is not converted back from String, it may lead to an error
 	def _isBoolean(self, value):
+
+		"""
+		Check if an string can be converted to Boolean
+
+		Parameters
+		----------
+
+		value: string
+
+		Returns
+		-------
+
+		Boolean
+		"""
+
 
 		try:
 			bool(value)
@@ -293,14 +483,20 @@ class Utilities:
 
 
 
-	def writeReport(self):
+	def writeReport(self, fw_path):
 
 		"""
+		Saves information about experiment run into CSVs
 
+		Parameters
+		----------
 
+		fw_path: string
+			Path to framework folder
 		"""
 
 		# Info needed to save execution info properly
+		# All possible pairs of dataset-configuration names
 		summary_index = []
 		for dataset_name in self.general_conf_['datasets'].split(','):
 			for conf_name in self.configurations_.keys():
@@ -311,6 +507,6 @@ class Utilities:
 		# Names of each metric used
 		metrics_names = [x.strip().lower() for x in self.general_conf_['metrics'].split(',')]
 
-		self.results_.saveResults(self.api_path_, summary_index, metrics_names)
+		self.results_.saveResults(fw_path, summary_index, metrics_names)
 
 
