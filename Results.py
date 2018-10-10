@@ -9,8 +9,9 @@ class DataFrameStorage:
 	"""
 	DataFrameStorage
 
-	Stores all metrics scores (train and test) for a given combiantion of dataset and configuration.
-	It will contain a dataframe for each partition in which the dataset could be divided. If its not
+	Stores all metrics scores (train and test) for a given combiantion
+	of dataset and configuration. It will contain a dataframe for each
+	partition in which the dataset could be divided. If its not 
 	partitionated, there'll be just one dataframe.
 	
 	Parameters
@@ -27,9 +28,9 @@ class DataFrameStorage:
 	----------
 
 	df_: list of OrderedDict
-		Each dict contains the parameter's values with which the cross-validation metrics 
-		has been maximized (best parameters) during cross-validation phase, besides train
-		and test scores for all different metrics specified.
+		Each dict contains the parameter's values with which the cross-validation
+		metrics has been maximized (best parameters) during cross-validation
+		phase, besides train and test scores for all different metrics specified.
 		There will as dicts in the list as partitions the dataset is fragmented in.
 
 	"""
@@ -53,8 +54,9 @@ class Results:
 	----------
 
 	dataframes_: list of DataFrameStorage objects
-		Each object will storage information about a pair of dataset-configuration.
-		There will be as many as the number of combinations of dataset and configurations.
+		Each object will storage information about a pair of 
+		dataset-configuration. There will be as many as the number of
+		combinations of different datasets and configurations.
 
 	"""
 
@@ -66,8 +68,8 @@ class Results:
 	def getDataFrame(self, dataset_name, configuration_name):
 
 		"""
-		Look if a dataframe for a given dataset and configuration already exists,
-		if not, creates it
+		Look if a dataframe for a given dataset and configuration already
+		exists, if not, creates it.
 
 		Parameters
 		----------
@@ -82,12 +84,13 @@ class Results:
 		-------
 
 		dfs : DataFrameStorage object 
-			Contains (or will contain) train and test metrics for 'dataset' and
-			'configuration' given values
+			Contains (or will contain) train and test metrics for 'dataset'
+			and 'configuration' given values
 
 		"""
 
-		# Searchs if this combination of 'dataset' and 'configuration' has already been used 
+		# Searchs if this combination of 'dataset' and 'configuration'
+		# has already been used 
 		for dfs in self.dataframes_:
 
 			if dfs.dataset_ == dataset_name and dfs.configuration_ == configuration_name:
@@ -104,7 +107,8 @@ class Results:
 	def addRecord(self, dataset_name, configuration_name, train_metrics, test_metrics, best_params):
 
 		"""
-		Stores all info about the run of a dataset with a specified configuration.
+		Stores all info about the run of a dataset with a specified
+		configuration.
 
 		Parameters
 		----------
@@ -122,8 +126,8 @@ class Results:
 			Dictionary with name of metrics as keys and scores as values
 
 		best_params: dictionary
-			Best parameters found during cross-validation from classifier and
-			parameters specified in this configuration.
+			Best parameters found during cross-validation from classifier
+			and parameters specified in this configuration.
 		"""
 
 		# Get or create a DataFrameStorage object for this dataset and configuration
@@ -134,8 +138,8 @@ class Results:
 		# Adding best parameters as first elements in OrderedDict
 		for p_name, p_value in best_params.items():
 
-			# If some ensemble method has been used, then one of its parameters will be a dict containing
-			# the best parameters found for the meta classifier
+			# If some ensemble method has been used, then one of its parameters will 
+			# be a dict containing the best parameters found for the meta classifier
 			if type(p_value) == dict:
 				for (k, v) in p_value.iteritems():
 					dataframe_row[k] = v
@@ -162,11 +166,12 @@ class Results:
 
 		By default, there will be a dedicated subfolder inside framework's one.
 
-		Each time a experiment has been run successfully, this method will generate
-		a new subfolder inside that subfolder, named 'exp-YY-MM-DD-hh-mm-ss'.
+		Each time a experiment has been run successfully, this method will 
+		generate a new subfolder inside that subfolder, named 
+		'exp-YY-MM-DD-hh-mm-ss'.
 
-		This new generated folder will store the train and test summaries as CSV, 
-		as well as so many subfolders as datasets, named after them.
+		This new generated folder will store the train and test summaries 
+		as CSV, as well as so many subfolders as datasets, named after them.
 
 		Last, inside this dataset subfolders, there will be one CSV for each
 		configuration used, containing info about metrics and partitions.
@@ -189,7 +194,8 @@ class Results:
 			os.makedirs(fw_path + runs_folder)
 
 		# Getting name of folder where we will store info about the Experiment
-		folder_name = "exp-" + datetime.date.today().strftime("%y-%m-%d") + "-" + datetime.datetime.now().strftime("%H-%M-%S") + "/"
+		folder_name = "exp-" + datetime.date.today().strftime("%y-%m-%d") + "-" \
+					 		 + datetime.datetime.now().strftime("%H-%M-%S") + "/"
 
 		# Check if folder already exists
 		folder_path = fw_path + runs_folder + folder_name
@@ -201,7 +207,8 @@ class Results:
 		train_summary = []; test_summary = []
 
 		# Name of columns for summary dataframes
-		avg_index, std_index = [mn + '_mean' for mn in metrics_names], [mn + '_std' for mn in metrics_names]
+		avg_index = [mn + '_mean' for mn in metrics_names]
+		std_index = [mn + '_std' for mn in metrics_names]
 		for dataframe in self.dataframes_:
 
 			# Creates subfolders for each dataset
