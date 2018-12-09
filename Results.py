@@ -31,7 +31,8 @@ class DataFrameStorage:
 		Each dict contains the parameter's values with which the cross-validation
 		metrics has been maximized (best parameters) during cross-validation
 		phase, besides train and test scores for all different metrics specified.
-		There will as dicts in the list as partitions the dataset is fragmented in.
+		There will be as many dicts in the list as partitions the dataset is
+		fragmented in.
 
 	"""
 
@@ -96,7 +97,7 @@ class Results:
 			if dfs.dataset_ == dataset_name and dfs.configuration_ == configuration_name:
 				return dfs
 
-		# If the dataframe its not been added yet, creates it
+		# If the dataframe has yet to be added, we create it
 		dfs = DataFrameStorage(dataset_name, configuration_name)
 		self.dataframes_.append(dfs)
 
@@ -126,8 +127,8 @@ class Results:
 			Dictionary with name of metrics as keys and scores as values
 
 		best_params: dictionary
-			Best parameters found during cross-validation from classifier
-			and parameters specified in this configuration.
+			Best parameters found during cross-validation for this
+			classifier.
 		"""
 
 		# Get or create a DataFrameStorage object for this dataset and configuration

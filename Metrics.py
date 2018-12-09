@@ -5,7 +5,6 @@ import numpy as np
 
 from sklearn.metrics.classification import confusion_matrix
 
-# This really need to be imported if it is merged with sklearn
 import scipy.stats
 
 def greater_is_better(metric_name):
