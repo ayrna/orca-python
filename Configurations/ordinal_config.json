@@ -1,0 +1,35 @@
+{
+
+
+	"general_conf": {
+
+		"basedir": "~/Escritorio/orca-python/ordinal-datasets/ordinal-regression/",
+		"datasets": ["automobile", "toy", "bondrate"],
+		"folds": 3,
+		"jobs": 10,
+		"metrics": ["ccr", "mae", "mze"],
+		"cv_metric": "mae"
+	},
+
+
+	"configurations": {
+
+		"SVMOP": {
+		
+			"algorithm": "OrdinalDecomposition",
+			"parameters": {
+				"dtype": "OrderedPartitions",
+				"algorithm": "sklearn.svm.SVC",
+				"parameters": {
+					"C": [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+					"gamma": [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+					"probability": ["True"]
+				}
+			}
+
+		}
+
+
+	}
+
+}

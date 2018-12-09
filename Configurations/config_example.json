@@ -1,0 +1,81 @@
+{
+
+
+	"general_conf": {
+
+		"basedir": "~/Escritorio/orca-python/Datasets/",
+		"datasets": ["iris", "pruebas", "car", "balance-scale", "nomnist"],
+		"folds": 3,
+		"jobs": 5,
+		"metrics": ["ccr", "mae", "amae", "ms"],
+		"cv_metric": "amae"
+	},
+
+
+	"configurations": {
+
+		"configuration_1": {
+		
+			"algorithm": "sklearn.svm.SVC",
+			"parameters": {
+				"C": [0.001, 0.1, 1, 10, 100],
+				"gamma": [0.1, 1, 10]
+			}
+		},
+
+		"configuration_2": {
+		
+			"algorithm": "OrdinalDecomposition",
+			"parameters": {
+				"dtype": "OrderedPartitions",
+				"algorithm": "sklearn.svm.SVC",
+				"parameters": {
+					"C": [0.01, 0.1, 1, 10],
+					"gamma": [0.01, 0.1, 1, 10],
+					"probability": ["True"]
+				}
+
+			}
+		},
+
+		"configuration_3": {
+		
+			"algorithm": "OrdinalDecomposition",
+			"parameters": {
+				"dtype": "OneVsNext",
+				"algorithm": "sklearn.svm.SVC",
+				"parameters": {
+					"C": [0.1, 1, 10, 100],
+					"gamma": [0.1, 1, 10, 100],
+					"probability": ["True"]
+				}
+
+			}
+		},
+
+		"configuration_4": {
+		
+			"algorithm": "OrdinalDecomposition",
+			"parameters": {
+				"dtype": "OrderedPartitions",
+				"algorithm": "LR",
+				"parameters": {
+					"C": [0.01, 0.1, 1, 10],
+					"l2": ["True", "False"]
+				}
+
+			}
+		},
+
+		"configuration_5": {
+		
+			"algorithm": "LR",
+			"parameters": {
+				"C": [0.001, 0.1, 1, 10, 100],
+				"l2": ["False", "True"]
+			}
+		}
+
+	}
+
+}
