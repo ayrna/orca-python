@@ -1,5 +1,5 @@
 
-import os, sys, collections
+import os, sys, collections, random
 from itertools import product
 
 import pandas as pd
@@ -58,7 +58,7 @@ class Utilities:
 
 		self.general_conf_ = general_conf
 		self.configurations_ = configurations
-		
+
 
 	def runExperiment(self):
 
@@ -82,16 +82,18 @@ class Utilities:
 		# Adding algorithm folder to sys path. Needed to import modules from different folders
 		sys.path.insert(0, 'Algorithms/')
 
+		if 'seed' in self.configurations_:
+			np.random.seed(self.configurations_['seed'])
+
+		self._checkDatasetList()
+
 		print "\n###############################"
 		print "\tRunning Experiment"
 		print "###############################"
 
 
-
-		#TODO: Comprobar que dos configuraciones no tengan el mismo nombre, porque sino se sobreescribiran (Try catch exception)
-
 		# Iterating over Datasets
-		for x in self.general_conf_['datasets'].split(','):
+		for x in self.general_conf_['datasets']:
 
 
 			# Getting dataset name and path, stripped out of whitespaces
@@ -111,17 +113,19 @@ class Utilities:
 			for conf_name, configuration in self.configurations_.iteritems():
 				print "Running", conf_name, "..."
 
-				# TODO: Comprobar que los algoritmos dados son correctos (y el resto de parametros), sino parar la ejecucion
-				#		Hacer que todas las metricas y algoritmos sean upper
 
 				# Loading Algorithm stated in configuration
 				algorithm = self._loadAlgorithm(configuration["algorithm"])
 				# Iterating over all partitions in each dataset
-				for partition in dataset:
+				for idx, partition in enumerate(dataset):
 
-					# Print number of actual partition if dataset is partitionated
-					if partition["partition"] != "csv":
-						print "  Running Partition", partition["partition"]
+
+					# TODO: Si los ficheros no estan nombrados apropiadamente, entonces no se correspondera
+					#		con las particiones que deberia
+
+
+					# Print actual running partition
+					print "  Running Partition", idx
 
 					# Finding optimal parameters
 					optimal_estimator = self._getOptimalEstimator(partition["train_inputs"], partition["train_outputs"],\
@@ -133,23 +137,37 @@ class Utilities:
 					test_metrics = collections.OrderedDict()
 
 					# Iterating over Metrics
-					for metric_name in self.general_conf_['metrics'].split(','):
+					for metric_name in self.general_conf_['metrics']:
 
-						# Loading metric from metrics file
-						module = __import__("Metrics")
-						metric = getattr(module, metric_name.strip().lower())
+						try:
+							# Loading metric from metrics file
+							module = __import__("Metrics")
+							metric = getattr(module, metric_name.strip().lower())
+
+						except AttributeError:
+							raise AttributeError("No metric named '%s'" % metric_name.strip().lower())
+
 
 						# Get train scores
 						train_predicted_y = optimal_estimator.predict(partition["train_inputs"])
 						train_score = metric(partition["train_outputs"], train_predicted_y)
 
-						# Get test scores
-						test_predicted_y = optimal_estimator.predict(partition["test_inputs"])
-						test_score = metric(partition["test_outputs"], test_predicted_y)
-
-						# Add metric to dict of metrics
 						train_metrics[metric_name.strip() + '_train'] = train_score
-						test_metrics[metric_name.strip() + '_test'] = test_score
+
+
+						# Get test scores
+						if "test_outputs" in partition:
+
+							test_predicted_y = optimal_estimator.predict(partition["test_inputs"])
+							test_score = metric(partition["test_outputs"], test_predicted_y)
+
+							test_metrics[metric_name.strip() + '_test'] = test_score
+
+						else:
+
+							test_metrics[metric_name.strip() + '_test'] = np.nan
+
+
 
 					# Save metrics scores for this partition
 					self.results_.addRecord(dataset_name, conf_name, train_metrics, test_metrics,\
@@ -179,11 +197,6 @@ class Utilities:
 			Absolute path to folder containing dataset files
 		"""
 
-		# Check if path it's relative or absolute
-		if base_path.startswith("~"):
-
-			base_path = base_path.replace('~', os.path.expanduser('~'), 1)
-			self.general_conf_['basedir'] = base_path
 
 		# Check if basedir has a final backslash or not
 		if base_path[-1] == '/':
@@ -216,38 +229,38 @@ class Utilities:
 			train and test inputs, and outputs
 		"""
 
-		#TODO: Comprobar que existe el fichero de test y de train, sino obrar en consecuencia
 
-		# Looks for all files specified as part of dataset in given folder and orders them
+		try:
 
-		train_files = []; test_files = []
-		for filename in os.listdir(dataset_path):
+			# Creating dicts for all partitions (saving order between partitions as keys)
+			partition_list = { filename[ filename.find('.') + 1 : ]: {} for filename in os.listdir(dataset_path)\
+								if filename.startswith("train_") }
 
-			if not os.path.isdir(filename):
+			# Saving info of every dataset file
+			for filename in os.listdir(dataset_path):
 
 				if filename.startswith("train_"):
-					train_files.append(dataset_path + filename)
+
+					train_inputs, train_outputs = self._readFile(dataset_path + filename)
+					partition_list[filename[ filename.find('.') + 1 : ]]["train_inputs"] = train_inputs
+					partition_list[filename[ filename.find('.') + 1 : ]]["train_outputs"] = train_outputs
+
 
 				elif filename.startswith("test_"):
-					test_files.append(dataset_path + filename)
 
-		train_files.sort(), test_files.sort()
+					test_inputs, test_outputs = self._readFile(dataset_path + filename)
+					partition_list[filename[ filename.find('.') + 1 : ]]["test_inputs"] = test_inputs
+					partition_list[filename[ filename.find('.') + 1 : ]]["test_outputs"] = test_outputs
+
+		except OSError:
+			raise ValueError("No such file or directory: '%s'" % dataset_path)
+
+		except KeyError:
+			raise RuntimeError("Found partition without train files: partition %s" % filename[ filename.find('.') + 1 : ])
 
 
-		# Get input and output variables from dataset files
-		partition_list = []
-		for train_file, test_file in zip(train_files, test_files):
-
-
-			#Declaring partition
-			partition = {"partition": train_file[ train_file.find('.') + 1 : ], "path": dataset_path}
-
-			# Get inputs and outputs from partition
-			partition["train_inputs"], partition["train_outputs"] = self._readFile(train_file)
-			partition["test_inputs"], partition["test_outputs"] = self._readFile(test_file)
-
-			# Append to begining of list
-			partition_list.append(partition)
+		# Saving partitions as a sorted list of dicts
+		partition_list = list( collections.OrderedDict(sorted(partition_list.items(), key=(lambda t: self._getKey(t[0])))).values() )
 
 		# Save info to dataset
 		return partition_list
@@ -279,13 +292,50 @@ class Utilities:
 
 		"""
 
-		f = pd.read_csv(filename, header=None)
+		f = pd.read_csv(filename, header=None, engine='python', sep=None)
 
 		inputs = f.values[:,0:(-1)]
 		outputs = f.values[:,(-1)]
 
 		return inputs, outputs
 
+
+
+	def _checkDatasetList(self):
+
+		"""
+		Checks if there is some inconsistency in dataset list.
+		It also simplifies running all datasets in 'basedir'
+
+		Parameters
+		----------
+		dataset_list: list of strings
+			list containing all dataset names to run in given experiment.
+			If 'all' is specified without any other string, then all
+			datasets in basedir folder will be run
+
+		"""
+
+		# Aliasing to simplify visibility
+		base_path = self.general_conf_['basedir']
+		dataset_list = self.general_conf_['datasets']
+
+		# Check if path it's relative or absolute
+		if base_path.startswith("~"):
+			base_path = base_path.replace('~', os.path.expanduser('~'), 1)
+
+		# Check if 'all' it's the only value, and if it is, expand it
+		if len(dataset_list) == 1 and dataset_list[0] == 'all':
+
+			dataset_list = [ item for item in os.listdir(base_path) \
+						if os.path.isdir(os.path.join(base_path, item)) ]
+
+		elif not all(isinstance(item, basestring) for item in dataset_list):
+			raise ValueError("Dataset list can only contain strings")
+
+
+		self.general_conf_['basedir'] = base_path
+		self.general_conf_['datasets'] = dataset_list
 
 
 	def _loadAlgorithm(self, algorithm_path):
@@ -315,15 +365,25 @@ class Utilities:
 		modules = [x for x in algorithm_path.split('.')]
 
 		if (len(modules) == 1):
-			algorithm = __import__(modules[0])
-			algorithm = getattr(algorithm, modules[0])
+
+			try:
+				algorithm = __import__(modules[0])
+				algorithm = getattr(algorithm, modules[0])
+
+			except:
+				raise ImportError("Unable to load classifier's path: %s" % algorithm_path)
 
 		elif (len(modules) == 3):
-			algorithm = __import__(modules[0] + '.' + modules[1], fromlist=[str(modules[2])])
-			algorithm = getattr(algorithm, modules[2])
+
+			try:
+				algorithm = __import__(modules[0] + '.' + modules[1], fromlist=[str(modules[2])])
+				algorithm = getattr(algorithm, modules[2])
+
+			except:
+				raise ImportError("Unable to load classifier's path: %s" % algorithm_path)
 
 		else:
-			pass
+			raise AttributeError("Unable to load classifier's path: %s" % algorithm_path)
 
 		return algorithm
 
@@ -353,21 +413,21 @@ class Utilities:
 			over train samples from given partition (or dataset)
 		"""
 
-		
-		module = __import__("Metrics")
-		metric = getattr(module, self.general_conf_['cv_metric'].lower().strip())
+		try:		
+			module = __import__("Metrics")
+			metric = getattr(module, self.general_conf_['cv_metric'].lower().strip())
+
+		except AttributeError:
+			raise AttributeError("No metric named '%s'" % self.general_conf_['cv_metric'].strip().lower())
 
 		gib = module.greater_is_better(self.general_conf_['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
 		# Checking if this configuration uses OrdinalDecomposition algorithm
+
 		parameters = self._extractParams(parameters)
 
-
-		#TODO: 	Parametro iid devuelve un Warning si no se especifica el valor (por defecto en warn)
-		#		Que valor indicar, True o False??
-
 		optimal = GridSearchCV(estimator=algorithm(), param_grid=parameters, scoring=scoring_function,\
-					n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'], iid=True)
+					n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'], iid=False)
 
 		optimal.fit(train_inputs, train_outputs)
 
@@ -419,7 +479,7 @@ class Utilities:
 				# Creates a list of dictionaries, containing all combinations of given parameters
 				p_list = [ dict( [item.split('_') for item in p] ) for p in p_list ]
 
-				# Returns not string values back to it's normal self
+				# Returns non-string values back to it's normal self
 				for d in p_list:
 					for (k, v) in d.iteritems():
 
@@ -441,12 +501,10 @@ class Utilities:
 
 		Parameters
 		----------
-
 		value: string
 
 		Returns
 		-------
-
 		Boolean
 		"""
 
@@ -465,12 +523,10 @@ class Utilities:
 
 		Parameters
 		----------
-
 		value: string
 
 		Returns
 		-------
-
 		Boolean
 		"""
 
@@ -480,6 +536,26 @@ class Utilities:
 			return True
 		except ValueError:
 			return False
+
+
+	def _getKey(self, key):
+
+		"""
+		Checks if the key of a dict can be converted to int, if not, returns the key as is
+
+		Parameters
+		----------
+		value: string
+
+		Returns
+		-------
+		int or boolean
+		"""
+
+		try:
+			return int(key)
+		except ValueError:
+			return key
 
 
 
@@ -498,14 +574,14 @@ class Utilities:
 		# Info needed to save execution info properly
 		# All possible pairs of dataset-configuration names
 		summary_index = []
-		for dataset_name in self.general_conf_['datasets'].split(','):
+		for dataset_name in self.general_conf_['datasets']:
 			for conf_name in self.configurations_.keys():
 
 				# Names for every file (excepting summary ones)
 				summary_index.append(dataset_name.strip() + "-" + conf_name)
 
 		# Names of each metric used
-		metrics_names = [x.strip().lower() for x in self.general_conf_['metrics'].split(',')]
+		metrics_names = [x.strip().lower() for x in self.general_conf_['metrics']]
 
 		self.results_.saveResults(fw_path, summary_index, metrics_names)
 
