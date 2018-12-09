@@ -34,11 +34,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		OrderedPartitions	OneVsNext		OneVsFollowers		OneVsPrevious
 		
-		-, -, -, -;		-,  ,  ,  ;		-,  ,  ,  ;		+, +, +, +;
-		+, -, -, -;		+, -,  ,  ;		+, -,  ,  ;		+, +, +, -;
-		+, +, -, -;		 , +, -,  ;		+, +, -,  ;		+, +, -,  ;
-		+, +, +, -;		 ,  , +, -;		+, +, +, -;		+, -,  ,  ;
-		+, +, +, +;		 ,  ,  , +;		+, +, +, +;		-,  ,  ,  ;
+			-, -, -, -;		-,  ,  ,  ;		-,  ,  ,  ;		+, +, +, +;
+			+, -, -, -;		+, -,  ,  ;		+, -,  ,  ;		+, +, +, -;
+			+, +, -, -;		 , +, -,  ;		+, +, -,  ;		+, +, -,  ;
+			+, +, +, -;		 ,  , +, -;		+, +, +, -;		+, -,  ,  ;
+			+, +, +, +;		 ,  ,  , +;		+, +, +, +;		-,  ,  ,  ;
 
 		where rows represents classes and columns classifiers. plus signs indicate
 		that for that classifier, that class will be part of the positive class,
@@ -48,13 +48,13 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 	algorithm: string
 		Inner classifier to be used to build a model for each binary subproblem.
-		It has to call a local classifier build into this framework, or else a
-		method from scikit-learn.
+		It has to call a local classifier built into this framework, or a class
+		from scikit-learn.
 
 	parameters: dict
-		This dictionary will contain the parameters which the classifier will be
-		built with. Because cross-validation for this meta-classifer is built
-		outside, only one value it's allowed for each parameter.
+		This dictionary will contain the parameters which the inner classifier 
+		will be built with. As this class has been created so that cross-validation
+		is carried out outside it, only one value per parameter is allowed.
 
 
 	Attributes
@@ -73,12 +73,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	classifiers_: list of classifiers
 		Initialy empty, will include all fitted models for each subproblem
 		once the fit function for this class is called successfully.
-
-
-	Examples
-	--------
-
-	see LogisticRegression source code for an example
 
 
 	References
@@ -136,7 +130,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		for n in range(len(class_labels[0,:])):
 
 			estimator = self._loadAlgorithm().fit(	X[ np.where(class_labels[:,n] != 0) ], \
-								np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T) )
+													np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T) )
 			self.classifiers_.append(estimator)
 
 
@@ -146,14 +140,18 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	def predict(self, X):
 
 		"""
+		Performs classification on samples in X
 
 		Parameters
 		----------
 
+		X : {array-like, sparse matrix}, shape (n_samples, n_features)
 
 		Returns
 		-------
 
+		y_pred : array, shape (n_samples,)
+			Class labels for samples in X.
 		"""
 
 		# Check is fit had been called
@@ -163,18 +161,16 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		X = check_array(X)
 
 
-		#TODO: Cual es la clase positiva ??
-		positive_class = -1
+		positive_class = 1
 		predictions = np.array([np.interp( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == positive_class) ]),\
-						   (0, 1), (-1, +1) ) for c in self.classifiers_]).T
-		#predictions = np.array([np.interp( c.predict_proba(X)[:,0], (0, 1), (-1, +1) ) for c in self.classifiers_]).T
+						   					(0, 1), (-1, +1) ) for c in self.classifiers_]).T
+
 
 		eLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
-
 		for i in range(self.coding_matrix_.shape[0]):
 
-			eLosses[:,i] = np.sum(np.exp( predictions * \
-						np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) ), axis=1)
+			eLosses[:,i] = np.sum(np.exp( -predictions * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) ), axis=1)
+
 
 		predicted_y = self.unique_y_[np.argmin(eLosses, axis=1)]
 		return predicted_y
@@ -201,15 +197,26 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		modules = [x for x in self.algorithm.split('.')]
 
 		if (len(modules) == 1):
-			algorithm = __import__(modules[0])
-			algorithm = getattr(algorithm, modules[0])
+
+			try:
+				algorithm = __import__(modules[0])
+				algorithm = getattr(algorithm, modules[0])
+
+			except:
+				raise ImportError("Unable to load classifier's path: %s" % self.algorithm)
 
 		elif (len(modules) == 3):
-			algorithm = __import__(modules[0] + '.' + modules[1], fromlist=[str(modules[2])])
-			algorithm = getattr(algorithm, modules[2])
+
+			try:
+				algorithm = __import__(modules[0] + '.' + modules[1], fromlist=[str(modules[2])])
+				algorithm = getattr(algorithm, modules[2])
+
+			except:
+				raise ImportError("Unable to load classifier's path: %s" % self.algorithm)
 
 		else:
-			pass
+			raise AttributeError("Unable to load classifier's path: %s" % self.algorithm)
+
 
 		algorithm = algorithm(**self.parameters)
 		return algorithm
@@ -266,8 +273,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		else:
 
-			print "Decomposition type", dType, "does not exist."
-			#exit()
+			raise ValueError("Decomposition type %s does not exist" % dType)
 
 		return coding_matrix.astype(int)
 
