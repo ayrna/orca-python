@@ -1,7 +1,9 @@
 
 import os, datetime, collections
 
+import numpy as np
 import pandas as pd
+import cPickle as pickle
 
 
 class DataFrameStorage:
@@ -27,12 +29,20 @@ class DataFrameStorage:
 	Attributes
 	----------
 
-	df_: list of OrderedDict
+	df_: dict of OrderedDict
 		Each dict contains the parameter's values with which the cross-validation
 		metrics has been maximized (best parameters) during cross-validation
 		phase, besides train and test scores for all different metrics specified.
 		There will be as many dicts in the list as partitions the dataset is
 		fragmented in.
+
+	models_: dict
+		Dictionary containing best found model for each partition, where the
+		number of partition will act as key.
+
+	predictions_: dict of dicts
+		Dictionary containing array of predicted labels for train and test sets.
+		The number of partition will act as key.
 
 	"""
 
@@ -40,7 +50,11 @@ class DataFrameStorage:
 
 		self.dataset_ = dataset_name
 		self.configuration_ = configuration_name
-		self.df_ = []
+
+		self.df_ = {}
+
+		self.models_ = {}
+		self.predictions_ = {}
 
 
 class Results:
@@ -105,34 +119,40 @@ class Results:
 
 
 
-	def addRecord(self, dataset_name, configuration_name, train_metrics, test_metrics, best_params):
+	def addRecord(self, partition, best_params, best_model, configuration, metrics, predictions):
 
 		"""
-		Stores all info about the run of a dataset with a specified
-		configuration.
+		Stores information about the run of a partition into a
+		DataFrameStorage object.
 
 		Parameters
 		----------
 
-		dataset_name: string
-			Name of dataset used
-
-		configuration_name: string
-			Name of configuration used
-
-		train_metrics: dictionary of floats
-			Dictionary with name of metrics as keys and scores as values
-
-		test_metrics: dictionary of floats
-			Dictionary with name of metrics as keys and scores as values
+		partition: int ot string
+			Number of partition to store.
 
 		best_params: dictionary
 			Best parameters found during cross-validation for this
 			classifier.
+
+		best_model: estimator
+			Best found model of classifier during cross-validation.
+
+		configuration: dict
+			Dictionary containing the name used for this pair of
+			dataset and configuration
+
+		metrics: dict of dictionaries
+			Dictionary containing the metrics for train and test for this
+			particular configuration.
+
+		predictions: dict of dictionaries
+			Dictionary that stores train and test class predictions.
+
 		"""
 
 		# Get or create a DataFrameStorage object for this dataset and configuration
-		dfs = self.getDataFrame(dataset_name, configuration_name)
+		dfs = self.getDataFrame(configuration['dataset'], configuration['config'])
 
 
 		dataframe_row = collections.OrderedDict()
@@ -148,19 +168,25 @@ class Results:
 				dataframe_row[p_name] = p_value
 
 
-		# Concatenating train and test metrics for easier display
-		for (tm_name, tm_value), (ts_name, ts_value) in zip(train_metrics.items(), test_metrics.items()):
+		# Concatenating train and test metrics
+		for (tm_name, tm_value), (ts_name, ts_value) in zip(metrics['train'].items(), metrics['test'].items()):
 
 			dataframe_row[tm_name] = tm_value
 			dataframe_row[ts_name] = ts_value
 
+		# Adding others variables
+		dataframe_row['refit_time'] = metrics['train']['refit_time']
+
 		# Adding this OrderedDict as a new entry to DataFrameStorage object
-		dfs.df_.append(dataframe_row)
+		dfs.df_[str(partition)] = dataframe_row
 
 
+		# Storing models and predictions for this partition
+		dfs.models_[str(partition)] = best_model
+		dfs.predictions_[str(partition)] = predictions
 
 
-	def saveResults(self, fw_path, summary_index, metrics_names):
+	def saveResults(self, runs_folder, summary_index, metrics_names):
 
 		"""
 		Method used for saving experiment info to CSV's.
@@ -180,28 +206,32 @@ class Results:
 
 		"""
 
-		# TODO: If allowed to change folder name, check all problems derived form it: ending in backslash,
-		# 		whether folder is specified from root or relative to framework folder, etc
 
-		# 		It may be better to pass it as a parameter
+		# Transforming given path to absolute path if neccesary
+		if not runs_folder.startswith("/"):
 
-		runs_folder = "my_runs/"
+			fw_path = os.path.dirname(os.path.abspath(__file__)) + "/"
+			runs_folder = fw_path + runs_folder
+
+		if not runs_folder.endswith("/"):
+			runs_folder += "/"
 		
 
-		# TODO: Try-catch and raising exceptions if needed when two names of experiment folders collide
-
 		# Check if experiments folder exists
-		if not os.path.exists(fw_path + runs_folder):
-			os.makedirs(fw_path + runs_folder)
+		if not os.path.exists(runs_folder):
+			os.makedirs(runs_folder)
+
+
 
 		# Getting name of folder where we will store info about the Experiment
 		folder_name = "exp-" + datetime.date.today().strftime("%y-%m-%d") + "-" \
 				+ datetime.datetime.now().strftime("%H-%M-%S") + "/"
 
+
 		# Check if folder already exists
-		folder_path = fw_path + runs_folder + folder_name
-		if not os.path.exists(folder_path):
-			os.makedirs(folder_path)
+		folder_path = runs_folder + folder_name
+		try: os.makedirs(folder_path)
+		except OSError: raise OSError("Could not create folder %s to store results. It already exists" % folder_path)
 
 
 		# Saving summaries from every combination of DB and Configuration
@@ -210,20 +240,46 @@ class Results:
 		# Name of columns for summary dataframes
 		avg_index = [mn + '_mean' for mn in metrics_names]
 		std_index = [mn + '_std' for mn in metrics_names]
+
 		for dataframe in self.dataframes_:
 
 			# Creates subfolders for each dataset
 			dataset_folder = folder_path + dataframe.dataset_ + "/"
-			if not os.path.exists(dataset_folder):
-				os.makedirs(dataset_folder)
+			try: os.makedirs(dataset_folder)
+			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % dataset_folder)
 
 			# Saving each dataframe
-			df = pd.DataFrame(dataframe.df_)
+			df = pd.DataFrame([row for partition,row in sorted(dataframe.df_.items())])
 			df.to_csv(dataset_folder + dataframe.dataset_ + "-" + dataframe.configuration_ + ".csv")
 
 			# Creating one entry for dataframe in summaries
 			tr_sr, ts_sr = self.createSummary(df, avg_index, std_index)
 			train_summary.append(tr_sr); test_summary.append(ts_sr)
+
+			# Saving models generated for each partition in one folder
+			models_folder = dataset_folder + "models/"
+			try: os.makedirs(models_folder)
+			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % models_folder)
+
+			for part, model in dataframe.models_.iteritems():
+
+				model_filename = dataframe.dataset_ + "-" + dataframe.configuration_ + "." + part
+				with open(models_folder + model_filename, 'wb') as output:
+
+					pickle.dump(model, output)
+
+
+			# Saving predictions
+			predictions_folder = dataset_folder + "predictions/"
+			try: os.makedirs(predictions_folder)
+			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % predictions_folder)
+
+			for part, predictions in dataframe.predictions_.iteritems():
+
+				pred_filename = dataframe.dataset_ + "-" + dataframe.configuration_ + "." + part
+				np.savetxt(predictions_folder + 'train_' + pred_filename, predictions['train'], fmt='%d')
+				np.savetxt(predictions_folder + 'test_' + pred_filename, predictions['test'], fmt='%d')
+
 
 		# Naming each row in datasets
 		train_summary = pd.concat(train_summary, axis=1).transpose(); train_summary.index = summary_index
@@ -273,10 +329,11 @@ class Results:
 
 		"""
 
-		# Dissociating train and test metrics
-		n_parameters = len(df.columns) - len(avg_index)*2	#Number of parameters used in this configuration
-		train_df = df.iloc[:,n_parameters::2].copy() 		#Even columns from dataframe (train metrics)
-		test_df = df.iloc[:,(n_parameters+1)::2].copy()		#Odd columns (test metrics)
+		# Dissociating train and test metrics (last 3 columns are computational times)
+		n_parameters = len(df.columns) - len(avg_index)*2 - 3				# Number of parameters used in this configuration
+		train_df = df.iloc[:,n_parameters:len(df.columns)-3:2].copy() 		# Even columns from dataframe (train metrics)
+		test_df = df.iloc[:,(n_parameters+1):len(df.columns)-3:2].copy()	# Odd columns (test metrics)
+
 
 		# Computing mean and standard deviation for metrics
 		train_avg, train_std = train_df.mean(), train_df.std()
