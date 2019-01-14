@@ -86,7 +86,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 	"""
 
-	#TODO: Specify default values
+	#TODO: Especificar valores por defecto
 	def __init__(self, dtype="", decision_method="", classifier="",  parameters={}):
 
 		self.dtype = dtype
