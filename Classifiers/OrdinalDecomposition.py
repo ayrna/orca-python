@@ -46,7 +46,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		for that binary problem. If there is no sign, then those samples will not be
 		taken into account when building the model.
 
-	algorithm: string
+	decision_method: string
+		Decision method used to transform from n different classifier predictions to
+		give the final label (one among the real classes) to a given set.
+
+	classifier: string
 		Inner classifier to be used to build a model for each binary subproblem.
 		It has to call a local classifier built into this framework, or a class
 		from scikit-learn.
@@ -82,10 +86,12 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 	"""
 
-	def __init__(self, dtype="", algorithm="",  parameters={}):
+	#TODO: Specify default values
+	def __init__(self, dtype="", decision_method="", classifier="",  parameters={}):
 
 		self.dtype = dtype
-		self.algorithm = algorithm
+		self.decision_method = decision_method
+		self.classifier = classifier
 		self.parameters = parameters
 
 
@@ -120,7 +126,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		self.unique_y_ = np.unique(y)
 
 		# Gives each train input its corresponding output label for each binary classifier
-		self.coding_matrix_ = self._codingMatrix( len(self.unique_y_), self.dtype )
+		self.coding_matrix_ = self._codingMatrix( len(self.unique_y_) )
 		class_labels = self.coding_matrix_[ (np.digitize(y, self.unique_y_) - 1), :]
 
 
@@ -129,7 +135,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		# given by the coding_matrix
 		for n in range(len(class_labels[0,:])):
 
-			estimator = self._loadAlgorithm().fit(	X[ np.where(class_labels[:,n] != 0) ], \
+			estimator = self._loadClassifier(self.classifier).fit(	X[ np.where(class_labels[:,n] != 0) ], \
 													np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T) )
 			self.classifiers_.append(estimator)
 
@@ -161,69 +167,186 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		X = check_array(X)
 
 
+		decision_method = self.decision_method.lower()
+
+		if decision_method == "exponential_loss":
+
+			losses = self.exponentialLoss(X)
+			predicted_y = self.unique_y_[np.argmin(losses, axis=1)]
+
+
+		elif decision_method == "hinge_loss":
+			
+			losses = self.hingeLoss(X)
+			predicted_y = self.unique_y_[np.argmin(losses, axis=1)]
+
+
+		elif decision_method == "logaritmic_loss":
+
+			losses = self.logaritmicLoss(X)
+			predicted_y = self.unique_y_[np.argmin(losses, axis=1)]
+
+
+		elif decision_method == "frank_hall":
+
+			predicted_y = self.frankHallMethod(X)
+
+
+		else:
+			raise AttributeError('The specified loss method %s is not implemented' % decision_method)
+
+
+		return predicted_y
+
+
+
+
+
+	def exponentialLoss(self, X):
+
+		"""
+
+		"""
+
+
 		positive_class = 1
-		predictions = np.array([np.interp( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == positive_class) ]),\
-						   					(0, 1), (-1, +1) ) for c in self.classifiers_]).T
+		# Mapping decission probabilities for possitive class from [0 ~ 1] range to [-1 ~ 1]
+		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == positive_class)])*2 ) - 1
+									 for c in self.classifiers_]).T
 
 
+		# Computing exponential losses
 		eLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
 		for i in range(self.coding_matrix_.shape[0]):
 
 			eLosses[:,i] = np.sum(np.exp( -predictions * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) ), axis=1)
 
+		return eLosses
 
-		predicted_y = self.unique_y_[np.argmin(eLosses, axis=1)]
+
+
+
+	def hingeLoss(self, X):
+
+		"""
+
+		"""
+
+		# Mapping decission probabilities for possitive class from [0 ~ 1] range to [-1 ~ 1]
+		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == 1)])*2 ) - 1
+									 for c in self.classifiers_]).T
+
+
+		hLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
+		for i in range(self.coding_matrix_.shape[0]):
+
+			hLosses[:,i] = np.sum( np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions) ), axis=1 )
+
+		return hLosses
+
+
+
+	def logaritmicLoss(self, X):
+
+		"""
+
+		"""
+
+		# Mapping decission probabilities for possitive class from [0 ~ 1] range to [-1 ~ 1]
+		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == 1)])*2 ) - 1
+									 for c in self.classifiers_]).T
+
+		
+		lLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
+		for i in range(self.coding_matrix_.shape[0]):
+
+			lLosses[:,i] = np.sum( np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions)), axis=1 )
+
+
+		return lLosses
+
+
+	def frankHallMethod(self, X):
+
+		"""
+
+		"""
+
+
+		if self.dtype.lower() != "orderedpartitions":
+			raise AttributeError("When using FrankHall decision method, OrderedPartitions must be used")
+
+
+
+		predicted_proba_y = np.empty( [X.shape[0], len(self.classifiers_) + 1] )
+
+
+		positive_class_placement = np.where(self.classifiers_[0].classes_ == 1)
+
+		# Probabilities of each set to belong to the first class
+		predicted_proba_y[:,0] = 1 - np.ravel( self.classifiers_[0].predict_proba(X)[:, positive_class_placement] )
+		previous_proba_y = predicted_proba_y[:,0]
+
+		for i, c in enumerate(self.classifiers_, 1):
+
+			# Prbability of sets to belong to class i
+			predicted_proba_y[:,i] = previous_proba_y - np.ravel( c.predict_proba(X)[:, positive_class_placement] )
+			# Storing predictions for actual class for next iteration
+			previous_proba_y = np.ravel( c.predict_proba(X)[:, positive_class_placement] )
+
+		# Probabilities of each set to belong to the last class
+		predicted_proba_y[:,-1] = np.ravel( self.classifiers_[-1].predict_proba(X)[:, positive_class_placement] )
+
+		# Class predicted will be the one with maxed probabilities
+		predicted_y = np.argmax(predicted_proba_y, axis=1)
+
 		return predicted_y
 
 
-	def _loadAlgorithm(self):
+
+
+
+
+	def _loadClassifier(self, classifier_path):
 
 		"""
 		Loads and return a classifier.
 
 		Arguments for this function are received globally from class's constructor
-		The ones used here ara 'algorithm' and 'parameters'
+		The ones used here ara 'classifier' and 'parameters'
 
 		Returns
 		-------
 
-		algorithm: object
+		classifier: object
 			Returns a loaded classifier, either from an scikit-learn module, or from
 			a module of this framework.
 
 		"""
 
-		# Loading modules to execute algorithm given in configuration file
-		modules = [x for x in self.algorithm.split('.')]
 
-		if (len(modules) == 1):
+		try:
 
-			try:
-				algorithm = __import__(modules[0])
-				algorithm = getattr(algorithm, modules[0])
+			if (len(classifier_path.split('.')) == 1):
 
-			except:
-				raise ImportError("Unable to load classifier's path: %s" % self.algorithm)
+				classifier = __import__(classifier_path)
+				classifier = getattr(classifier, classifier_path)
 
-		elif (len(modules) == 3):
+			else:
 
-			try:
-				algorithm = __import__(modules[0] + '.' + modules[1], fromlist=[str(modules[2])])
-				algorithm = getattr(algorithm, modules[2])
+				classifier = __import__(classifier_path.rsplit('.', 1)[0], fromlist="None")
+				classifier = getattr(classifier, classifier_path.rsplit('.', 1)[1])
 
-			except:
-				raise ImportError("Unable to load classifier's path: %s" % self.algorithm)
-
-		else:
-			raise AttributeError("Unable to load classifier's path: %s" % self.algorithm)
+		except ImportError:
+			raise ImportError("Unable to load classifier's path: %s" % classifier_path)
 
 
-		algorithm = algorithm(**self.parameters)
-		return algorithm
+		classifier = classifier(**self.parameters)
+		return classifier
 
 
 
-	def _codingMatrix(self, nClasses, dType):
+	def _codingMatrix(self, nClasses):
 
 		"""
 			Method that returns the coding matrix for a given dataset.
@@ -246,8 +369,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 				used for that particular binary classifier.
 		"""
 
-		dType = dType.lower()
-
+		dType = self.dtype.lower()
 		if dType == "orderedpartitions":
 
 			coding_matrix = np.triu( (-2 * np.ones(nClasses - 1)) ) + 1
@@ -276,32 +398,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			raise ValueError("Decomposition type %s does not exist" % dType)
 
 		return coding_matrix.astype(int)
-
-
-	"""
-	def predict(self, X):
-
-		X = check_array(X)
-
-		# Outputs predicted to given data by fitted model
-		predicted_proba_y = np.empty( [X.shape[0], len(self.classifiers_) + 1] )
-
-		for i, c in enumerate(self.classifiers_):
-
-			if i == 0:
-				predicted_proba_y[:,i] = 1 - c.predict_proba(X)[:,0]
-			else:
-				predicted_proba_y[:,i] = previous_proba_y - c.predict_proba(X)[:,0]
-
-			# Storing actual prediction for next iteration
-			previous_proba_y = c.predict_proba(X)[:,1]
-
-		predicted_proba_y[:,-1] = self.classifiers_[-1].predict_proba(X)[:,0]
-		predicted_y = np.argmax(predicted_proba_y, axis=1)
-
-		return predicted_y
-	"""
-
 
 
 
