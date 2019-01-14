@@ -14,7 +14,8 @@ def default_config():
 					"folds": 3,
 					"jobs": 1,
 					"metrics": "ccr",
-					"cv_metric": "ccr"
+					"cv_metric": "ccr",
+					"runs_folder": "my_runs/"
 					}
 
 	algorithms = {}
@@ -24,11 +25,9 @@ def default_config():
 def main(general_conf, configurations):
 
 
-	fw_path = os.path.dirname(os.path.abspath(__file__)) + "/"
-
-	interfaz = Utilities(general_conf, configurations)
-	interfaz.runExperiment()
-	interfaz.writeReport(fw_path)
+	interface = Utilities(general_conf, configurations)
+	interface.runExperiment()
+	interface.writeReport()
 
 
 
