@@ -9,6 +9,7 @@ ex = Experiment('Experiment Configuration')
 @ex.config
 def default_config():
 
+	# Giving default values
 	general_conf = {"basedir": "",
 					"dataset": "",
 					"folds": 3,
@@ -18,12 +19,9 @@ def default_config():
 					"runs_folder": "my_runs/"
 					}
 
-	algorithms = {}
-
 
 @ex.automain
 def main(general_conf, configurations):
-
 
 	interface = Utilities(general_conf, configurations)
 	interface.runExperiment()

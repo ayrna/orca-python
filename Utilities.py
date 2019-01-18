@@ -198,7 +198,8 @@ class Utilities:
 		----------
 
 		base_path: string
-			Base path in which dataset folder can be found
+			Base path in which dataset folder can be found.
+			It can be absolute or relative.
 
 		dataset_name: string
 			Name given to dataset folder
@@ -208,7 +209,7 @@ class Utilities:
 		-------
 
 		dataset_path: string
-			Absolute path to folder containing dataset files
+			Path to folder containing dataset files
 		"""
 
 
@@ -231,7 +232,7 @@ class Utilities:
 		----------
 
 		dataset_path: string
-			Absolute path to dataset folder
+			Path to dataset folder
 
 
 		Returns
@@ -612,10 +613,9 @@ def isBoolean(value):
 	"""
 
 
-	try:
-		bool(value)
+	if value == "True" or value == "False":
 		return True
-	except ValueError:
+	else:
 		return False
 
 
