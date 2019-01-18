@@ -1,6 +1,9 @@
 
-import os, sys, collections, random
+import os
+from time import time
+from collections import OrderedDict
 from itertools import product
+from sys import path
 
 import pandas as pd
 import numpy as np
@@ -11,6 +14,7 @@ from sklearn.metrics.scorer import make_scorer
 from Results import Results
 
 class Utilities:
+
 	"""
 
 	Utilities
@@ -63,13 +67,13 @@ class Utilities:
 	def runExperiment(self):
 
 		"""
-		Main function of this class. Runs an experiment.
+		Runs an experiment. Main method of this framework.
 
 		Builds one model for each possible combination of dataset and 
-		config entry stated in it's corresponding configuration file.
+		configuration entry stated in it's corresponding configuration file.
 
 		Loads every dataset, which can be fragmented in different partitions.
-		Builds a model for every dataset, using cross-validation for finding
+		Builds a model for every partition, using cross-validation for finding
 		the best possible values for the different parameters of that actual
 		configuration entry.
 		Get train and test metrics for each dataset-config pair.
@@ -80,12 +84,7 @@ class Utilities:
 
 		self.results_ = Results()
 		# Adding classifier folder to sys path. Needed to import modules from different folders
-		sys.path.insert(0, 'Classifiers/')
-
-		"""
-		if 'seed' in self.general_conf_:
-			np.random.seed(self.general_conf_['seed'])
-		"""
+		path.insert(0, 'Classifiers/')
 
 
 		self._checkDatasetList()
@@ -118,7 +117,7 @@ class Utilities:
 
 
 				# Loading Classifier stated in configuration
-				classifier = self._loadClassifier(configuration["classifier"])
+				classifier = loadClassifier(configuration["classifier"])
 				# Iterating over all partitions in each dataset
 				for idx, partition in enumerate(dataset):
 
@@ -129,10 +128,23 @@ class Utilities:
 					optimal_estimator = self._getOptimalEstimator(partition["train_inputs"], partition["train_outputs"],\
 																  classifier, configuration["parameters"])
 
+					# Getting predictions for train and test datasets
+					train_predicted_y = optimal_estimator.predict(partition["train_inputs"])
+					if "test_outputs" in partition:
+
+						start = time()
+						test_predicted_y = optimal_estimator.predict(partition["test_inputs"])
+						elapsed = time() - start
+
+					else:
+
+						test_predicted_y = None
+						elapsed = 0
+
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
-					train_metrics = collections.OrderedDict()
-					test_metrics = collections.OrderedDict()
+					train_metrics = OrderedDict()
+					test_metrics = OrderedDict()
 
 					# Iterating over Metrics
 					for metric_name in self.general_conf_['metrics']:
@@ -147,31 +159,27 @@ class Utilities:
 
 
 						# Get train scores
-						train_predicted_y = optimal_estimator.predict(partition["train_inputs"])
 						train_score = metric(partition["train_outputs"], train_predicted_y)
-
 						train_metrics[metric_name.strip() + '_train'] = train_score
 
 
 						# Get test scores
 						if "test_outputs" in partition:
 
-							test_predicted_y = optimal_estimator.predict(partition["test_inputs"])
 							test_score = metric(partition["test_outputs"], test_predicted_y)
-
 							test_metrics[metric_name.strip() + '_test'] = test_score
 
 						else:
 
-							test_predicted_y = None
 							test_metrics[metric_name.strip() + '_test'] = np.nan
 
 
 
 					# Saving time taken to cross-validate hyperparameters and re-fitting time of best model
-					train_metrics['cv_time_train'] = optimal_estimator.cv_results_['mean_fit_time'].sum()
-					test_metrics['cv_time_test'] = optimal_estimator.cv_results_['mean_score_time'].sum()
-					train_metrics['refit_time'] = optimal_estimator.refit_time_
+					train_metrics['crossval_time'] = optimal_estimator.cv_results_['mean_fit_time'].mean()
+					test_metrics['validation_time'] = optimal_estimator.cv_results_['mean_score_time'].mean()
+					train_metrics['train_time'] = optimal_estimator.refit_time_
+					test_metrics['test_time'] = elapsed
 
 					# Save metrics scores for this partition
 					self.results_.addRecord(idx, optimal_estimator.best_params_, optimal_estimator.best_estimator_,\
@@ -270,7 +278,7 @@ class Utilities:
 
 
 		# Saving partitions as a sorted list of dicts (according to it's partition order)
-		partition_list = list( collections.OrderedDict(sorted(partition_list.items(), key=(lambda t: self._getKey(t[0])))).values() )
+		partition_list = list( OrderedDict(sorted(partition_list.items(), key=(lambda t: getKey(t[0])))).values() )
 
 		return partition_list
 
@@ -315,7 +323,7 @@ class Utilities:
 
 		"""
 		Checks if there is some inconsistency in dataset list.
-		It also simplifies running all datasets in 'basedir'
+		It also simplifies running all datasets inside one folder.
 
 		Parameters
 		----------
@@ -326,11 +334,11 @@ class Utilities:
 
 		"""
 
-		# Aliasing to simplify visibility
+
 		base_path = self.general_conf_['basedir']
 		dataset_list = self.general_conf_['datasets']
 
-		# Check if path it's relative or absolute
+		# Check if home path is shortened
 		if base_path.startswith("~"):
 			base_path = base_path.replace('~', os.path.expanduser('~'), 1)
 
@@ -348,55 +356,13 @@ class Utilities:
 		self.general_conf_['datasets'] = dataset_list
 
 
-	def _loadClassifier(self, classifier_path):
-
-		"""
-		Loads and returns a classifier.
-
-		Parameters
-		----------
-
-		classifier_path: string
-			Relative path to which package the classifier class is located in.
-			That module can be local if the classifier is built inside the
-			framework, or relative to scikit-learn package.
-
-
-		Returns
-		-------
-
-		classifier: object
-			Returns a loaded classifier, either from an scikit-learn module, or from
-			a module of this framework.
-
-		"""
-
-		try:
-
-			if (len(classifier_path.split('.')) == 1):
-
-				classifier = __import__(classifier_path)
-				classifier = getattr(classifier, classifier_path)
-
-			else:
-
-				classifier = __import__(classifier_path.rsplit('.', 1)[0], fromlist="None")
-				classifier = getattr(classifier, classifier_path.rsplit('.', 1)[1])
-
-		except ImportError:
-			raise ImportError("Unable to load classifier's path: %s" % classifier_path)
-
-
-
-		return classifier
-
 
 
 	def _getOptimalEstimator(self, train_inputs, train_outputs, classifier, parameters):
 
 		"""
 		Perform cross-validation technique for finding best
-		hyper-parameters out of the set given by configuration file.
+		hyper-parameters out of all the options given in configuration file.
 
 		Parameters
 		----------
@@ -406,6 +372,14 @@ class Utilities:
 
 		train_outputs: array-like, shape (n_samples)
 			Target vector relative to train_inputs.
+
+		classifier: Classifier Object
+			Class implementing an mathematical model able to be trained and to
+			perform predictions over given datasets.
+
+		parameters: dictionary
+			Dictionary containing parameters to cross-validate as keys
+			and the list of values that want to be compared as values.
 
 		Returns
 		-------
@@ -429,8 +403,8 @@ class Utilities:
 
 		gib = module.greater_is_better(self.general_conf_['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
-		# Checking if this configuration uses OrdinalDecomposition classifier
 
+		# Checking if this configuration uses an ensemble method
 		parameters = self._extractParams(parameters)
 
 		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,\
@@ -449,7 +423,7 @@ class Utilities:
 		when needed. Those consist of:
 
 		- If one parameter's values are not inside a list, GridSearchCV will not be
-		  able to handle them, so they must be enclosed into a list.
+		  able to handle them, so they must be enclosed into one.
 
 		- When an ensemble method, as OrderedPartitions, is chosen as classifier,
 		  transforms the dict of lists in which the parameters for the internal
@@ -459,13 +433,13 @@ class Utilities:
 		Parameters
 		----------
 
-		parameters: dict of list
+		parameters: dict of lists
 			Dictionary which contains parameters to cross-validate.
 
 		Returns
 		-------
 
-		parameters: dict of list
+		parameters: dict of lists
 			Dictionary properly formatted if necessary.
 		"""
 
@@ -493,105 +467,22 @@ class Utilities:
 				except TypeError:
 					raise TypeError('All parameters for the inner classifier must be an iterable object')
 
-				# TODO: It has to be a better way of doing this without going through all elements again
+				# TODO: Debe haber una forma mas eficiente de hacer esto
+
 				# Returns non-string values back to it's normal self
 				for d in p_list:
 					for (k, v) in d.iteritems():
 
-						if self._isInt(v):	#TODO: Solamente se usa para random_state realmente (no admite floats)
+						if isInt(v):		#TODO: Solamente se usa para random_state (no admite floats)
 							d[k] = int(v)
-						elif self._isFloat(v):
+						elif isFloat(v):
 							d[k] = float(v)
-						elif self._isBoolean(v):
+						elif isBoolean(v):
 							d[k] = bool(v)
 
 				parameters[param_name] = p_list
 
 		return parameters
-
-
-	def _isInt(self, value):
-
-		"""
-		Check if an string can be converted to int
-
-		Parameters
-		----------
-		value: string
-
-		Returns
-		-------
-		Int
-		"""
-
-		try:
-			int(value)
-			return True
-		except ValueError:
-			return False
-
-	def _isFloat(self, value):
-
-		"""
-		Check if an string can be converted to float
-
-		Parameters
-		----------
-		value: string
-
-		Returns
-		-------
-		Float
-		"""
-
-		try:
-			float(value)
-			return True
-		except ValueError:
-			return False
-
-
-
-	def _isBoolean(self, value):
-
-		"""
-		Check if an string can be converted to Boolean
-
-		Parameters
-		----------
-		value: string
-
-		Returns
-		-------
-		Boolean
-		"""
-
-
-		try:
-			bool(value)
-			return True
-		except ValueError:
-			return False
-
-
-	def _getKey(self, key):
-
-		"""
-		Checks if the key of a dict can be converted to int, if not, returns the key as is
-
-		Parameters
-		----------
-		value: string
-
-		Returns
-		-------
-		int or boolean
-		"""
-
-		try:
-			return int(key)
-		except ValueError:
-			return key
 
 
 
@@ -606,18 +497,163 @@ class Utilities:
 		print "\nSaving Results..."
 
 
-		# Info needed to save execution info properly
-		# All possible pairs of dataset-configuration names
-		summary_index = []
-		for dataset_name in self.general_conf_['datasets']:
-			for conf_name in self.configurations_.keys():
-
-				# Names for every file (excepting summary ones)
-				summary_index.append(dataset_name.strip() + "-" + conf_name)
-
 		# Names of each metric used
 		metrics_names = [x.strip().lower() for x in self.general_conf_['metrics']]
 
-		self.results_.saveResults(self.general_conf_['runs_folder'], summary_index, metrics_names)
+		self.results_.saveResults(self.general_conf_['runs_folder'], metrics_names)
+
+
+
+##########################
+# END OF UTILITIES CLASS #
+##########################
+
+
+
+def loadClassifier(classifier_path, params=None):
+
+	"""
+	Loads and returns a classifier.
+
+	Parameters
+	----------
+
+	classifier_path: string
+		Package path where the classifier class is located in.
+		That module can be local if the classifier is built inside the
+		framework, or relative to scikit-learn package.
+
+	params: dictionary
+		Parameters to initialize the classifier with. Used when loading a
+		classifiers inside of an ensemble algorithm.
+
+
+	Returns
+	-------
+
+	classifier: object
+		Returns a loaded classifier, either from an scikit-learn module, or from
+		a module of this framework.
+		Depending is params are specified, the object will instantiated or not.
+
+	"""
+
+	if (len(classifier_path.split('.')) == 1):
+
+		classifier = __import__(classifier_path)
+		classifier = getattr(classifier, classifier_path)
+
+	else:
+
+		classifier = __import__(classifier_path.rsplit('.', 1)[0], fromlist="None")
+		classifier = getattr(classifier, classifier_path.rsplit('.', 1)[1])
+
+	if params is not None:
+		classifier = classifier(**params)
+
+	return classifier
+
+
+
+def isInt(value):
+
+	"""
+	Check if an string can be converted to int
+
+	Parameters
+	----------
+	value: string
+
+	Returns
+	-------
+	Int
+	"""
+
+	try:
+		int(value)
+		return True
+	except ValueError:
+		return False
+
+def isFloat(value):
+
+	"""
+	Check if an string can be converted to float
+
+	Parameters
+	----------
+	value: string
+
+	Returns
+	-------
+	Float
+	"""
+
+	try:
+		float(value)
+		return True
+	except ValueError:
+		return False
+
+
+
+def isBoolean(value):
+
+	"""
+	Check if an string can be converted to Boolean
+
+	Parameters
+	----------
+	value: string
+
+	Returns
+	-------
+	Boolean
+	"""
+
+
+	try:
+		bool(value)
+		return True
+	except ValueError:
+		return False
+
+
+def getKey(key):
+
+	"""
+	Checks if the key of a dict can be converted to int, if not, returns the key as is
+
+	Parameters
+	----------
+	value: string
+
+	Returns
+	-------
+	int or boolean
+	"""
+
+	try:
+		return int(key)
+	except ValueError:
+		return key
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
