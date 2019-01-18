@@ -1,0 +1,72 @@
+{
+
+
+	"general_conf": {
+
+		"basedir": "ordinal-datasets/ordinal-regression/",
+		"datasets": ["tae", "balance-scale"],
+		"folds": 3,
+		"jobs": 10,
+		"runs_folder": "my_runs/",
+		"metrics": ["ccr", "mae", "amae", "mze"],
+		"cv_metric": "mae"
+	},
+
+
+	"configurations": {
+
+		"SVM": {
+		
+			"classifier": "sklearn.svm.SVC",
+			"parameters": {
+				"C": [0.001, 0.1, 1, 10, 100],
+				"gamma": [0.1, 1, 10],
+				"random_state": [1112]
+			}
+		},
+
+
+		"SVMOP": {
+		
+			"classifier": "OrdinalDecomposition",
+			"parameters": {
+				"dtype": "OrderedPartitions",
+				"decision_method": "frank_hall",
+				"classifier": "sklearn.svm.SVC",
+				"parameters": {
+					"C": [0.01, 0.1, 1, 10],
+					"gamma": [0.01, 0.1, 1, 10],
+					"probability": ["True"],
+					"random_state": [1112]
+				}
+
+			}
+		},
+
+
+		"LR": {
+		
+			"classifier": "OrdinalDecomposition",
+			"parameters": {
+				"dtype": ["OrderedPartitions", "OneVsNext"],
+				"decision_method": "exponential_loss",
+				"classifier": "sklearn.linear_model.LogisticRegression",
+				"parameters": {
+					"C": [0.01, 0.1, 1, 10],
+					"penalty": ["l1","l2"],
+					"random_state": [1112]
+				}
+
+			}
+		}
+
+
+
+
+	}
+
+
+
+
+
+}
