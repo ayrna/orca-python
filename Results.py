@@ -1,20 +1,24 @@
 
-import os, datetime, collections
+import os, datetime
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
 import cPickle as pickle
 
 
-class DataFrameStorage:
+class ReportUnit:
 
 	"""
-	DataFrameStorage
+	ReportUnit
 
-	Stores all metrics scores (train and test) for a given combiantion
-	of dataset and configuration. It will contain a dataframe for each
-	partition in which the dataset could be divided. If its not 
-	partitionated, there'll be just one dataframe.
+	Stores all metrics scores (train and test) for an unique combiantion
+	of dataset and configuration, besides best models found during
+	cross-validation, predictions obtained with them and computational
+	times.
+
+	It will contain a dict entry for each partition in which the dataset 
+	is divided into.
 	
 	Parameters
 	----------
@@ -32,7 +36,8 @@ class DataFrameStorage:
 	df_: dict of OrderedDict
 		Each dict contains the parameter's values with which the cross-validation
 		metrics has been maximized (best parameters) during cross-validation
-		phase, besides train and test scores for all different metrics specified.
+		phase, besides train and test scores for all different metrics specified
+		and the measure of computational times.
 		There will be as many dicts in the list as partitions the dataset is
 		fragmented in.
 
@@ -62,13 +67,13 @@ class Results:
 	"""
 	Results
 
-	Class that handles all info from an experiment that needs to be saved.
-	This info will be saved in CSV's inside a dedicated folder
+	Class that handles all information from an experiment that needs
+	to be saved. This info will be saved into an specified folder.
 
 	Attributes
 	----------
 
-	dataframes_: list of DataFrameStorage objects
+	reports_: list of ReportUnit objects
 		Each object will storage information about a pair of 
 		dataset-configuration. There will be as many as the number of
 		combinations of different datasets and configurations.
@@ -77,14 +82,14 @@ class Results:
 
 	def __init__(self):
 
-		self.dataframes_ = []
+		self.reports_ = []
 
 
-	def getDataFrame(self, dataset_name, configuration_name):
+	def getReportUnit(self, dataset_name, configuration_name):
 
 		"""
-		Look if a dataframe for a given dataset and configuration already
-		exists, if not, creates it.
+		Looks if a ReportUnit object for a given dataset and configuration
+		already exists, if not, creates it.
 
 		Parameters
 		----------
@@ -98,7 +103,7 @@ class Results:
 		Returns
 		-------
 
-		dfs : DataFrameStorage object 
+		ru : ReportUnit object 
 			Contains (or will contain) train and test metrics for 'dataset'
 			and 'configuration' given values
 
@@ -106,16 +111,16 @@ class Results:
 
 		# Searchs if this combination of 'dataset' and 'configuration'
 		# has already been used 
-		for dfs in self.dataframes_:
+		for ru in self.reports_:
 
-			if dfs.dataset_ == dataset_name and dfs.configuration_ == configuration_name:
-				return dfs
+			if ru.dataset_ == dataset_name and ru.configuration_ == configuration_name:
+				return ru
 
-		# If the dataframe has yet to be added, we create it
-		dfs = DataFrameStorage(dataset_name, configuration_name)
-		self.dataframes_.append(dfs)
+		# If the ReportUnit has yet to be added, creates it
+		ru = ReportUnit(dataset_name, configuration_name)
+		self.reports_.append(ru)
 
-		return dfs
+		return ru
 
 
 
@@ -123,7 +128,7 @@ class Results:
 
 		"""
 		Stores information about the run of a partition into a
-		DataFrameStorage object.
+		ReportUnit object.
 
 		Parameters
 		----------
@@ -151,11 +156,11 @@ class Results:
 
 		"""
 
-		# Get or create a DataFrameStorage object for this dataset and configuration
-		dfs = self.getDataFrame(configuration['dataset'], configuration['config'])
+		# Get or create a ReportUnit object for this dataset and configuration
+		ru = self.getReportUnit(configuration['dataset'], configuration['config'])
 
 
-		dataframe_row = collections.OrderedDict()
+		dataframe_row = OrderedDict()
 		# Adding best parameters as first elements in OrderedDict
 		for p_name, p_value in best_params.items():
 
@@ -174,36 +179,57 @@ class Results:
 			dataframe_row[tm_name] = tm_value
 			dataframe_row[ts_name] = ts_value
 
-		# Adding others variables
-		dataframe_row['refit_time'] = metrics['train']['refit_time']
 
-		# Adding this OrderedDict as a new entry to DataFrameStorage object
-		dfs.df_[str(partition)] = dataframe_row
+		# Adding this OrderedDict as a new entry to ReportUnit object
+		ru.df_[str(partition)] = dataframe_row
 
 
 		# Storing models and predictions for this partition
-		dfs.models_[str(partition)] = best_model
-		dfs.predictions_[str(partition)] = predictions
+		ru.models_[str(partition)] = best_model
+		ru.predictions_[str(partition)] = predictions
 
 
-	def saveResults(self, runs_folder, summary_index, metrics_names):
+	def saveResults(self, runs_folder, metrics_names):
 
 		"""
-		Method used for saving experiment info to CSV's.
+		Method used for writing all the experiment information to files.
 
-		By default, there will be a dedicated subfolder inside framework's one.
+		By default, there will be a dedicated subfolder inside framework's 
+		main one. This default folder can be changed in Config.py or through
+		configuration files.
 
 		Each time a experiment has been run successfully, this method will 
-		generate a new subfolder inside that subfolder, named 
-		'exp-YY-MM-DD-hh-mm-ss'.
+		generate a new subfolder inside that folder, named 
+		'exp-YY-MM-DD-hh-mm-ss'. Where everything bar 'exp' it's the date and
+		hour the experiment finished running.
 
 		This new generated folder will store the train and test summaries 
-		as CSV, as well as so many subfolders as datasets, named after them.
+		as CSV, as well as so many subfolders as datasets-configurations pairs,
+		named after them.
 
-		Last, inside this dataset subfolders, there will be one CSV for each
-		configuration used, containing info about metrics and partitions.
+		Inside this specifics subfolders, there will be:
+
+				- A CSV with one entr per partition, where there'll be
+				stored the best found parameters during cross-validation,
+				train and test metrics and computational times for building
+				each model.
+
+				- Models subfolder where it'll be stored the best model built for
+				each partition, writed as a cPickle.
+
+				- Predictions subfolder with train and test label predictions
+				obtained with the best found model.
 
 
+		Parameters
+		----------
+
+		runs_folder: string
+			Relative or absolute path where store results.
+
+		metrics_names: list of strings
+			List with the names of all metrics used during the execution
+			of the experiment.
 		"""
 
 
@@ -236,34 +262,36 @@ class Results:
 
 		# Saving summaries from every combination of DB and Configuration
 		train_summary = []; test_summary = []
+		summary_index = []
 
 		# Name of columns for summary dataframes
 		avg_index = [mn + '_mean' for mn in metrics_names]
 		std_index = [mn + '_std' for mn in metrics_names]
 
-		for dataframe in self.dataframes_:
+		for report in self.reports_:
 
 			# Creates subfolders for each dataset
-			dataset_folder = folder_path + dataframe.dataset_ + "/"
+			dataset_folder = folder_path + report.dataset_ + "-" + report.configuration_ + "/"
 			try: os.makedirs(dataset_folder)
 			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % dataset_folder)
 
 			# Saving each dataframe
-			df = pd.DataFrame([row for partition,row in sorted(dataframe.df_.items())])
-			df.to_csv(dataset_folder + dataframe.dataset_ + "-" + dataframe.configuration_ + ".csv")
+			df = pd.DataFrame([row for partition,row in sorted(report.df_.items())])
+			df.to_csv(dataset_folder + report.dataset_ + "-" + report.configuration_ + ".csv")
 
-			# Creating one entry for dataframe in summaries
+			# Creating one entry for ReportUnit in summaries
 			tr_sr, ts_sr = self.createSummary(df, avg_index, std_index)
 			train_summary.append(tr_sr); test_summary.append(ts_sr)
+			summary_index.append(report.dataset_.strip() + "-" + report.configuration_)
 
 			# Saving models generated for each partition in one folder
 			models_folder = dataset_folder + "models/"
 			try: os.makedirs(models_folder)
 			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % models_folder)
 
-			for part, model in dataframe.models_.iteritems():
+			for part, model in report.models_.iteritems():
 
-				model_filename = dataframe.dataset_ + "-" + dataframe.configuration_ + "." + part
+				model_filename = report.dataset_ + "-" + report.configuration_ + "." + part
 				with open(models_folder + model_filename, 'wb') as output:
 
 					pickle.dump(model, output)
@@ -274,11 +302,12 @@ class Results:
 			try: os.makedirs(predictions_folder)
 			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % predictions_folder)
 
-			for part, predictions in dataframe.predictions_.iteritems():
+			for part, predictions in report.predictions_.iteritems():
 
-				pred_filename = dataframe.dataset_ + "-" + dataframe.configuration_ + "." + part
+				pred_filename = report.dataset_ + "-" + report.configuration_ + "." + part
 				np.savetxt(predictions_folder + 'train_' + pred_filename, predictions['train'], fmt='%d')
-				np.savetxt(predictions_folder + 'test_' + pred_filename, predictions['test'], fmt='%d')
+				if predictions['test'] is not None:
+					np.savetxt(predictions_folder + 'test_' + pred_filename, predictions['test'], fmt='%d')
 
 
 		# Naming each row in datasets
@@ -295,8 +324,8 @@ class Results:
 	def createSummary(self, df, avg_index, std_index):
 
 		"""
-		Summarizing information from all partitions stored in a DataFrameStorage 
-		object into one line of a DataFrame
+		Summarices information from all partitions stored in a ReportUnit 
+		object into one line of a DataFrame.
 
 
 		Parameters
@@ -325,14 +354,15 @@ class Results:
 				we are summarizing info from.
 
 			test_summary_row: DataFrame
-				Simmilar to train_summary_row, but storing only info about test scores
+				Simmilar to train_summary_row, but storing only information
+				about test scores
 
 		"""
 
-		# Dissociating train and test metrics (last 3 columns are computational times)
-		n_parameters = len(df.columns) - len(avg_index)*2 - 3				# Number of parameters used in this configuration
-		train_df = df.iloc[:,n_parameters:len(df.columns)-3:2].copy() 		# Even columns from dataframe (train metrics)
-		test_df = df.iloc[:,(n_parameters+1):len(df.columns)-3:2].copy()	# Odd columns (test metrics)
+		# Dissociating train and test metrics (last 4 columns are computational times)
+		n_parameters = len(df.columns) - len(avg_index)*2 - 4				# Number of parameters used in this configuration
+		train_df = df.iloc[:,n_parameters:len(df.columns)-4:2].copy() 		# Even columns from dataframe (train metrics)
+		test_df = df.iloc[:,(n_parameters+1):len(df.columns)-4:2].copy()	# Odd columns (test metrics)
 
 
 		# Computing mean and standard deviation for metrics
