@@ -4,7 +4,7 @@
 	"general_conf": {
 
 		"basedir": "ordinal-datasets/ordinal-regression/",
-		"datasets": ["tae", "balance-scale"],
+		"datasets": ["tae", "balance-scale", "contact-lenses"],
 		"folds": 3,
 		"jobs": 10,
 		"runs_folder": "my_runs/",
@@ -20,8 +20,7 @@
 			"classifier": "sklearn.svm.SVC",
 			"parameters": {
 				"C": [0.001, 0.1, 1, 10, 100],
-				"gamma": [0.1, 1, 10],
-				"random_state": [1112]
+				"gamma": [0.1, 1, 10]
 			}
 		},
 
@@ -36,8 +35,7 @@
 				"parameters": {
 					"C": [0.01, 0.1, 1, 10],
 					"gamma": [0.01, 0.1, 1, 10],
-					"probability": ["True"],
-					"random_state": [1112]
+					"probability": ["True"]
 				}
 
 			}
@@ -53,8 +51,7 @@
 				"classifier": "sklearn.linear_model.LogisticRegression",
 				"parameters": {
 					"C": [0.01, 0.1, 1, 10],
-					"penalty": ["l1","l2"],
-					"random_state": [1112]
+					"penalty": ["l1","l2"]
 				}
 
 			}
