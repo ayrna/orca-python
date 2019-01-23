@@ -52,8 +52,8 @@ class Utilities:
 	----------
 
 	results_: Results object
-		Class used to manage and store all info obtained when testing
-		the different built models during the run of an experiment.
+		Class used to manage and store all information obtained when
+		testing the different built models during the run of an experiment.
 	"""
 
 
@@ -88,6 +88,7 @@ class Utilities:
 
 
 		self._checkDatasetList()
+		self._checkParams()
 
 		print "\n###############################"
 		print "\tRunning Experiment"
@@ -106,10 +107,9 @@ class Utilities:
 			# containing train and test inputs/outputs. It also stores its partition number
 
 			dataset = self._loadDataset(dataset_path)
-
-
 			print "\nRunning", dataset_name, "dataset"
 			print "--------------------------"
+
 
 			# Iterating over all different Configurations
 			for conf_name, configuration in self.configurations_.iteritems():
@@ -118,11 +118,12 @@ class Utilities:
 
 				# Loading Classifier stated in configuration
 				classifier = loadClassifier(configuration["classifier"])
+
+
 				# Iterating over all partitions in each dataset
 				for idx, partition in enumerate(dataset):
-
-					# Print actual running partition
 					print "  Running Partition", idx
+
 
 					# Finding optimal parameters
 					optimal_estimator = self._getOptimalEstimator(partition["train_inputs"], partition["train_outputs"],\
@@ -181,7 +182,7 @@ class Utilities:
 					train_metrics['train_time'] = optimal_estimator.refit_time_
 					test_metrics['test_time'] = elapsed
 
-					# Save metrics scores for this partition
+					# Save this partition's results
 					self.results_.addRecord(idx, optimal_estimator.best_params_, optimal_estimator.best_estimator_,\
 											{'dataset': dataset_name, 'config': conf_name},\
 											{'train': train_metrics, 'test': test_metrics},\
@@ -359,6 +360,81 @@ class Utilities:
 
 
 
+	def _checkParams(self):
+
+		"""
+		Checks if all given configurations are correct.
+
+		Performs two different transformations over parameter dictionaries
+		when needed. Those consist of:
+
+		- If one parameter's values are not inside a list, GridSearchCV will not be
+		  able to handle them, so they must be enclosed into one.
+
+		- When an ensemble method, as OrderedPartitions, is chosen as classifier,
+		  transforms the dict of lists in which the parameters for the internal
+		  classifier are stated into a list of dicts (all possible combiantions of
+		  those different parameters).
+
+
+		"""
+
+		random_seed = np.random.get_state()[1][0]
+		for conf_name, conf in self.configurations_.iteritems():
+
+			parameters = conf['parameters']
+
+			# If parameter is a dict named 'parameters', then an ensemble method it's being used
+			# we need to transform a dict of lists, into a list of dicts.
+			if 'parameters' in parameters and type(parameters['parameters'] == dict):
+
+				# Using given seed as random_state value
+				parameters['parameters']['random_state'] = [random_seed]
+
+				try:
+
+					#TODO: Si hay algun parametro que contenga guiones, falla (se esta usando para representar los valores)
+
+					# Creating a list for each parameter. Elements represented as 'parameterName-parameterValue'.
+					p_list = [ [p_name + '-' + str(v) for v in p] for p_name, p in parameters['parameters'].iteritems() ]
+					# Permutations of all lists. Generates all possible combination of elements between lists.
+					p_list = [ list(item) for item in list(product(*p_list)) ]
+					# Creates a list of dictionaries, containing all combinations of given parameters
+					p_list = [ dict( [item.split('-') for item in p] ) for p in p_list ]
+
+				except TypeError:
+					raise TypeError('All parameters for the inner classifier must be an iterable object')
+
+
+				# TODO: Debe haber una forma mas eficiente de hacer esto
+				# Returns non-string values back to it's normal self
+				for d in p_list:
+					for (k, v) in d.iteritems():
+
+						if isInt(v):		#TODO: Solamente se usa para random_state (no admite floats)
+							d[k] = int(v)
+						elif isFloat(v):
+							d[k] = float(v)
+						elif isBoolean(v):
+							d[k] = bool(v)
+
+				parameters['parameters'] = p_list
+
+
+			else:
+
+				# Using given seed as random_state value
+				parameters['random_state'] = [random_seed]
+
+
+			for param_name, param in parameters.iteritems():
+
+				# If parameter is not a list, convert it into one
+				if (type(param) != list) and (type(param) != dict):
+					parameters[param_name] = [param]
+
+
+
 	def _getOptimalEstimator(self, train_inputs, train_outputs, classifier, parameters):
 
 		"""
@@ -405,8 +481,6 @@ class Utilities:
 		gib = module.greater_is_better(self.general_conf_['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
 
-		# Checking if this configuration uses an ensemble method
-		parameters = self._extractParams(parameters)
 
 		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,\
 					n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'], iid=False)
@@ -415,75 +489,6 @@ class Utilities:
 
 		return optimal
 
-
-
-	def _extractParams(self, parameters):
-
-		"""
-		Performs two different transformations over parameters dict
-		when needed. Those consist of:
-
-		- If one parameter's values are not inside a list, GridSearchCV will not be
-		  able to handle them, so they must be enclosed into one.
-
-		- When an ensemble method, as OrderedPartitions, is chosen as classifier,
-		  transforms the dict of lists in which the parameters for the internal
-		  classifier are stated into a list of dicts (all possible combiantions of
-		  those different parameters).
-
-		Parameters
-		----------
-
-		parameters: dict of lists
-			Dictionary which contains parameters to cross-validate.
-
-		Returns
-		-------
-
-		parameters: dict of lists
-			Dictionary properly formatted if necessary.
-		"""
-
-		for param_name, param in parameters.iteritems():
-
-			# If parameter is not a list, convert it into one
-			if (type(param) != list) and (type(param) != dict):
-				parameters[param_name] = [param]
-
-			# If parameter is a dict named 'parameters', then an ensemble method it's been used
-			# we need to transform a dict of lists, into a list of dicts.
-			elif (type(param) == dict) and (param_name == 'parameters'):
-
-				try:
-
-					#TODO: Si hay algun parametro que contenga guiones, falla (se esta usando para representar los valores)
-
-					# Creating a list for each parameter. Elements represented as 'parameterName-parameterValue'.
-					p_list = [ [p_name + '-' + str(v) for v in p] for p_name, p in param.iteritems() ]
-					# Permutations of all lists. Generates all possible combination of elements between lists.
-					p_list = [ list(item) for item in list(product(*p_list)) ]
-					# Creates a list of dictionaries, containing all combinations of given parameters
-					p_list = [ dict( [item.split('-') for item in p] ) for p in p_list ]
-
-				except TypeError:
-					raise TypeError('All parameters for the inner classifier must be an iterable object')
-
-				# TODO: Debe haber una forma mas eficiente de hacer esto
-
-				# Returns non-string values back to it's normal self
-				for d in p_list:
-					for (k, v) in d.iteritems():
-
-						if isInt(v):		#TODO: Solamente se usa para random_state (no admite floats)
-							d[k] = int(v)
-						elif isFloat(v):
-							d[k] = float(v)
-						elif isBoolean(v):
-							d[k] = bool(v)
-
-				parameters[param_name] = p_list
-
-		return parameters
 
 
 
