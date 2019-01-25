@@ -195,7 +195,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		elif decision_method == "frank_hall":
 
-			predicted_y = self._frankHallMethod(X)
+			predicted_proba_y = self._frankHallMethod(X)
+			predicted_y = self.unique_y_[np.argmax(predicted_proba_y, axis=1)]
 
 
 		else:
@@ -399,28 +400,23 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		predicted_proba_y = np.empty( [X.shape[0], len(self.classifiers_) + 1] )
-
-
 		positive_class_placement = np.where(self.classifiers_[0].classes_ == 1)
 
-		# Probabilities of each set to belong to the first class
-		predicted_proba_y[:,0] = 1 - np.ravel( self.classifiers_[0].predict_proba(X)[:, positive_class_placement] )
-		previous_proba_y = predicted_proba_y[:,0]
 
-		for i, c in enumerate(self.classifiers_, 1):
+		# Probabilities of each set to belong to the first ordinal class
+		predicted_proba_y[:,0] = 1 - np.ravel( self.classifiers_[0].predict_proba(X)[:, positive_class_placement] )
+
+		for i, c in enumerate(self.classifiers_[1:], 1):
 
 			# Prbability of sets to belong to class i
-			predicted_proba_y[:,i] = previous_proba_y - np.ravel( c.predict_proba(X)[:, positive_class_placement] )
-			# Storing predictions for actual class for next iteration
-			previous_proba_y = np.ravel( c.predict_proba(X)[:, positive_class_placement] )
+			predicted_proba_y[:,i] = np.ravel( self.classifiers_[i-1].predict_proba(X)[:, positive_class_placement] ) - \
+									np.ravel(self.classifiers_[i].predict_proba(X)[:, positive_class_placement])
 
 		# Probabilities of each set to belong to the last class
 		predicted_proba_y[:,-1] = np.ravel( self.classifiers_[-1].predict_proba(X)[:, positive_class_placement] )
 
-		# Class predicted will be the one with maxed probabilities
-		predicted_y = np.argmax(predicted_proba_y, axis=1)
 
-		return predicted_y
+		return predicted_proba_y
 
 
 
