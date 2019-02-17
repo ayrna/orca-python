@@ -79,9 +79,21 @@ For a better understanding of the way this files works, it's better to follow an
 	"cv_metric": "mae"
 }
 ```
+*note that all the keys (variable names) must be strings, while all pair: value elements are separated by commas.*
+
+- **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one.
+- 
 
 
-*note that all the keys (variable names) must be strings, while all dictionaries are separated by commas.*
+Most os this variables do have default values (specified in [Config.py](https://github.com/i22bomui/orca-python/blob/master/Config.py)), but "basedir" and "datasets" must always be written for the experiment to be run.
+
+
+### configurations
+
+this dictionary will contain, at the same time, one dictionary for each configuration to try over the datasets during the experiment. This is, a classifier with some specific hyper-parameters to tune. (Keep in mind, that if two or more configurations share the same name, the later ones will be omitted)
+
+
+
 
 This example can be found in [Configurations/full_functionality_test.json](https://github.com/i22bomui/orca-python/blob/master/Configurations/full_functionality_test.json).
 
