@@ -54,10 +54,36 @@ The datasets are already partitioned with a 30-holdout experimental design (trai
 
 ## Configuration Files
 
-All experiments are run through configuration files, which are written in JSON format. 
-For a better understanding of the way this files works, it's better to follow an example.
+All experiments are run through configuration files, which are written in JSON format, and consist of two well differentiated 
+sections:
+
+  - **general-conf**: indicates basic information to run the experiment, such as the location to datasets, the different datasets names to run, etc. 
+  - **configurations**: tells the framework what classification algorithms to apply over all the datasets, with the collection of hyper-parameters to tune.
+
+Each one of this sections will be inside a dictionary, having the said section names as keys.
 
 
+For a better understanding of the way this files works, it's better to follow an example:
+
+### general-conf
+
+```
+	"general_conf": {
+
+		"basedir": "ordinal-datasets/ordinal-regression/",
+		"datasets": ["tae", "balance-scale", "contact-lenses"],
+		"folds": 3,
+		"jobs": 10,
+		"runs_folder": "my_runs/",
+		"metrics": ["ccr", "mae", "amae", "mze"],
+		"cv_metric": "mae"
+	}
+```
+
+
+*note that all the keys (variable names) must be strings, while all dictionaries are separated by commas.*
+
+This example can be found in [Configurations/full_functionality_test.json](https://github.com/i22bomui/orca-python/blob/master/Configurations/full_functionality_test.json).
 
 ## Running an Experiment
 
