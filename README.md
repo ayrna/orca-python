@@ -68,16 +68,16 @@ For a better understanding of the way this files works, it's better to follow an
 ### general-conf
 
 ```
-	"general_conf": {
+"general_conf": {
 
-		"basedir": "ordinal-datasets/ordinal-regression/",
-		"datasets": ["tae", "balance-scale", "contact-lenses"],
-		"folds": 3,
-		"jobs": 10,
-		"runs_folder": "my_runs/",
-		"metrics": ["ccr", "mae", "amae", "mze"],
-		"cv_metric": "mae"
-	}
+	"basedir": "ordinal-datasets/ordinal-regression/",
+	"datasets": ["tae", "balance-scale", "contact-lenses"],
+	"folds": 3,
+	"jobs": 10,
+	"runs_folder": "my_runs/",
+	"metrics": ["ccr", "mae", "amae", "mze"],
+	"cv_metric": "mae"
+}
 ```
 
 
