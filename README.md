@@ -57,8 +57,8 @@ The datasets are already partitioned with a 30-holdout experimental design (trai
 All experiments are run through configuration files, which are written in JSON format, and consist of two well differentiated 
 sections:
 
-  - **general-conf**: indicates basic information to run the experiment, such as the location to datasets, the different datasets names to run, etc. 
-  - **configurations**: tells the framework what classification algorithms to apply over all the datasets, with the collection of hyper-parameters to tune.
+  - **`general-conf`**: indicates basic information to run the experiment, such as the location to datasets, the different datasets names to run, etc. 
+  - **`configurations`**: tells the framework what classification algorithms to apply over all the datasets, with the collection of hyper-parameters to tune.
 
 Each one of this sections will be inside a dictionary, having the said section names as keys.
 
@@ -81,21 +81,70 @@ For a better understanding of the way this files works, it's better to follow an
 ```
 *note that all the keys (variable names) must be strings, while all pair: value elements are separated by commas.*
 
-- **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one.
-- 
+- **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one folder at a time.
+- **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist insise `basedir`.
+- **`folds`**: number of folds used while cross-validating.
+- **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
+- **`runs_folder`**: name of the folder where all experiment results will be stored.
+- **`metrics`**: name of the accuracy metrics to measure the train and test classification error.
+- **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
-
-Most os this variables do have default values (specified in [Config.py](https://github.com/i22bomui/orca-python/blob/master/Config.py)), but "basedir" and "datasets" must always be written for the experiment to be run.
+Most os this variables do have default values (specified in [Config.py](https://github.com/i22bomui/orca-python/blob/master/Config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
 
 
 ### configurations
 
 this dictionary will contain, at the same time, one dictionary for each configuration to try over the datasets during the experiment. This is, a classifier with some specific hyper-parameters to tune. (Keep in mind, that if two or more configurations share the same name, the later ones will be omitted)
 
+```
+"configurations": {
+
+	"SVM": {
+
+		"classifier": "sklearn.svm.SVC",
+		"parameters": {
+			"C": [0.001, 0.1, 1, 10, 100],
+			"gamma": [0.1, 1, 10]
+		}
+	},
 
 
+	"SVMOP": {
+
+		"classifier": "OrdinalDecomposition",
+		"parameters": {
+			"dtype": "OrderedPartitions",
+			"decision_method": "frank_hall",
+			"classifier": "sklearn.svm.SVC",
+			"parameters": {
+				"C": [0.01, 0.1, 1, 10],
+				"gamma": [0.01, 0.1, 1, 10],
+				"probability": ["True"]
+			}
+
+		}
+	},
+
+
+	"LR": {
+
+		"classifier": "OrdinalDecomposition",
+		"parameters": {
+			"dtype": ["OrderedPartitions", "OneVsNext"],
+			"decision_method": "exponential_loss",
+			"classifier": "sklearn.linear_model.LogisticRegression",
+			"parameters": {
+				"C": [0.01, 0.1, 1, 10],
+				"penalty": ["l1","l2"]
+			}
+
+		}
+	}
+}
+```
 
 This example can be found in [Configurations/full_functionality_test.json](https://github.com/i22bomui/orca-python/blob/master/Configurations/full_functionality_test.json).
+
 
 ## Running an Experiment
 
