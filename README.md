@@ -149,7 +149,7 @@ Each configuration has a name (whatever you want), and consists of:
 	- A relative path to the classifier in sklearn module.
 	- The name of a built-in class in Classifiers folder (found in the main folder of the project).
 - **`parameters`**: hyper-paramers to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
-	- In ensemble methods, as `OrdinalDecomposition`, you must must nest another classifier (the inner classifier, which doesn't have a configuration name), besides it's own parameters to tune.
+	- In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the inner classifier, which doesn't have a configuration name), besides it's own parameters to tune.
 
 
 
