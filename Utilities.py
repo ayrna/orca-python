@@ -90,6 +90,7 @@ class Utilities:
 		self._checkDatasetList()
 		self._checkParams()
 
+
 		print "\n###############################"
 		print "\tRunning Experiment"
 		print "###############################"
@@ -393,14 +394,14 @@ class Utilities:
 
 				try:
 
-					#TODO: Si hay algun parametro que contenga guiones, falla (se esta usando para representar los valores)
+					#TODO: Si hay algun parametro que contenga ';', falla (se esta usando para representar los valores)
 
 					# Creating a list for each parameter. Elements represented as 'parameterName-parameterValue'.
-					p_list = [ [p_name + '-' + str(v) for v in p] for p_name, p in parameters['parameters'].iteritems() ]
+					p_list = [ [p_name + ';' + str(v) for v in p] for p_name, p in parameters['parameters'].iteritems() ]
 					# Permutations of all lists. Generates all possible combination of elements between lists.
 					p_list = [ list(item) for item in list(product(*p_list)) ]
 					# Creates a list of dictionaries, containing all combinations of given parameters
-					p_list = [ dict( [item.split('-') for item in p] ) for p in p_list ]
+					p_list = [ dict( [item.split(';') for item in p] ) for p in p_list ]
 
 				except TypeError:
 					raise TypeError('All parameters for the inner classifier must be an iterable object')
@@ -432,6 +433,8 @@ class Utilities:
 				# If parameter is not a list, convert it into one
 				if (type(param) != list) and (type(param) != dict):
 					parameters[param_name] = [param]
+
+
 
 
 
@@ -642,16 +645,6 @@ def getKey(key):
 		return int(key)
 	except ValueError:
 		return key
-
-
-
-
-
-
-
-
-
-
 
 
 
