@@ -28,7 +28,7 @@ For the modules installation, you may follow this [Python's Official Guide](http
 
 To download ORCA you can simply clone this GitHub repository by using the following commands:
 
-  `$ git clone https://<i></i>github.com/i22bomui/orca-python.git`
+  `$ git clone https://github.com/i22bomui/orca-python.git`
   
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
 
@@ -37,8 +37,8 @@ All the contents of the repository can also be downloaded from the GitHub site b
 We provide a pre-made experiment (dataset and configuration file) to test if everything has been correctly installed.\
 The way to run this test (and all experiments) is the following:
 
-  ``# Go to framework main folder\
-  $ python Config.py with Configurations/testing-config.json``
+  `# Go to framework main folder`
+  `$ python Config.py with Configurations/testing-config.json`
 
 # How to use ORCA
 
