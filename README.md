@@ -1,16 +1,16 @@
 ## What is ORCA?
 
-ORCA is an experimental framework, completely built on Python, and integrated with scikit-learn and sacred modules, 
+ORCA is an experimental framework, completely built on Python (integrated with scikit-learn and sacred modules), 
 that seeks to automatize the run of machine learning experiments through simple-to-understand configuration files.
 
 In this README, we will explain how to use ORCA, and what you need to install in order to run it.
 
 
-## Installing ORCA
+# Installing ORCA
 
 ORCA has been developed and tested in GNU/Linux systems. It has been tested with Python 2.7.13.
 
-### Installation Requirements
+## Installation Requirements
 
 Besides the need of the aforementioned Python interpreter, you will need to install the next Python modules
 in order to run an experiment:
@@ -24,5 +24,21 @@ in order to run an experiment:
 To install Python, you can use the package management system you like the most.\
 For the modules installation, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
 
-## How to use ORCA
+## Download ORCA
+
+To download ORCA you can simply clone this GitHub repository by using the following commands:
+
+  `$ git clone https://<i></i>github.com/i22bomui/orca-python.git`
+  
+All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
+
+## Installation testing
+
+We provide a pre-made experiment (dataset and configuration file) to test if everything has been correctly installed.\
+The way to run this test (and all experiments) is the following:
+
+  ``# Go to framework main folder\
+  $ python Config.py with Configurations/testing-config.json``
+
+# How to use ORCA
 
