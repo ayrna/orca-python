@@ -37,8 +37,11 @@ All the contents of the repository can also be downloaded from the GitHub site b
 We provide a pre-made experiment (dataset and configuration file) to test if everything has been correctly installed.\
 The way to run this test (and all experiments) is the following:
 
-  `# Go to framework main folder`
+  `# Go to framework main folder`\
   `$ python Config.py with Configurations/testing-config.json`
+
+
+
 
 # How to use ORCA
 
