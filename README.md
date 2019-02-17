@@ -1,3 +1,18 @@
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:1 -->
+
+1. [What is ORCA](#what-is-orca)
+2. [Installing ORCA](#installing-orca)
+	1. [Installation Requirements](#installation-requirements)
+	2. [Download ORCA](#download-orca)
+	3. [Installation Testing](#installation-testing)
+3. [How to use ORCA](#how-to-use-orca)
+	1. [Configuration Files](#configuration-files)
+		1. [general-conf](#general-conf)
+		2. [configurations](#configurations)
+	2. [Running an Experiment](#running-an-experiment)
+
+<!-- /TOC -->
+
 ## What is ORCA?
 
 ORCA is an experimental framework, completely built on Python (integrated with scikit-learn and sacred modules), 
