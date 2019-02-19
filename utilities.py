@@ -85,7 +85,7 @@ class Utilities:
 
 		self.results_ = Results()
 		# Adding classifier folder to sys path. Needed to import modules from different folders
-		path.insert(0, 'Classifiers/')
+		path.insert(0, 'classifiers/')
 
 
 		self._checkDatasetList()
@@ -154,7 +154,7 @@ class Utilities:
 
 						try:
 							# Loading metric from metrics file
-							module = __import__("Metrics")
+							module = __import__("metrics")
 							metric = getattr(module, metric_name.strip().lower())
 
 						except AttributeError:
@@ -482,7 +482,7 @@ class Utilities:
 		"""
 
 		try:
-			module = __import__("Metrics")
+			module = __import__("metrics")
 			metric = getattr(module, self.general_conf_['cv_metric'].lower().strip())
 
 		except AttributeError:
