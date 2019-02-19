@@ -57,14 +57,14 @@ The way to run this test (and all experiments) is the following:
 
   ```
   # Go to framework main folder
-  $ python Config.py with Configurations/single_test.json -l ERROR
+  $ python config.py with configurations/single_test.json -l ERROR
   ```
 
 
 # How to use ORCA
 
 
-This tutorial uses three small datasets (balance-scale, contact-lenses and tae) contained in "Datasets" folder.
+This tutorial uses three small datasets (balance-scale, contact-lenses and tae) contained in "datasets" folder.
 The datasets are already partitioned with a 30-holdout experimental design (train and test pairs for each partition).
 
 ## Configuration Files
@@ -104,7 +104,7 @@ For a better understanding of the way this files works, it's better to follow an
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
-Most os this variables do have default values (specified in [Config.py](https://github.com/i22bomui/orca-python/blob/master/Config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
+Most os this variables do have default values (specified in [Config.py](https://github.com/i22bomui/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
 
 
 ### configurations
@@ -130,7 +130,7 @@ this dictionary will contain, at the same time, one dictionary for each configur
 		"parameters": {
 			"dtype": "OrderedPartitions",
 			"decision_method": "frank_hall",
-			"classifier": "sklearn.svm.SVC",
+			"base_classifier": "sklearn.svm.SVC",
 			"parameters": {
 				"C": [0.01, 0.1, 1, 10],
 				"gamma": [0.01, 0.1, 1, 10],
@@ -147,7 +147,7 @@ this dictionary will contain, at the same time, one dictionary for each configur
 		"parameters": {
 			"dtype": ["OrderedPartitions", "OneVsNext"],
 			"decision_method": "exponential_loss",
-			"classifier": "sklearn.linear_model.LogisticRegression",
+			"base_classifier": "sklearn.linear_model.LogisticRegression",
 			"parameters": {
 				"C": [0.01, 0.1, 1, 10],
 				"penalty": ["l1","l2"]
@@ -164,7 +164,8 @@ Each configuration has a name (whatever you want), and consists of:
 	- A relative path to the classifier in sklearn module.
 	- The name of a built-in class in Classifiers folder (found in the main folder of the project).
 - **`parameters`**: hyper-paramers to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
-	- In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the inner classifier, which doesn't have a configuration name), besides it's own parameters to tune.
+
+*In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the base classifier, which doesn't have a configuration name), besides it's own parameters to tune.*
 
 
 
@@ -174,17 +175,17 @@ Each configuration has a name (whatever you want), and consists of:
 As viewed in [Installation Testing](#installation-testing), running an experiment is as simple as executing Config.py
 with the python interpreter, and tell what configuration file to use for this expetiment, resulting in the next command:
 
-  `$ python Config.py with runtest.json`
+  `$ python config.py with runtest.json`
 
 Running an experiment this way has two problems though, one of them being an excesive verbosity from Sacred's python module,
 while the other consists in the non-reproducibility of the experiments results, due to the lack of a fixed seed.
 
 Both problems can be easily fixed. The seed can be specified after "with" in the command:
 
-  `$ python Config.py with runtest.json seed=12345`
+  `$ python config.py with runtest.json seed=12345`
   
 while we can silence Sacred just by adding "-l ERROR" at the end of the line (not necessarily at the end).
 
-  `$ python Config.py with runtest.json seed=12345 -l ERROR`
+  `$ python config.py with runtest.json seed=12345 -l ERROR`
 
 
