@@ -87,9 +87,9 @@ For a better understanding of the way this files works, it's better to follow an
 
 	"basedir": "ordinal-datasets/ordinal-regression/",
 	"datasets": ["tae", "balance-scale", "contact-lenses"],
-	"folds": 3,
+	"hyperparam_cv_folds": 3,
 	"jobs": 10,
-	"runs_folder": "my_runs/",
+	"output_folder": "my_runs/",
 	"metrics": ["ccr", "mae", "amae", "mze"],
 	"cv_metric": "mae"
 }
@@ -98,9 +98,9 @@ For a better understanding of the way this files works, it's better to follow an
 
 - **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one folder at a time. It can be indicated using a full path, or a relative one to the framework folder.
 - **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist insise `basedir`.
-- **`folds`**: number of folds used while cross-validating.
+- **`hyperparam_cv_folds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
-- **`runs_folder`**: name of the folder where all experiment results will be stored.
+- **`output_folder`**: name of the folder where all experiment results will be stored.
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
