@@ -12,7 +12,7 @@ import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics.scorer import make_scorer
 
-from Results import Results
+from results import Results
 
 class Utilities:
 

@@ -2,7 +2,7 @@
 import os
 from sacred import Experiment
 
-from Utilities import Utilities
+from utilities import Utilities
 
 ex = Experiment('Experiment Configuration')
 
