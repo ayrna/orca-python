@@ -90,11 +90,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	"""
 
 	#TODO: Especificar valores por defecto
-	def __init__(self, dtype="", decision_method="", classifier="",  parameters={}):
+	def __init__(self, dtype="", decision_method="", base_classifier="",  parameters={}):
 
 		self.dtype = dtype
 		self.decision_method = decision_method
-		self.classifier = classifier
+		self.base_classifier = base_classifier
 		self.parameters = parameters
 
 
@@ -138,7 +138,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		# given by the coding_matrix
 		for n in range(len(class_labels[0,:])):
 
-			estimator = loadClassifier(self.classifier, self.parameters)
+			estimator = loadClassifier(self.base_classifier, self.parameters)
 			estimator.fit(X[ np.where(class_labels[:,n] != 0) ], \
 						  np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T) )
 

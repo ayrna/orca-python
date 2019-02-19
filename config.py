@@ -12,11 +12,11 @@ def default_config():
 	# Giving default values
 	general_conf = {"basedir": "",
 					"dataset": "",
-					"folds": 3,
+					"hyperparam_cv_nfolds": 3,
 					"jobs": 1,
 					"metrics": "ccr",
 					"cv_metric": "ccr",
-					"runs_folder": "my_runs/"
+					"output_folder": "my_runs/"
 					}
 
 

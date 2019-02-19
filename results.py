@@ -189,7 +189,7 @@ class Results:
 		ru.predictions_[str(partition)] = predictions
 
 
-	def saveResults(self, runs_folder, metrics_names):
+	def saveResults(self, output_folder, metrics_names):
 
 		"""
 		Method used for writing all the experiment information to files.
@@ -224,7 +224,7 @@ class Results:
 		Parameters
 		----------
 
-		runs_folder: string
+		output_folder: string
 			Relative or absolute path where store results.
 
 		metrics_names: list of strings
@@ -234,18 +234,18 @@ class Results:
 
 
 		# Transforming given path to absolute path if neccesary
-		if not runs_folder.startswith("/"):
+		if not output_folder.startswith("/"):
 
 			fw_path = os.path.dirname(os.path.abspath(__file__)) + "/"
-			runs_folder = fw_path + runs_folder
+			output_folder = fw_path + output_folder
 
-		if not runs_folder.endswith("/"):
-			runs_folder += "/"
+		if not output_folder.endswith("/"):
+			output_folder += "/"
 		
 
 		# Check if experiments folder exists
-		if not os.path.exists(runs_folder):
-			os.makedirs(runs_folder)
+		if not os.path.exists(output_folder):
+			os.makedirs(output_folder)
 
 
 
@@ -255,7 +255,7 @@ class Results:
 
 
 		# Check if folder already exists
-		folder_path = runs_folder + folder_name
+		folder_path = output_folder + folder_name
 		try: os.makedirs(folder_path)
 		except OSError: raise OSError("Could not create folder %s to store results. It already exists" % folder_path)
 

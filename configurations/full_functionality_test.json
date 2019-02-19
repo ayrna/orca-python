@@ -5,9 +5,9 @@
 
 		"basedir": "datasets/",
 		"datasets": ["tae", "balance-scale", "contact-lenses"],
-		"folds": 3,
+		"hyperparam_cv_nfolds": 3,
 		"jobs": 10,
-		"runs_folder": "my_runs/",
+		"output_folder": "my_runs/",
 		"metrics": ["ccr", "mae", "amae", "mze"],
 		"cv_metric": "mae"
 	},
@@ -31,7 +31,7 @@
 			"parameters": {
 				"dtype": "OrderedPartitions",
 				"decision_method": "frank_hall",
-				"classifier": "sklearn.svm.SVC",
+				"base_classifier": "sklearn.svm.SVC",
 				"parameters": {
 					"C": [0.01, 0.1, 1, 10],
 					"gamma": [0.01, 0.1, 1, 10],
@@ -48,7 +48,7 @@
 			"parameters": {
 				"dtype": ["OrderedPartitions", "OneVsNext"],
 				"decision_method": "exponential_loss",
-				"classifier": "sklearn.linear_model.LogisticRegression",
+				"base_classifier": "sklearn.linear_model.LogisticRegression",
 				"parameters": {
 					"C": [0.01, 0.1, 1, 10],
 					"penalty": ["l1","l2"]

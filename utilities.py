@@ -497,7 +497,7 @@ class Utilities:
 
 
 		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,\
-					n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['folds'], iid=False)
+					n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['hyperparam_cv_nfolds'], iid=False)
 
 		optimal.fit(train_inputs, train_outputs)
 
@@ -520,7 +520,7 @@ class Utilities:
 		# Names of each metric used
 		metrics_names = [x.strip().lower() for x in self.general_conf_['metrics']]
 
-		self.results_.saveResults(self.general_conf_['runs_folder'], metrics_names)
+		self.results_.saveResults(self.general_conf_['output_folder'], metrics_names)
 
 
 
