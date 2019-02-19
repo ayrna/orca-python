@@ -3,7 +3,7 @@
 
 	"general_conf": {
 
-		"basedir": "ordinal-datasets/ordinal-regression/",
+		"basedir": "Datasets/",
 		"datasets": ["tae", "balance-scale", "contact-lenses"],
 		"folds": 3,
 		"jobs": 10,

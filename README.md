@@ -96,7 +96,7 @@ For a better understanding of the way this files works, it's better to follow an
 ```
 *note that all the keys (variable names) must be strings, while all pair: value elements are separated by commas.*
 
-- **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one folder at a time.
+- **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one folder at a time. It can be indicated using a full path, or a relative one to the framework folder.
 - **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist insise `basedir`.
 - **`folds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
