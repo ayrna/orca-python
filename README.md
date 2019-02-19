@@ -26,7 +26,7 @@ In this README, we will explain how to use ORCA, and what you need to install in
 
 # Installing ORCA
 
-ORCA has been developed and tested in GNU/Linux systems. It has been tested with Python 2.7.13.
+ORCA has been developed and tested in GNU/Linux systems. It has been tested with Python 2.7.13 and Python 3.5.3.
 
 ## Installation Requirements
 
