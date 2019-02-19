@@ -78,7 +78,7 @@ sections:
 Each one of this sections will be inside a dictionary, having the said section names as keys.
 
 
-For a better understanding of the way this files works, it's better to follow an example, that can be found in [Configurations/full_functionality_test.json](https://github.com/i22bomui/orca-python/blob/master/Configurations/full_functionality_test.json).
+For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/i22bomui/orca-python/blob/master/configurations/full_functionality_test.json).
 
 ### general-conf
 
@@ -104,7 +104,7 @@ For a better understanding of the way this files works, it's better to follow an
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
-Most os this variables do have default values (specified in [Config.py](https://github.com/i22bomui/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
+Most os this variables do have default values (specified in [config.py](https://github.com/i22bomui/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
 
 
 ### configurations
@@ -165,7 +165,7 @@ Each configuration has a name (whatever you want), and consists of:
 	- The name of a built-in class in Classifiers folder (found in the main folder of the project).
 - **`parameters`**: hyper-paramers to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
 
-*In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the base classifier, which doesn't have a configuration name), besides it's own parameters to tune.*
+*In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the base classifier, which doesn't have a configuration name), with it's respective parameters to tune.*
 
 
 
