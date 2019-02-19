@@ -2,7 +2,7 @@
 from sys import path
 path.insert(0, '../')
 
-from Utilities import loadClassifier
+from utilities import loadClassifier
 
 import numpy as np
 
