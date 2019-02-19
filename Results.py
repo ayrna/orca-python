@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-import cPickle as pickle
+import pickle
 
 
 class ReportUnit:
@@ -167,7 +167,7 @@ class Results:
 			# If some ensemble method has been used, then one of its parameters will 
 			# be a dict containing the best parameters found for the meta classifier
 			if type(p_value) == dict:
-				for (k, v) in p_value.iteritems():
+				for (k, v) in p_value.items():
 					dataframe_row[k] = v
 			else:
 				dataframe_row[p_name] = p_value
@@ -289,7 +289,7 @@ class Results:
 			try: os.makedirs(models_folder)
 			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % models_folder)
 
-			for part, model in report.models_.iteritems():
+			for part, model in report.models_.items():
 
 				model_filename = report.dataset_ + "-" + report.configuration_ + "." + part
 				with open(models_folder + model_filename, 'wb') as output:
@@ -302,7 +302,7 @@ class Results:
 			try: os.makedirs(predictions_folder)
 			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % predictions_folder)
 
-			for part, predictions in report.predictions_.iteritems():
+			for part, predictions in report.predictions_.items():
 
 				pred_filename = report.dataset_ + "-" + report.configuration_ + "." + part
 				np.savetxt(predictions_folder + 'train_' + pred_filename, predictions['train'], fmt='%d')

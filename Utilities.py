@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 import os
 from time import time
@@ -91,9 +92,9 @@ class Utilities:
 		self._checkParams()
 
 
-		print "\n###############################"
-		print "\tRunning Experiment"
-		print "###############################"
+		print("\n###############################")
+		print("\tRunning Experiment")
+		print("###############################")
 
 
 		# Iterating over Datasets
@@ -108,13 +109,13 @@ class Utilities:
 			# containing train and test inputs/outputs. It also stores its partition number
 
 			dataset = self._loadDataset(dataset_path)
-			print "\nRunning", dataset_name, "dataset"
-			print "--------------------------"
+			print("\nRunning", dataset_name, "dataset")
+			print("--------------------------")
 
 
 			# Iterating over all different Configurations
-			for conf_name, configuration in self.configurations_.iteritems():
-				print "Running", conf_name, "..."
+			for conf_name, configuration in self.configurations_.items():
+				print("Running", conf_name, "...")
 
 
 				# Loading Classifier stated in configuration
@@ -123,7 +124,7 @@ class Utilities:
 
 				# Iterating over all partitions in each dataset
 				for idx, partition in enumerate(dataset):
-					print "  Running Partition", idx
+					print("  Running Partition", idx)
 
 
 					# Finding optimal parameters
@@ -325,15 +326,15 @@ class Utilities:
 	def _checkDatasetList(self):
 
 		"""
-		Checks if there is some inconsistency in dataset list.
+		Checks if there is some inconsistency in the dataset list.
 		It also simplifies running all datasets inside one folder.
 
 		Parameters
 		----------
 		dataset_list: list of strings
-			list containing all dataset names to run in given experiment.
-			If 'all' is specified without any other string, then all
-			datasets in basedir folder will be run
+			list containing all the dataset names to run in given experiment.
+			If 'all' is specified without any other string, then all datasets
+			in basedir folder will be run.
 
 		"""
 
@@ -345,11 +346,21 @@ class Utilities:
 		if base_path.startswith("~"):
 			base_path = base_path.replace('~', os.path.expanduser('~'), 1)
 
+
+
+		# Compatibility between python 2 and 3
+		try:
+			basestring = unicode
+		except NameError:
+			basestring = str
+
+
 		# Check if 'all' it's the only value, and if it is, expand it
 		if len(dataset_list) == 1 and dataset_list[0] == 'all':
 
 			dataset_list = [ item for item in os.listdir(base_path) \
 						if os.path.isdir(os.path.join(base_path, item)) ]
+
 
 		elif not all(isinstance(item, basestring) for item in dataset_list):
 			raise ValueError("Dataset list can only contain strings")
@@ -381,7 +392,7 @@ class Utilities:
 		"""
 
 		random_seed = np.random.get_state()[1][0]
-		for conf_name, conf in self.configurations_.iteritems():
+		for conf_name, conf in self.configurations_.items():
 
 			parameters = conf['parameters']
 
@@ -397,7 +408,7 @@ class Utilities:
 					#TODO: Si hay algun parametro que contenga ';', falla (se esta usando para representar los valores)
 
 					# Creating a list for each parameter. Elements represented as 'parameterName-parameterValue'.
-					p_list = [ [p_name + ';' + str(v) for v in p] for p_name, p in parameters['parameters'].iteritems() ]
+					p_list = [ [p_name + ';' + str(v) for v in p] for p_name, p in parameters['parameters'].items() ]
 					# Permutations of all lists. Generates all possible combination of elements between lists.
 					p_list = [ list(item) for item in list(product(*p_list)) ]
 					# Creates a list of dictionaries, containing all combinations of given parameters
@@ -410,7 +421,7 @@ class Utilities:
 				# TODO: Debe haber una forma mas eficiente de hacer esto
 				# Returns non-string values back to it's normal self
 				for d in p_list:
-					for (k, v) in d.iteritems():
+					for (k, v) in d.items():
 
 						if isInt(v):		#TODO: Solamente se usa para random_state (no admite floats)
 							d[k] = int(v)
@@ -428,7 +439,7 @@ class Utilities:
 				parameters['random_state'] = [random_seed]
 
 
-			for param_name, param in parameters.iteritems():
+			for param_name, param in parameters.items():
 
 				# If parameter is not a list, convert it into one
 				if (type(param) != list) and (type(param) != dict):
@@ -503,7 +514,7 @@ class Utilities:
 		"""
 
 
-		print "\nSaving Results..."
+		print("\nSaving Results...")
 
 
 		# Names of each metric used
