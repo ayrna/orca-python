@@ -1,12 +1,15 @@
+import os
+import sys
+import collections
 
-import os, sys, collections
 import unittest
 
+from numpy import array
 import numpy.testing as npt
 import pandas.util.testing as pdt
-import numpy as np
 
-sys.path.append('../Classifiers')
+sys.path.append('../classifiers')
+
 from OrdinalDecomposition import OrdinalDecomposition
 
 # TODO: Testear este metodo como lo hacen en los tests del clasificador de naive bayes en scikit learn ???
@@ -14,73 +17,66 @@ from OrdinalDecomposition import OrdinalDecomposition
 class TestOrdinalDecomposition(unittest.TestCase):
 
 	# Data is just 6 separable points in the plane
-	X = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
-	y = np.array([1, 1, 1, 2, 2, 2])
-
+	X = array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
+	y = array([1, 1, 1, 2, 2, 2])
 
 
 	def test_coding_matrix(self):
 
 		od = OrdinalDecomposition()
 
-		# Checking OrderedPartitions (with a 5 class, 4 classifiers example)
-		od.dtype = 'OrderedPartitions'
-		expected_cm = np.array([[-1,-1,-1,-1], [1,-1,-1,-1], [1,1,-1,-1], [1,1,1,-1], [1,1,1,1]])
-		actual_cm = od._codingMatrix(5)
+		# Checking ordered_partitions (with a 5 class, 4 classifiers example)
+		od.dtype = 'ordered_partitions'
+		expected_cm = array([[-1,-1,-1,-1], [1,-1,-1,-1], [1,1,-1,-1], [1,1,1,-1], [1,1,1,1]])
+		actual_cm = od._coding_matrix(5)
 
 		npt.assert_array_equal(actual_cm, expected_cm)
 
-		# Checking OneVsNext
-		od.dtype = 'OneVsNext'
-		expected_cm = np.array([[-1,0,0,0], [1,-1,0,0], [0,1,-1,0], [0,0,1,-1], [0,0,0,1]])
-		actual_cm = od._codingMatrix(5)
+		# Checking one_vs_next
+		od.dtype = 'one_vs_next'
+		expected_cm = array([[-1,0,0,0], [1,-1,0,0], [0,1,-1,0], [0,0,1,-1], [0,0,0,1]])
+		actual_cm = od._coding_matrix(5)
 
 		npt.assert_array_equal(actual_cm, expected_cm)
 
-		# Checking OneVsFollowers
-		od.dtype = 'OneVsFollowers'
-		expected_cm = np.array([[-1,0,0,0], [1,-1,0,0], [1,1,-1,0], [1,1,1,-1], [1,1,1,1]])
-		actual_cm = od._codingMatrix(5)
+		# Checking one_vs_followers
+		od.dtype = 'one_vs_followers'
+		expected_cm = array([[-1,0,0,0], [1,-1,0,0], [1,1,-1,0], [1,1,1,-1], [1,1,1,1]])
+		actual_cm = od._coding_matrix(5)
 
 		npt.assert_array_equal(actual_cm, expected_cm)
 
-		# Checking OneVsPrevious
-		od.dtype = 'OneVsPrevious'
-		expected_cm = np.array([[1,1,1,1], [1,1,1,-1], [1,1,-1,0], [1,-1,0,0], [-1,0,0,0]])
-		actual_cm = od._codingMatrix(5)
+		# Checking one_vs_previous
+		od.dtype = 'one_vs_previous'
+		expected_cm = array([[1,1,1,1], [1,1,1,-1], [1,1,-1,0], [1,-1,0,0], [-1,0,0,0]])
+		actual_cm = od._coding_matrix(5)
 
 		npt.assert_array_equal(actual_cm, expected_cm)
 
 
+	#TODO: Test decision methods outputs and check if they are correct (compute them on paper)
+	def test_decision_method(self):
+
+		# Checking Frank and Hall method cannot be used whitout ordered partitions
+		od = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
+		npt.assert_raises(AttributeError, od._frank_hall_method, self.X)
+
+		# 
+		od = OrdinalDecomposition(dtype="", decision_method="")
 
 
-	def test_od(self):
 
-		od = OrdinalDecomposition("OrderedPartitions", "exponential_loss", "sklearn.svm.SVC",\
-								 {'C': 1.0, 'gamma': "scale", 'probability': True})
+
+	def test_ordinal_decomposition(self):
+
+		od = OrdinalDecomposition(dtype="ordered_partitions", decision_method="frank_hall",\
+								base_classifier="sklearn.svm.SVC",\
+								parameters={'C': 1.0, 'gamma': "scale", 'probability': True})
+
 		y_pred = od.fit(self.X, self.y).predict(self.X)
 		npt.assert_array_equal(y_pred, self.y)
 
 
-	"""
-	def test_positive_class(self):
-
-		np.random.seed(0)
-		rng = np.random.RandomState(0)
-		X2 = rng.randint(5, size=(9, 10))
-		y2 = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2])
-
-		X3 = np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
-		y3 = np.array([1, 1, 1, 2, 2, 2])
-
-		X4 = np.array([[0, 5], [-1, 4], [1, 4], [5, 0], [4, 1], [4, -1], [0, -5], [-1, -4], [1, -4], [-5, 0], [-4, -1], [-4, 1]])
-		y4 = np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3])
-
-		od = OrdinalDecomposition("OneVsPrevious", "sklearn.svm.SVC", {'C': 1, 'gamma': "scale", 'probability': True})
-		y_pred = od.fit(X4, y4).predict(X4)
-
-		print '\nPredicted Y:\n', y_pred
-	"""
 
 
 if __name__ == '__main__':

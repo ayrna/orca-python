@@ -1,14 +1,16 @@
-
-import os, sys
+import os
+import sys
 import unittest
 
 import numpy.testing as npt
 import pandas.util.testing as pdt
+import pandas as pd
 import numpy as np
 
 sys.path.append('../')
-sys.path.append('../Classifiers')
-from Utilities import Utilities
+sys.path.append('../classifiers')
+from utilities import Utilities
+from utilities import load_classifier
 
 
 class TestAuxiliarMethods(unittest.TestCase):
@@ -22,15 +24,15 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 		path = '/path/without/final/backslash'
 		dataset = 'dataset'
-		dataset_path = self.util._getDatasetPath(path, dataset)
+		dataset_path = self.util._get_dataset_path(path, dataset)
 
-		self.assertEqual(dataset_path, '/path/without/final/backslash/dataset/')
+		npt.assert_equal(dataset_path, '/path/without/final/backslash/dataset/')
 
 		path = '/path/with/final/backslash/'
 		dataset = 'dataset'
-		dataset_path = self.util._getDatasetPath(path, dataset)
+		dataset_path = self.util._get_dataset_path(path, dataset)
 
-		self.assertEqual(dataset_path, '/path/with/final/backslash/dataset/')
+		npt.assert_equal(dataset_path, '/path/with/final/backslash/dataset/')
 
 
 	def test_load_complete_dataset(self):
@@ -38,12 +40,12 @@ class TestAuxiliarMethods(unittest.TestCase):
 		# Loading dataset composed of 5 partitions, each one of them composed of a train and test file
 
 		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/complete/"
-		partition_list = self.util._loadDataset(dataset_path)
+		partition_list = self.util._load_dataset(dataset_path)
 
 		# Check all partitions have been loaded
-		self.assertEqual(len(partition_list), ( len([name for name in os.listdir(dataset_path)]) / 2 ))
+		npt.assert_equal(len(partition_list), ( len([name for name in os.listdir(dataset_path)]) / 2 ))
 		# Check if every partition has train and test inputs and outputs (4 diferent dictionaries)
-		self.assertTrue(all([ len(partition) == 4 for partition in partition_list ]))
+		npt.assert_equal(all([ len(partition) == 4 for partition in partition_list ]), True)
 
 
 	def test_load_partitionless_dataset(self):
@@ -51,10 +53,10 @@ class TestAuxiliarMethods(unittest.TestCase):
 		# This dataset is composed of only two csv files (train and test files)
 
 		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/partitionless/"
-		partition_list = self.util._loadDataset(dataset_path)
+		partition_list = self.util._load_dataset(dataset_path)
 
-		self.assertEqual(len(partition_list), 1)
-		self.assertTrue(all([ len(partition) == 4 for partition in partition_list ]))
+		npt.assert_equal(len(partition_list), 1)
+		npt.assert_equal(all([ len(partition) == 4 for partition in partition_list ]), True)
 
 
 	def test_load_nontestfile_dataset(self):
@@ -62,10 +64,10 @@ class TestAuxiliarMethods(unittest.TestCase):
 		# Dataset composed of just five train files
 
 		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/nontestfile/"
-		partition_list = self.util._loadDataset(dataset_path)
+		partition_list = self.util._load_dataset(dataset_path)
 
-		self.assertEqual(len(partition_list), len([name for name in os.listdir(dataset_path)]))
-		self.assertTrue(all([ len(partition) == 2 for partition in partition_list ]))
+		npt.assert_equal(len(partition_list), len([name for name in os.listdir(dataset_path)]))
+		npt.assert_equal(all([ len(partition) == 2 for partition in partition_list ]), True)
 
 
 	def test_load_nontrainfile_dataset(self):
@@ -76,75 +78,175 @@ class TestAuxiliarMethods(unittest.TestCase):
 		# doesn't have a train file, should raise an exception
 
 		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/nontrainfile/"
-		self.assertRaises(RuntimeError, self.util._loadDataset, dataset_path)
+		npt.assert_raises(RuntimeError, self.util._load_dataset, dataset_path)
 
 
 	def test_load_algorithm(self):
 
 		# Loading a method from within this framework
 		from OrdinalDecomposition import OrdinalDecomposition
-		imported_class = self.util._loadClassifier("OrdinalDecomposition")
-		self.assertEqual(imported_class, OrdinalDecomposition)
+		imported_class = load_classifier("OrdinalDecomposition")
+		npt.assert_equal(imported_class, OrdinalDecomposition)
 
 		# Loading a scikit-learn classifier
 		from sklearn.svm import SVC
-		imported_class = self.util._loadClassifier("sklearn.svm.SVC")
-		self.assertEqual(imported_class, SVC)
+		imported_class = load_classifier("sklearn.svm.SVC")
+		npt.assert_equal(imported_class, SVC)
 
 		# Raising exceptions when the classifier cannot be loaded
-		self.assertRaises(ImportError, self.util._loadClassifier, "sklearn.svm.SVC.submethod")
-		self.assertRaises(AttributeError, self.util._loadClassifier, "sklearn.svm.SVCC")
+		npt.assert_raises(ImportError, load_classifier, "sklearn.svm.SVC.submethod")
+		npt.assert_raises(AttributeError, load_classifier, "sklearn.svm.SVCC")
 
 
-	def test_extract_params(self):
+	def test_check_params(self):
 
 		# Normal use of configuration file with a non nested method
-		params = {'C': [0.1, 1, 10], 'gamma': [0.1, 1, 100], 'probability': "True"}
-		formatted_params = self.util._extractParams(params)
+		self.util._configurations = {'conf1': {'classifier': 'sklearn.svm.SVC',
+												'parameters': {'C': [0.1, 1, 10],
+															'gamma': [0.1, 1, 100], 'probability': "True"}}}
 
-		expected_params = {'C': [0.1, 1, 10], 'gamma': [0.1, 1, 100], 'probability': ["True"]}
-		self.assertEqual(formatted_params, expected_params) 
+		# Getting formatted_params and expected_params
+		self.util._check_params(); formatted_params = self.util._configurations['conf1']['parameters']
 
-		# Configuration file using a meta-clasifier method
-		params = {	'dtype': 'OrderedPartitions', 
-					'algorithm': 'sklearn.svm.SVC', 
-					'parameters': {'C': [1, 10], 'gamma': [1, 10], 'probability': ['True']}}
+		random_state = self.util._configurations['conf1']['parameters']['random_state']
+		expected_params = {'C': [0.1, 1, 10], 'gamma': [0.1, 1, 100], 'probability': ["True"], 'random_state': random_state}
 
-		formatted_params = self.util._extractParams(params)
+		npt.assert_equal(formatted_params, expected_params) 
 
+		# Configuration file using an ensemble method
+		self.util._configurations = {'conf2': {'classifier': 'sklearn.smv.SVC',
+												'parameters': {'dtype': 'OrderedPartitions', 
+															'algorithm': 'sklearn.svm.SVC', 
+															'parameters': {'C': [1, 10], 
+																	'gamma': [1, 10], 'probability': ['True']}}}}
+
+		# Getting formatted_params and expected_params
+		self.util._check_params(); formatted_params = self.util._configurations['conf2']['parameters']
+
+		random_state = self.util._configurations['conf2']['parameters']['parameters'][0]['random_state']
 		expected_params = {	'dtype': ['OrderedPartitions'],
 							'algorithm': ['sklearn.svm.SVC'],
-							'parameters': [	{'C': 1.0, 'gamma': 1.0, 'probability': True},
-											{'C': 1.0, 'gamma': 10.0, 'probability': True}, 
-											{'C': 10.0, 'gamma': 1.0, 'probability': True}, 
-											{'C': 10.0, 'gamma': 10.0, 'probability': True}]
+							'parameters': [	{'C': 1.0, 'gamma': 1.0, 'probability': True, 'random_state': random_state},
+											{'C': 1.0, 'gamma': 10.0, 'probability': True, 'random_state': random_state}, 
+											{'C': 10.0, 'gamma': 1.0, 'probability': True, 'random_state': random_state}, 
+											{'C': 10.0, 'gamma': 10.0, 'probability': True, 'random_state': random_state}]
 						  }
 
-		self.assertEqual(formatted_params, expected_params)
 
+		npt.assert_equal(formatted_params, expected_params)
+
+
+		# Configuration file where it's not necessary to perform cross-validation
+		self.util._configurations = {'conf3': {'classifier': 'sklearn.smv.SVC',
+												'parameters': {'dtype': 'OrderedPartitions', 
+															'algorithm': 'sklearn.svm.SVC', 
+															'parameters': {'C': [1], 'gamma': [1]}}}}
+
+		# Getting formatted_params and expected_params
+		self.util._check_params(); formatted_params = self.util._configurations['conf3']['parameters']
+
+		random_state = self.util._configurations['conf3']['parameters']['parameters']['random_state']
+		expected_params = {	'dtype': 'OrderedPartitions',
+							'algorithm': 'sklearn.svm.SVC',
+							'parameters': {'C': 1, 'gamma': 1, 'random_state': random_state}}
+
+		npt.assert_equal(formatted_params, expected_params)
+
+
+		# Resetting configurations to not interfere with other experiments
+		self.util.configurations = {}
 
 
 class TestMainMethod(unittest.TestCase):
 
 
-	#TODO: Testear el funcionamiento del "main" al completo
-	pass
 
+	# Getting path to datasets folder
+	main_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
+	dataset_folder = main_folder + "datasets/"
+
+	general_conf = {"basedir": dataset_folder,
+					"datasets": ["tae", "contact-lenses"],
+					"hyperparam_cv_nfolds": 3,
+					"jobs": 10,
+					"output_folder": "my_runs/",
+					"metrics": ["ccr", "mae", "amae", "mze"],
+					"cv_metric": "mae"}
+
+	configurations = {
+		"SVM": {
+			"classifier": "sklearn.svm.SVC",
+			"parameters": {
+				"C": [0.001, 0.1, 1, 10, 100],
+				"gamma": [0.1, 1, 10]
+			}
+		},
+		"SVMOP": {
+		
+			"classifier": "OrdinalDecomposition",
+			"parameters": {
+				"dtype": "ordered_partitions",
+				"decision_method": "frank_hall",
+				"base_classifier": "sklearn.svm.SVC",
+				"parameters": {
+					"C": [0.01, 0.1, 1, 10],
+					"gamma": [0.01, 0.1, 1, 10],
+					"probability": ["True"]
+	}}}}
+
+
+	@npt.dec.slow
+	def test_run_experiment(self):
+
+		# TODO: Anhadir una variable para eliminar los mensajes (modo no verbose)
+
+		# Declaring Utilities object and running the experiment
+		util = Utilities(self.general_conf, self.configurations)
+		#util.run_experiment()
+		# Saving results information
+		#util.write_report()
+
+		# Checking if all outputs have been generated and are correct
+		outputs_folder = self.main_folder + "my_runs/"
+		npt.assert_equal(os.path.exists(outputs_folder), True)
+
+		experiment_folder = sorted(os.listdir(outputs_folder))
+		experiment_folder = outputs_folder + experiment_folder[-1] + '/'
+
+		for dataset in util._general_conf['datasets']:
+			for conf_name, _ in util._configurations.items():
+
+				# Check if the folder for that dataset-configurations exists
+				conf_folder = experiment_folder + dataset + "-" + conf_name + "/"
+				npt.assert_equal(os.path.exists(conf_folder), True)
+
+				# Checking CSV containning all metrics for that configuration
+				metrics_csv = pd.read_csv(conf_folder + dataset + "-" + conf_name + ".csv")
+				metrics_csv = metrics_csv.iloc[:,-12:]
+				npt.assert_equal(metrics_csv.shape, (30, 12))
+				npt.assert_equal(all(str(c) == "float64" for c in metrics_csv.dtypes), True)
+
+				# Checking that all models have been saved
+				models_folder = conf_folder + "models/"
+				npt.assert_equal(os.path.exists(models_folder), True)
+				npt.assert_equal(len(os.listdir(models_folder)), 30)
+
+				# Checking that all predictions have been saved
+				predictions_folder = conf_folder + "predictions/"
+				npt.assert_equal(os.path.exists(predictions_folder), True)
+				npt.assert_equal(len(os.listdir(predictions_folder)), 60)
+
+
+		# Checking if summaries are correct
+		train_summary = pd.read_csv(experiment_folder + "train_summary.csv")
+		npt.assert_equal(train_summary.shape, (4, 13))
+		npt.assert_equal(all(str(c) == "float64" for c in train_summary.dtypes.iloc[1:]), True)
+
+		test_summary = pd.read_csv(experiment_folder + "test_summary.csv")
+		npt.assert_equal(test_summary.shape, (4, 13))
+		npt.assert_equal(all(str(c) == "float64" for c in test_summary.dtypes.iloc[1:]), True)
 
 
 # Running all tests
 if __name__ == "__main__":
 	unittest.main()
-
-
-
-
-
-
-
-
-
-
-
-
-
