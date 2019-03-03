@@ -16,10 +16,10 @@
 	"configurations": {
 
 		"SVMOP": {
-		
+
 			"classifier": "OrdinalDecomposition",
 			"parameters": {
-				"dtype": "OrderedPartitions",
+				"dtype": "ordered_partitions",
 				"decision_method": "frank_hall",
 				"base_classifier": "sklearn.svm.SVC",
 				"parameters": {

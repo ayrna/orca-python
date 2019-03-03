@@ -8,7 +8,6 @@ from sys import path
 
 import pandas as pd
 import numpy as np
-
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics.scorer import make_scorer
 
@@ -52,7 +51,7 @@ class Utilities:
 	Attributes
 	----------
 
-	results_: Results object
+	_results: Results object
 		Class used to manage and store all information obtained when
 		testing the different built models during the run of an experiment.
 	"""
@@ -61,11 +60,11 @@ class Utilities:
 	def __init__(self, general_conf, configurations):
 
 
-		self.general_conf_ = general_conf
-		self.configurations_ = configurations
+		self._general_conf = general_conf
+		self._configurations = configurations
 
 
-	def runExperiment(self):
+	def run_experiment(self):
 
 		"""
 		Runs an experiment. Main method of this framework.
@@ -83,13 +82,13 @@ class Utilities:
 		"""
 
 
-		self.results_ = Results()
+		self._results = Results()
 		# Adding classifier folder to sys path. Needed to import modules from different folders
 		path.insert(0, 'classifiers/')
 
 
-		self._checkDatasetList()
-		self._checkParams()
+		self._check_dataset_list()
+		self._check_params()
 
 
 		print("\n###############################")
@@ -98,38 +97,38 @@ class Utilities:
 
 
 		# Iterating over Datasets
-		for x in self.general_conf_['datasets']:
+		for x in self._general_conf['datasets']:
 
 
 			# Getting dataset name and path, stripped out of whitespaces
 			dataset_name = x.strip()
-			dataset_path = self._getDatasetPath(self.general_conf_['basedir'], dataset_name)
+			dataset_path = self._get_dataset_path(self._general_conf['basedir'], dataset_name)
 
 			# Loading dataset into a list of partitions. Each partition represented as a dictionary
 			# containing train and test inputs/outputs. It also stores its partition number
 
-			dataset = self._loadDataset(dataset_path)
+			dataset = self._load_dataset(dataset_path)
 			print("\nRunning", dataset_name, "dataset")
 			print("--------------------------")
 
 
 			# Iterating over all different Configurations
-			for conf_name, configuration in self.configurations_.items():
+			for conf_name, configuration in self._configurations.items():
 				print("Running", conf_name, "...")
 
 
 				# Loading Classifier stated in configuration
-				classifier = loadClassifier(configuration["classifier"])
+				classifier = load_classifier(configuration["classifier"])
 
 
 				# Iterating over all partitions in each dataset
-				for idx, partition in enumerate(dataset):
-					print("  Running Partition", idx)
+				for part_idx, partition in enumerate(dataset):
+					print("  Running Partition", part_idx)
 
 
 					# Finding optimal parameters
-					optimal_estimator = self._getOptimalEstimator(partition["train_inputs"], partition["train_outputs"],\
-																  classifier, configuration["parameters"])
+					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"], partition["train_outputs"],\
+																	classifier, configuration["parameters"])
 
 					# Getting predictions for train and test datasets
 					train_predicted_y = optimal_estimator.predict(partition["train_inputs"])
@@ -142,7 +141,7 @@ class Utilities:
 					else:
 
 						test_predicted_y = None
-						elapsed = 0
+						elapsed = np.nan
 
 
 					# Creating tuples with each specified tuple and passing it to specified dataframe
@@ -150,7 +149,7 @@ class Utilities:
 					test_metrics = OrderedDict()
 
 					# Iterating over Metrics
-					for metric_name in self.general_conf_['metrics']:
+					for metric_name in self._general_conf['metrics']:
 
 						try:
 							# Loading metric from metrics file
@@ -177,22 +176,35 @@ class Utilities:
 							test_metrics[metric_name.strip() + '_test'] = np.nan
 
 
+					# Cross-validation was performed to tune hyper-parameters
+					if isinstance(optimal_estimator, GridSearchCV):
 
-					# Saving time taken to cross-validate hyperparameters and re-fitting time of best model
-					train_metrics['crossval_time'] = optimal_estimator.cv_results_['mean_fit_time'].mean()
-					test_metrics['validation_time'] = optimal_estimator.cv_results_['mean_score_time'].mean()
-					train_metrics['train_time'] = optimal_estimator.refit_time_
-					test_metrics['test_time'] = elapsed
+						train_metrics['cv_time_train'] = optimal_estimator.cv_results_['mean_fit_time'].mean()
+						test_metrics['cv_time_test'] = optimal_estimator.cv_results_['mean_score_time'].mean()
+						train_metrics['time_train'] = optimal_estimator.refit_time_
+						test_metrics['time_test'] = elapsed
+
+					# No cross-validation was performed
+					else:
+
+						optimal_estimator.best_params_ = configuration['parameters']
+						optimal_estimator.best_estimator_ = optimal_estimator
+
+						train_metrics['cv_time_train'] = np.nan
+						test_metrics['cv_time_test'] = np.nan
+						train_metrics['time_train'] = np.nan
+						test_metrics['time_test'] = np.nan
+
 
 					# Save this partition's results
-					self.results_.addRecord(idx, optimal_estimator.best_params_, optimal_estimator.best_estimator_,\
+					self._results.add_record(part_idx, optimal_estimator.best_params_, optimal_estimator.best_estimator_,\
 											{'dataset': dataset_name, 'config': conf_name},\
 											{'train': train_metrics, 'test': test_metrics},\
 											{'train': train_predicted_y, 'test': test_predicted_y})
 
 
 
-	def _getDatasetPath(self, base_path, dataset_name):
+	def _get_dataset_path(self, base_path, dataset_name):
 
 		"""
 		Gets path to actual dataset.
@@ -226,7 +238,7 @@ class Utilities:
 
 
 
-	def _loadDataset(self, dataset_path):
+	def _load_dataset(self, dataset_path):
 
 		"""
 		Loads all datasets files, divided into train and test.
@@ -263,14 +275,14 @@ class Utilities:
 
 				if filename.startswith("train_"):
 
-					train_inputs, train_outputs = self._readFile(dataset_path + filename)
+					train_inputs, train_outputs = self._read_file(dataset_path + filename)
 					partition_list[filename[ filename.find('.') + 1 : ]]["train_inputs"] = train_inputs
 					partition_list[filename[ filename.find('.') + 1 : ]]["train_outputs"] = train_outputs
 
 
 				elif filename.startswith("test_"):
 
-					test_inputs, test_outputs = self._readFile(dataset_path + filename)
+					test_inputs, test_outputs = self._read_file(dataset_path + filename)
 					partition_list[filename[ filename.find('.') + 1 : ]]["test_inputs"] = test_inputs
 					partition_list[filename[ filename.find('.') + 1 : ]]["test_outputs"] = test_outputs
 
@@ -282,13 +294,13 @@ class Utilities:
 
 
 		# Saving partitions as a sorted list of dicts (according to it's partition order)
-		partition_list = list( OrderedDict(sorted(partition_list.items(), key=(lambda t: getKey(t[0])))).values() )
+		partition_list = list( OrderedDict(sorted(partition_list.items(), key=(lambda t: get_key(t[0])))).values() )
 
 		return partition_list
 
 
 
-	def _readFile(self, filename):
+	def _read_file(self, filename):
 
 		"""
 		Reads a CSV containing a partition or the entirety of a 
@@ -323,7 +335,7 @@ class Utilities:
 
 
 
-	def _checkDatasetList(self):
+	def _check_dataset_list(self):
 
 		"""
 		Checks if there is some inconsistency in the dataset list.
@@ -339,18 +351,17 @@ class Utilities:
 		"""
 
 
-		base_path = self.general_conf_['basedir']
-		dataset_list = self.general_conf_['datasets']
+		base_path = self._general_conf['basedir']
+		dataset_list = self._general_conf['datasets']
 
 		# Check if home path is shortened
 		if base_path.startswith("~"):
 			base_path = base_path.replace('~', os.path.expanduser('~'), 1)
 
 
-
 		# Compatibility between python 2 and 3
 		try:
-			basestring = unicode
+			basestring = (unicode, str)
 		except NameError:
 			basestring = str
 
@@ -366,13 +377,13 @@ class Utilities:
 			raise ValueError("Dataset list can only contain strings")
 
 
-		self.general_conf_['basedir'] = base_path
-		self.general_conf_['datasets'] = dataset_list
+		self._general_conf['basedir'] = base_path
+		self._general_conf['datasets'] = dataset_list
 
 
 
 
-	def _checkParams(self):
+	def _check_params(self):
 
 		"""
 		Checks if all given configurations are correct.
@@ -392,7 +403,7 @@ class Utilities:
 		"""
 
 		random_seed = np.random.get_state()[1][0]
-		for conf_name, conf in self.configurations_.items():
+		for _, conf in self._configurations.items():
 
 			parameters = conf['parameters']
 
@@ -423,33 +434,40 @@ class Utilities:
 				for d in p_list:
 					for (k, v) in d.items():
 
-						if isInt(v):		#TODO: Solamente se usa para random_state (no admite floats)
+						if is_int(v):		#TODO: Solamente se usa para random_state (no admite floats)
 							d[k] = int(v)
-						elif isFloat(v):
+						elif is_float(v):
 							d[k] = float(v)
-						elif isBoolean(v):
+						elif is_boolean(v):
 							d[k] = bool(v)
 
 				parameters['parameters'] = p_list
 
 
+			# No ensemble classifier was specified
 			else:
-
 				# Using given seed as random_state value
 				parameters['random_state'] = [random_seed]
 
 
-			for param_name, param in parameters.items():
 
-				# If parameter is not a list, convert it into one
-				if (type(param) != list) and (type(param) != dict):
-					parameters[param_name] = [param]
+			# If there is just one value per parameter, it won't be necessary to use GridSearchCV
+			if all(not isinstance(p, list) or len(p) == 1 for _, p in parameters.items()):
+				# Pop out of list the lonely values
+				for p_name, p in parameters.items():
+					if isinstance(p, list):
+						parameters[p_name] = p[0]
+
+			# There are enough parameters to perform cross-validation
+			else:
+				# Convert non-list values to lists
+				for p_name, p in parameters.items():
+					if not isinstance(p, list) and not isinstance(p, dict):
+						parameters[p_name] = [p]
 
 
 
-
-
-	def _getOptimalEstimator(self, train_inputs, train_outputs, classifier, parameters):
+	def _get_optimal_estimator(self, train_inputs, train_outputs, classifier, parameters):
 
 		"""
 		Perform cross-validation technique for finding best
@@ -481,23 +499,41 @@ class Utilities:
 			over train samples from given partition (or dataset)
 		"""
 
+
+
+		# TODO: Comprobar si hay que hacer los folds o no complica bastante la logica a la
+		#		hora de almacenar los datos (habria que indicarle a ReportUnit en Results que 
+		#		combinacion no tiene tiempos computacionales, y anhadir los nombres de las metricas
+		#		de los tiempos en saveResults y no en writeReport, ademas de los cambios en esta
+		#		clase)
+		
+		# No need to cross-validate when there is just one value per parameter
+		if all(not isinstance(p, list) for k, p in parameters.items()):
+
+			optimal = classifier(**parameters)
+			optimal.fit(train_inputs, train_outputs)
+
+			return optimal
+
+
+		# More than one value per parameter. Cross-validation needed.
 		try:
 			module = __import__("metrics")
-			metric = getattr(module, self.general_conf_['cv_metric'].lower().strip())
+			metric = getattr(module, self._general_conf['cv_metric'].lower().strip())
 
 		except AttributeError:
 
-			if type(self.general_conf_['cv_metric']) == list:
+			if type(self._general_conf['cv_metric']) == list:
 				raise AttributeError("Cross-Validation Metric must be a string")
 
-			raise AttributeError("No metric named '%s'" % self.general_conf_['cv_metric'].strip().lower())
+			raise AttributeError("No metric named '%s'" % self._general_conf['cv_metric'].strip().lower())
 
-		gib = module.greater_is_better(self.general_conf_['cv_metric'].lower().strip())
+		gib = module.greater_is_better(self._general_conf['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
 
 
 		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,\
-					n_jobs=self.general_conf_['jobs'], cv=self.general_conf_['hyperparam_cv_nfolds'], iid=False)
+					n_jobs=self._general_conf['jobs'], cv=self._general_conf['hyperparam_cv_nfolds'], iid=False)
 
 		optimal.fit(train_inputs, train_outputs)
 
@@ -506,7 +542,7 @@ class Utilities:
 
 
 
-	def writeReport(self):
+	def write_report(self):
 
 		"""
 		Saves information about experiment through Results class
@@ -518,9 +554,9 @@ class Utilities:
 
 
 		# Names of each metric used
-		metrics_names = [x.strip().lower() for x in self.general_conf_['metrics']]
-
-		self.results_.saveResults(self.general_conf_['output_folder'], metrics_names)
+		metrics_names = [x.strip().lower() for x in self._general_conf['metrics']] + ["cv_time", "time"]
+		# Saving results through Results class
+		self._results.save_results(self._general_conf['output_folder'], metrics_names)
 
 
 
@@ -530,7 +566,7 @@ class Utilities:
 
 
 
-def loadClassifier(classifier_path, params=None):
+def load_classifier(classifier_path, params=None):
 
 	"""
 	Loads and returns a classifier.
@@ -575,7 +611,7 @@ def loadClassifier(classifier_path, params=None):
 
 
 
-def isInt(value):
+def is_int(value):
 
 	"""
 	Check if an string can be converted to int
@@ -595,7 +631,7 @@ def isInt(value):
 	except ValueError:
 		return False
 
-def isFloat(value):
+def is_float(value):
 
 	"""
 	Check if an string can be converted to float
@@ -617,7 +653,7 @@ def isFloat(value):
 
 
 
-def isBoolean(value):
+def is_boolean(value):
 
 	"""
 	Check if an string can be converted to Boolean
@@ -638,7 +674,7 @@ def isBoolean(value):
 		return False
 
 
-def getKey(key):
+def get_key(key):
 
 	"""
 	Checks if the key of a dict can be converted to int, if not, returns the key as is

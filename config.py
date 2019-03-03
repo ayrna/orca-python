@@ -1,5 +1,5 @@
-
 import os
+
 from sacred import Experiment
 
 from utilities import Utilities
@@ -24,8 +24,8 @@ def default_config():
 def main(general_conf, configurations):
 
 	interface = Utilities(general_conf, configurations)
-	interface.runExperiment()
-	interface.writeReport()
+	interface.run_experiment()
+	interface.write_report()
 
 
 

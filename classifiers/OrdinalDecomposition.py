@@ -2,13 +2,12 @@
 from sys import path
 path.insert(0, '../')
 
-from utilities import loadClassifier
-
 import numpy as np
-
 from sklearn.metrics.scorer import make_scorer
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+
+from utilities import load_classifier
 
 
 class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
@@ -67,7 +66,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	Attributes
 	----------
 
-	unique_y_: list
+	classes_: list
 		List that contains all different class labels found in original dataset
 
 
@@ -126,11 +125,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		self.y_ = y
 
 		# Get list of different targets of dataset
-		self.unique_y_ = np.unique(y)
+		self.classes_ = np.unique(y)
 
 		# Gives each train input its corresponding output label for each binary classifier
-		self.coding_matrix_ = self._codingMatrix( len(self.unique_y_) )
-		class_labels = self.coding_matrix_[ (np.digitize(y, self.unique_y_) - 1), :]
+		self.coding_matrix_ = self._coding_matrix( len(self.classes_) )
+		class_labels = self.coding_matrix_[ (np.digitize(y, self.classes_) - 1), :]
 
 
 		self.classifiers_ = []
@@ -138,7 +137,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		# given by the coding_matrix
 		for n in range(len(class_labels[0,:])):
 
-			estimator = loadClassifier(self.base_classifier, self.parameters)
+			estimator = load_classifier(self.base_classifier, self.parameters)
 			estimator.fit(X[ np.where(class_labels[:,n] != 0) ], \
 						  np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T) )
 
@@ -177,26 +176,26 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		if decision_method == "exponential_loss":
 
-			losses = self._exponentialLoss(X)
-			predicted_y = self.unique_y_[np.argmin(losses, axis=1)]
+			losses = self._exponential_loss(X)
+			predicted_y = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "hinge_loss":
 			
-			losses = self._hingeLoss(X)
-			predicted_y = self.unique_y_[np.argmin(losses, axis=1)]
+			losses = self._hinge_loss(X)
+			predicted_y = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "logaritmic_loss":
 
-			losses = self._logaritmicLoss(X)
-			predicted_y = self.unique_y_[np.argmin(losses, axis=1)]
+			losses = self._logaritmic_loss(X)
+			predicted_y = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "frank_hall":
 
-			predicted_proba_y = self._frankHallMethod(X)
-			predicted_y = self.unique_y_[np.argmax(predicted_proba_y, axis=1)]
+			predicted_proba_y = self._frank_hall_method(X)
+			predicted_y = self.classes_[np.argmax(predicted_proba_y, axis=1)]
 
 
 		else:
@@ -210,7 +209,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 
-	def _codingMatrix(self, nClasses):
+	def _coding_matrix(self, n_classes):
 
 		"""
 		Method that returns the coding matrix for a given dataset.
@@ -218,55 +217,55 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Parameters
 		----------
 
-		nClasses: int
+		n_classes: int
 			Number of different classes in actual dataset
 		
-		dType: string
+		dtype: string
 			Type of decomposition to be applied
 
 		Returns
 		-------
 
-		Coding Matrix: array-like, shape (n_targets, n_targets-1)
+		coding_matrix: array-like, shape (n_targets, n_targets-1)
 			Each value must be in range {-1, 1, 0}, whether that class
 		 	will belong to negative class, positive class or will not be 
 			used for that particular binary classifier.
 		"""
 
-		dType = self.dtype.lower()
-		if dType == "orderedpartitions":
+		dtype = self.dtype.lower()
+		if dtype == "ordered_partitions":
 
-			coding_matrix = np.triu( (-2 * np.ones(nClasses - 1)) ) + 1
-			coding_matrix = np.vstack([coding_matrix, np.ones((1, nClasses-1))])
+			coding_matrix = np.triu( (-2 * np.ones(n_classes - 1)) ) + 1
+			coding_matrix = np.vstack([coding_matrix, np.ones((1, n_classes-1))])
 
-		elif dType == "onevsnext":
+		elif dtype == "one_vs_next":
 
-			plus_ones = np.diagflat(np.ones((1, nClasses - 1), dtype=int), -1)
-			minus_ones = -( np.eye(nClasses, nClasses - 1, dtype=int) )
+			plus_ones = np.diagflat(np.ones((1, n_classes - 1), dtype=int), -1)
+			minus_ones = -( np.eye(n_classes, n_classes - 1, dtype=int) )
 			coding_matrix = minus_ones + plus_ones[:,:-1]
 
-		elif dType == "onevsfollowers":
+		elif dtype == "one_vs_followers":
 
-			minus_ones = np.diagflat(-np.ones((1, nClasses), dtype=int))
-			plus_ones = np.tril(np.ones(nClasses), -1)
+			minus_ones = np.diagflat(-np.ones((1, n_classes), dtype=int))
+			plus_ones = np.tril(np.ones(n_classes), -1)
 			coding_matrix = (plus_ones + minus_ones)[:,:-1]
 
-		elif dType == "onevsprevious":
+		elif dtype == "one_vs_previous":
 
-			plusones = np.triu(np.ones(nClasses))
-			minusones = -np.diagflat(np.ones((1, nClasses - 1)), -1)
+			plusones = np.triu(np.ones(n_classes))
+			minusones = -np.diagflat(np.ones((1, n_classes - 1)), -1)
 			coding_matrix = np.flip( (plusones + minusones)[:,:-1], axis=1 )
 
 		else:
 
-			raise ValueError("Decomposition type %s does not exist" % dType)
+			raise ValueError("Decomposition type %s does not exist" % dtype)
 
 		return coding_matrix.astype(int)
 
 
 
 
-	def _exponentialLoss(self, X):
+	def _exponential_loss(self, X):
 
 		"""
 		Computation of the exponential losses for each label of the
@@ -281,7 +280,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		eLosses : array, shape (n_samples, unique_labels)
+		e_losses : array, shape (n_samples, unique_labels)
 			Exponential losses for each sample of dataset X. One different
 			value for each class label.
 		"""
@@ -294,17 +293,17 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		# Computing exponential losses
-		eLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
+		e_losses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
 		for i in range(self.coding_matrix_.shape[0]):
 
-			eLosses[:,i] = np.sum(np.exp( -predictions * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) ), axis=1)
+			e_losses[:,i] = np.sum(np.exp( -predictions * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) ), axis=1)
 
-		return eLosses
-
-
+		return e_losses
 
 
-	def _hingeLoss(self, X):
+
+
+	def _hinge_loss(self, X):
 
 		"""
 		Computation of the Hinge losses for each label of the
@@ -330,16 +329,16 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 									 for c in self.classifiers_]).T
 
 		# Computing Hinge losses
-		hLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
+		h_losses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
 		for i in range(self.coding_matrix_.shape[0]):
 
-			hLosses[:,i] = np.sum( np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions) ), axis=1 )
+			h_losses[:,i] = np.sum( np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions) ), axis=1 )
 
-		return hLosses
+		return h_losses
 
 
 
-	def _logaritmicLoss(self, X):
+	def _logaritmic_loss(self, X):
 
 		"""
 		Computation of the logaritmic losses for each label of the
@@ -365,17 +364,17 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 									 for c in self.classifiers_]).T
 
 		# Computing logaritmic losses
-		lLosses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
+		l_losses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
 		for i in range(self.coding_matrix_.shape[0]):
 
-			lLosses[:,i] = np.sum( np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions)), axis=1 )
+			l_losses[:,i] = np.sum( np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions)), axis=1 )
 
 
-		return lLosses
+		return l_losses
 
 
 
-	def _frankHallMethod(self, X):
+	def _frank_hall_method(self, X):
 
 		"""
 		Decision method used to transform from n predictions of binary
@@ -394,8 +393,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		"""
 
 
-		if self.dtype.lower() != "orderedpartitions":
-			raise AttributeError("When using FrankHall decision method, OrderedPartitions must be used")
+		if self.dtype.lower() != "ordered_partitions":
+			raise AttributeError("When using Frank and Hall decision method, ordered_partitions must be used")
 
 
 

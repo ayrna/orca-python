@@ -1,5 +1,5 @@
-
-import os, datetime
+import os
+import datetime
 from collections import OrderedDict
 
 import numpy as np
@@ -33,19 +33,19 @@ class ReportUnit:
 	Attributes
 	----------
 
-	df_: dict of OrderedDict
-		Each dict contains the parameter's values with which the cross-validation
-		metrics has been maximized (best parameters) during cross-validation
-		phase, besides train and test scores for all different metrics specified
-		and the measure of computational times.
-		There will be as many dicts in the list as partitions the dataset is
-		fragmented in.
+	metrics: dict of OrderedDict
+		Each dict contains the parameter values the cross-validation
+		metrics has been maximized with (best parameters) during 
+		cross-validation phase, besides train and test scores for all
+		different metrics specified and the measure of computational times.
+		There will be as many dicts in the list as partitions the dataset
+		is fragmented in.
 
-	models_: dict
+	models: dict
 		Dictionary containing best found model for each partition, where the
 		number of partition will act as key.
 
-	predictions_: dict of dicts
+	predictions: dict of dicts
 		Dictionary containing array of predicted labels for train and test sets.
 		The number of partition will act as key.
 
@@ -53,13 +53,13 @@ class ReportUnit:
 
 	def __init__(self, dataset_name, configuration_name):
 
-		self.dataset_ = dataset_name
-		self.configuration_ = configuration_name
+		self.dataset = dataset_name
+		self.configuration = configuration_name
 
-		self.df_ = {}
+		self.metrics = {}
 
-		self.models_ = {}
-		self.predictions_ = {}
+		self.models = {}
+		self.predictions = {}
 
 
 class Results:
@@ -82,10 +82,10 @@ class Results:
 
 	def __init__(self):
 
-		self.reports_ = []
+		self._reports = []
 
 
-	def getReportUnit(self, dataset_name, configuration_name):
+	def _get_report_unit(self, dataset_name, configuration_name):
 
 		"""
 		Looks if a ReportUnit object for a given dataset and configuration
@@ -109,22 +109,21 @@ class Results:
 
 		"""
 
-		# Searchs if this combination of 'dataset' and 'configuration'
-		# has already been used 
-		for ru in self.reports_:
+		# Searchs for this combination of 'dataset' and 'configuration'
+		for ru in self._reports:
 
-			if ru.dataset_ == dataset_name and ru.configuration_ == configuration_name:
+			if ru.dataset == dataset_name and ru.configuration == configuration_name:
 				return ru
 
 		# If the ReportUnit has yet to be added, creates it
 		ru = ReportUnit(dataset_name, configuration_name)
-		self.reports_.append(ru)
+		self._reports.append(ru)
 
 		return ru
 
 
 
-	def addRecord(self, partition, best_params, best_model, configuration, metrics, predictions):
+	def add_record(self, partition, best_params, best_model, configuration, metrics, predictions):
 
 		"""
 		Stores information about the run of a partition into a
@@ -137,8 +136,7 @@ class Results:
 			Number of partition to store.
 
 		best_params: dictionary
-			Best parameters found during cross-validation for this
-			classifier.
+			Best parameters found for this configuration and dataset.
 
 		best_model: estimator
 			Best found model of classifier during cross-validation.
@@ -148,16 +146,16 @@ class Results:
 			dataset and configuration
 
 		metrics: dict of dictionaries
-			Dictionary containing the metrics for train and test for this
-			particular configuration.
+			Dictionary containing the metrics for train and test for
+			this particular configuration.
 
-		predictions: dict of dictionaries
+		predictions: dict of lists
 			Dictionary that stores train and test class predictions.
 
 		"""
 
 		# Get or create a ReportUnit object for this dataset and configuration
-		ru = self.getReportUnit(configuration['dataset'], configuration['config'])
+		ru = self._get_report_unit(configuration['dataset'], configuration['config'])
 
 
 		dataframe_row = OrderedDict()
@@ -181,15 +179,14 @@ class Results:
 
 
 		# Adding this OrderedDict as a new entry to ReportUnit object
-		ru.df_[str(partition)] = dataframe_row
-
+		ru.metrics[str(partition)] = dataframe_row
 
 		# Storing models and predictions for this partition
-		ru.models_[str(partition)] = best_model
-		ru.predictions_[str(partition)] = predictions
+		ru.models[str(partition)] = best_model
+		ru.predictions[str(partition)] = predictions
 
 
-	def saveResults(self, output_folder, metrics_names):
+	def save_results(self, output_folder, metrics_names):
 
 		"""
 		Method used for writing all the experiment information to files.
@@ -268,30 +265,30 @@ class Results:
 		avg_index = [mn + '_mean' for mn in metrics_names]
 		std_index = [mn + '_std' for mn in metrics_names]
 
-		for report in self.reports_:
+		for report in self._reports:
 
 			# Creates subfolders for each dataset
-			dataset_folder = folder_path + report.dataset_ + "-" + report.configuration_ + "/"
+			dataset_folder = folder_path + report.dataset + "-" + report.configuration + "/"
 			try: os.makedirs(dataset_folder)
 			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % dataset_folder)
 
 			# Saving each dataframe
-			df = pd.DataFrame([row for partition,row in sorted(report.df_.items())])
-			df.to_csv(dataset_folder + report.dataset_ + "-" + report.configuration_ + ".csv")
+			df = pd.DataFrame([row for partition,row in sorted(report.metrics.items())])
+			df.to_csv(dataset_folder + report.dataset + "-" + report.configuration + ".csv")
 
 			# Creating one entry for ReportUnit in summaries
-			tr_sr, ts_sr = self.createSummary(df, avg_index, std_index)
+			tr_sr, ts_sr = self._create_summary(df, avg_index, std_index)
 			train_summary.append(tr_sr); test_summary.append(ts_sr)
-			summary_index.append(report.dataset_.strip() + "-" + report.configuration_)
+			summary_index.append(report.dataset.strip() + "-" + report.configuration)
 
 			# Saving models generated for each partition in one folder
 			models_folder = dataset_folder + "models/"
 			try: os.makedirs(models_folder)
 			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % models_folder)
 
-			for part, model in report.models_.items():
+			for part, model in report.models.items():
 
-				model_filename = report.dataset_ + "-" + report.configuration_ + "." + part
+				model_filename = report.dataset + "-" + report.configuration + "." + part
 				with open(models_folder + model_filename, 'wb') as output:
 
 					pickle.dump(model, output)
@@ -302,9 +299,9 @@ class Results:
 			try: os.makedirs(predictions_folder)
 			except OSError: raise OSError("Could not create folder %s to store results. It already exists" % predictions_folder)
 
-			for part, predictions in report.predictions_.items():
+			for part, predictions in report.predictions.items():
 
-				pred_filename = report.dataset_ + "-" + report.configuration_ + "." + part
+				pred_filename = report.dataset + "-" + report.configuration + "." + part
 				np.savetxt(predictions_folder + 'train_' + pred_filename, predictions['train'], fmt='%d')
 				if predictions['test'] is not None:
 					np.savetxt(predictions_folder + 'test_' + pred_filename, predictions['test'], fmt='%d')
@@ -321,7 +318,7 @@ class Results:
 
 
 
-	def createSummary(self, df, avg_index, std_index):
+	def _create_summary(self, df, avg_index, std_index):
 
 		"""
 		Summarices information from all partitions stored in a ReportUnit 
@@ -359,18 +356,18 @@ class Results:
 
 		"""
 
-		# Dissociating train and test metrics (last 4 columns are computational times)
-		n_parameters = len(df.columns) - len(avg_index)*2 - 4				# Number of parameters used in this configuration
-		train_df = df.iloc[:,n_parameters:len(df.columns)-4:2].copy() 		# Even columns from dataframe (train metrics)
-		test_df = df.iloc[:,(n_parameters+1):len(df.columns)-4:2].copy()	# Odd columns (test metrics)
+		# Dissociating train and test metrics
+		n_parameters = len(df.columns) - len(avg_index)*2		# Number of parameters used in this configuration
+		train_df = df.iloc[:,n_parameters::2].copy() 			# Even columns from dataframe (train metrics)
+		test_df = df.iloc[:,(n_parameters+1)::2].copy()			# Odd columns (test metrics)
 
 
 		# Computing mean and standard deviation for metrics
 		train_avg, train_std = train_df.mean(), train_df.std()
 		test_avg, test_std = test_df.mean(), test_df.std()
 		# Naming indexes for summary dataframes
-		train_avg.index, train_std.index = avg_index, std_index
-		test_avg.index, test_std.index = avg_index, std_index
+		train_avg.index = avg_index; train_std.index = std_index
+		test_avg.index = avg_index; test_std.index = std_index
 		# Merging avg and std into one dataframe
 		train_summary_row = pd.concat([train_avg, train_std])
 		test_summary_row = pd.concat([test_avg, test_std])

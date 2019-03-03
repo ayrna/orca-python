@@ -29,7 +29,7 @@
 		
 			"classifier": "OrdinalDecomposition",
 			"parameters": {
-				"dtype": "OrderedPartitions",
+				"dtype": "ordered_partitions",
 				"decision_method": "frank_hall",
 				"base_classifier": "sklearn.svm.SVC",
 				"parameters": {
@@ -46,7 +46,7 @@
 		
 			"classifier": "OrdinalDecomposition",
 			"parameters": {
-				"dtype": ["OrderedPartitions", "OneVsNext"],
+				"dtype": ["ordered_partitions", "one_vs_next"],
 				"decision_method": "exponential_loss",
 				"base_classifier": "sklearn.linear_model.LogisticRegression",
 				"parameters": {
