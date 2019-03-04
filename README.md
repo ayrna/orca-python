@@ -175,17 +175,17 @@ Each configuration has a name (whatever you want), and consists of:
 As viewed in [Installation Testing](#installation-testing), running an experiment is as simple as executing Config.py
 with the python interpreter, and tell what configuration file to use for this expetiment, resulting in the next command:
 
-  `$ python config.py with runtest.json`
+  `$ python config.py with experiment_file.json`
 
 Running an experiment this way has two problems though, one of them being an excesive verbosity from Sacred's python module,
 while the other consists in the non-reproducibility of the experiments results, due to the lack of a fixed seed.
 
 Both problems can be easily fixed. The seed can be specified after "with" in the command:
 
-  `$ python config.py with runtest.json seed=12345`
+  `$ python config.py with experiment_file.json seed=12345`
   
 while we can silence Sacred just by adding "-l ERROR" at the end of the line (not necessarily at the end).
 
-  `$ python config.py with runtest.json seed=12345 -l ERROR`
+  `$ python config.py with experiment_file.json seed=12345 -l ERROR`
 
 
