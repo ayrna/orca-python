@@ -20,30 +20,31 @@ class Utilities:
 	Utilities
 
 	Class in charge of running an experiment over N datasets, where we
-	apply M different configurations over each one of them.
+	apply M different configurations over each dataset.
 
-	Configurations are composed of a classifier and different parameters,
-	where it may be multiple values for every parameter.
+	Configurations are composed of a classifier method and different
+	parameters, where it may be multiple values for every one of them.
 
-	This function will find, for all dataset-configuration pairs, the best
-	value for each parameter of classifier applying cross-validation, after 
-	what it will train that model and test it's accurancy over the dataset.
+	Running the main function of this class will perform
+	cross-validation for each partition per dataset-configuration pairs,
+	obtaining the most optimal model, after what will be used to infere
+	the labels for the test sets.
 
 
 	Parameters
 	----------
 
 	general_conf: dict
-		Dictionary that contains values needed to run the experiment
-		itself. It gives this class info as to where are located the
-		different datasets, which one are going to be tested, the metrics
-		to use, etc.
+		Dictionary containing values needed to run the experiment.
+		It gives this class information about where are located the
+		different datasets, which one are going to be tested, the
+		metrics to use, etc.
 
 	configurations: dict
 		Dictionary in which are stated the different classifiers
 		to build methods upon the selected datasets, as well as
-		parameters with different possible values of which found the
-		best combination through cross-validation.
+		the different values for the hyper-parameters used to
+		optimize the model during cross-validation phase.
 
 	For more usage information, read User Guide of this framework.
 
@@ -52,8 +53,8 @@ class Utilities:
 	----------
 
 	_results: Results object
-		Class used to manage and store all information obtained when
-		testing the different built models during the run of an experiment.
+		Class used to manage and store all information obtained
+		during the run of an experiment.
 	"""
 
 
@@ -69,21 +70,17 @@ class Utilities:
 		"""
 		Runs an experiment. Main method of this framework.
 
-		Builds one model for each possible combination of dataset and 
-		configuration entry stated in it's corresponding configuration file.
+		Loads all datasets, which can be fragmented in partitions.
+		Builds a model per partition, using cross-validation to find
+		the optimal values among the hyper-parameters to compare from.
 
-		Loads every dataset, which can be fragmented in different partitions.
-		Builds a model for every partition, using cross-validation for finding
-		the best possible values for the different parameters of that actual
-		configuration entry.
-		Get train and test metrics for each dataset-config pair.
-
-
+		Uses the built model to get train and test metrics, storing all
+		the information into Results object.
 		"""
 
 
 		self._results = Results()
-		# Adding classifier folder to sys path. Needed to import modules from different folders
+		# Adding classifier folder to sys path.
 		path.insert(0, 'classifiers/')
 
 
@@ -100,9 +97,9 @@ class Utilities:
 		for x in self._general_conf['datasets']:
 
 
-			# Getting dataset name and path, stripped out of whitespaces
+			# Getting dataset name and path, stripped out of spaces
 			dataset_name = x.strip()
-			dataset_path = self._get_dataset_path(self._general_conf['basedir'], dataset_name)
+			dataset_path = os.path.join(self._general_conf['basedir'], dataset_name)
 
 			# Loading dataset into a list of partitions. Each partition represented as a dictionary
 			# containing train and test inputs/outputs. It also stores its partition number
@@ -196,7 +193,7 @@ class Utilities:
 						test_metrics['time_test'] = np.nan
 
 
-					# Save this partition's results
+					# Saving this partition's results
 					self._results.add_record(part_idx, optimal_estimator.best_params_, optimal_estimator.best_estimator_,\
 											{'dataset': dataset_name, 'config': conf_name},\
 											{'train': train_metrics, 'test': test_metrics},\
@@ -204,50 +201,16 @@ class Utilities:
 
 
 
-	def _get_dataset_path(self, base_path, dataset_name):
-
-		"""
-		Gets path to actual dataset.
-
-		Parameters
-		----------
-
-		base_path: string
-			Base path in which dataset folder can be found.
-			It can be absolute or relative.
-
-		dataset_name: string
-			Name given to dataset folder
-
-
-		Returns
-		-------
-
-		dataset_path: string
-			Path to folder containing dataset files
-		"""
-
-
-		# Check if basedir has a final backslash or not
-		if base_path[-1] == '/':
-			dataset_path = base_path + dataset_name + '/'
-		else:
-			dataset_path = base_path + "/" + dataset_name + '/'
-
-		return dataset_path
-
-
-
 	def _load_dataset(self, dataset_path):
 
 		"""
-		Loads all datasets files, divided into train and test.
+		Loads all dataset's files, divided into train and test.
 
 		Parameters
 		----------
 
 		dataset_path: string
-			Path to dataset folder
+			Path to dataset folder.
 
 
 		Returns
@@ -256,7 +219,7 @@ class Utilities:
 		partition_list: list of dicts
 			List of partitions found inside a dataset folder.
 			Each partition is stored into a dictionary, disjoining
-			train and test inputs, and outputs
+			train and test inputs, and outputs.
 		"""
 
 
@@ -266,35 +229,35 @@ class Utilities:
 
 
 			# Creating dicts for all partitions (saving partition order as keys)
-			partition_list = { filename[ filename.find('.') + 1 : ]: {} for filename in os.listdir(dataset_path)\
-								if filename.startswith("train_") }
+			partition_list = {filename[filename.find('.') + 1:]: {} for filename in os.listdir(dataset_path)\
+								if filename.startswith("train_")}
 
 
-			# Saving info for every dataset file
+			# Saving info of every dataset file
 			for filename in os.listdir(dataset_path):
 
 				if filename.startswith("train_"):
 
-					train_inputs, train_outputs = self._read_file(dataset_path + filename)
-					partition_list[filename[ filename.find('.') + 1 : ]]["train_inputs"] = train_inputs
-					partition_list[filename[ filename.find('.') + 1 : ]]["train_outputs"] = train_outputs
+					train_inputs, train_outputs = self._read_file(os.path.join(dataset_path, filename))
+					partition_list[filename[filename.find('.') + 1:]]["train_inputs"] = train_inputs
+					partition_list[filename[filename.find('.') + 1:]]["train_outputs"] = train_outputs
 
 
 				elif filename.startswith("test_"):
 
-					test_inputs, test_outputs = self._read_file(dataset_path + filename)
-					partition_list[filename[ filename.find('.') + 1 : ]]["test_inputs"] = test_inputs
-					partition_list[filename[ filename.find('.') + 1 : ]]["test_outputs"] = test_outputs
+					test_inputs, test_outputs = self._read_file(os.path.join(dataset_path, filename))
+					partition_list[filename[filename.find('.') + 1:]]["test_inputs"] = test_inputs
+					partition_list[filename[filename.find('.') + 1:]]["test_outputs"] = test_outputs
 
 		except OSError:
 			raise ValueError("No such file or directory: '%s'" % dataset_path)
 
 		except KeyError:
-			raise RuntimeError("Found partition without train files: partition %s" % filename[ filename.find('.') + 1 : ])
+			raise RuntimeError("Found partition without train files: partition %s" % filename[filename.find('.') + 1:])
 
 
 		# Saving partitions as a sorted list of dicts (according to it's partition order)
-		partition_list = list( OrderedDict(sorted(partition_list.items(), key=(lambda t: get_key(t[0])))).values() )
+		partition_list = list(OrderedDict(sorted(partition_list.items(), key=(lambda t: get_key(t[0])))).values())
 
 		return partition_list
 
@@ -304,7 +267,7 @@ class Utilities:
 
 		"""
 		Reads a CSV containing a partition or the entirety of a 
-		dataset (train and test files must be previously divided for 
+		dataset (train and test files must be previously divided for
 		the experiment to run though).
 
 		Parameters
