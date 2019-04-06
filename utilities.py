@@ -75,115 +75,91 @@ class Utilities:
 		the optimal values among the hyper-parameters to compare from.
 
 		Uses the built model to get train and test metrics, storing all
-		the information into Results object.
+		the information into a Results object.
 		"""
 
 
 		self._results = Results()
 		# Adding classifier folder to sys path.
-		path.insert(0, 'classifiers/')
-
+		path.insert(0, 'classifiers')
 
 		self._check_dataset_list()
 		self._check_params()
-
 
 		print("\n###############################")
 		print("\tRunning Experiment")
 		print("###############################")
 
-
 		# Iterating over Datasets
 		for x in self._general_conf['datasets']:
 
-
-			# Getting dataset name and path, stripped out of spaces
+			# Getting dataset name and path
 			dataset_name = x.strip()
 			dataset_path = os.path.join(self._general_conf['basedir'], dataset_name)
 
-			# Loading dataset into a list of partitions. Each partition represented as a dictionary
-			# containing train and test inputs/outputs. It also stores its partition number
-
+			# Loading dataset into a list of partitions.
 			dataset = self._load_dataset(dataset_path)
 			print("\nRunning", dataset_name, "dataset")
 			print("--------------------------")
 
 
-			# Iterating over all different Configurations
+			# Iterating over Configurations
 			for conf_name, configuration in self._configurations.items():
 				print("Running", conf_name, "...")
 
-
-				# Loading Classifier stated in configuration
 				classifier = load_classifier(configuration["classifier"])
 
-
-				# Iterating over all partitions in each dataset
+				# Iterating over partitions
 				for part_idx, partition in enumerate(dataset):
 					print("  Running Partition", part_idx)
 
-
-					# Finding optimal parameters
+					# Finding optimal classifier
 					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"], partition["train_outputs"],\
 																	classifier, configuration["parameters"])
 
-					# Getting predictions for train and test datasets
+					# Getting train and test predictions
 					train_predicted_y = optimal_estimator.predict(partition["train_inputs"])
-					if "test_outputs" in partition:
 
+					test_predicted_y = None; elapsed = np.nan
+					if "test_outputs" in partition:
 						start = time()
 						test_predicted_y = optimal_estimator.predict(partition["test_inputs"])
 						elapsed = time() - start
 
-					else:
-
-						test_predicted_y = None
-						elapsed = np.nan
 
 
-					# Creating tuples with each specified tuple and passing it to specified dataframe
-					train_metrics = OrderedDict()
-					test_metrics = OrderedDict()
-
-					# Iterating over Metrics
+					# Obtaining train and test metric's values.
+					train_metrics = OrderedDict(); test_metrics = OrderedDict()
 					for metric_name in self._general_conf['metrics']:
 
 						try:
-							# Loading metric from metrics file
+							# Loading metric from file
 							module = __import__("metrics")
 							metric = getattr(module, metric_name.strip().lower())
 
 						except AttributeError:
 							raise AttributeError("No metric named '%s'" % metric_name.strip().lower())
 
-
 						# Get train scores
 						train_score = metric(partition["train_outputs"], train_predicted_y)
 						train_metrics[metric_name.strip() + '_train'] = train_score
 
-
 						# Get test scores
+						test_metrics[metric_name.strip() + '_test'] = np.nan
 						if "test_outputs" in partition:
-
 							test_score = metric(partition["test_outputs"], test_predicted_y)
 							test_metrics[metric_name.strip() + '_test'] = test_score
-
-						else:
-
-							test_metrics[metric_name.strip() + '_test'] = np.nan
 
 
 					# Cross-validation was performed to tune hyper-parameters
 					if isinstance(optimal_estimator, GridSearchCV):
-
 						train_metrics['cv_time_train'] = optimal_estimator.cv_results_['mean_fit_time'].mean()
 						test_metrics['cv_time_test'] = optimal_estimator.cv_results_['mean_score_time'].mean()
 						train_metrics['time_train'] = optimal_estimator.refit_time_
 						test_metrics['time_test'] = elapsed
 
-					# No cross-validation was performed
-					else:
 
+					else:
 						optimal_estimator.best_params_ = configuration['parameters']
 						optimal_estimator.best_estimator_ = optimal_estimator
 
@@ -225,26 +201,19 @@ class Utilities:
 
 		try:
 
-			# TODO: Usar mejor el nombre completo del fichero (sin la parte de train) ??
-
-
 			# Creating dicts for all partitions (saving partition order as keys)
 			partition_list = {filename[filename.find('.') + 1:]: {} for filename in os.listdir(dataset_path)\
 								if filename.startswith("train_")}
 
-
-			# Saving info of every dataset file
+			# Loading each dataset
 			for filename in os.listdir(dataset_path):
 
 				if filename.startswith("train_"):
-
 					train_inputs, train_outputs = self._read_file(os.path.join(dataset_path, filename))
 					partition_list[filename[filename.find('.') + 1:]]["train_inputs"] = train_inputs
 					partition_list[filename[filename.find('.') + 1:]]["train_outputs"] = train_outputs
 
-
 				elif filename.startswith("test_"):
-
 					test_inputs, test_outputs = self._read_file(os.path.join(dataset_path, filename))
 					partition_list[filename[filename.find('.') + 1:]]["test_inputs"] = test_inputs
 					partition_list[filename[filename.find('.') + 1:]]["test_outputs"] = test_outputs
@@ -266,9 +235,9 @@ class Utilities:
 	def _read_file(self, filename):
 
 		"""
-		Reads a CSV containing a partition or the entirety of a 
-		dataset (train and test files must be previously divided for
-		the experiment to run though).
+		Reads a CSV containing partitions, or full datasets.
+		Train and test files must be previously divided for
+		the experiment to run.
 
 		Parameters
 		----------
@@ -307,9 +276,10 @@ class Utilities:
 		Parameters
 		----------
 		dataset_list: list of strings
-			list containing all the dataset names to run in given experiment.
-			If 'all' is specified without any other string, then all datasets
-			in basedir folder will be run.
+			list containing all the dataset names to run in a given
+			experiment.
+			If 'all' is specified without any other string, then all
+			datasets in basedir folder will be run.
 
 		"""
 
@@ -328,8 +298,7 @@ class Utilities:
 		except NameError:
 			basestring = str
 
-
-		# Check if 'all' it's the only value, and if it is, expand it
+		# Check if 'all' is the only value, and if it is, expand it
 		if len(dataset_list) == 1 and dataset_list[0] == 'all':
 
 			dataset_list = [ item for item in os.listdir(base_path) \
@@ -345,22 +314,21 @@ class Utilities:
 
 
 
-
 	def _check_params(self):
 
 		"""
-		Checks if all given configurations are correct.
+		Checks if all given configurations are sintactly correct.
 
-		Performs two different transformations over parameter dictionaries
-		when needed. Those consist of:
+		Performs two different transformations over parameter
+		dictionaries when needed. Those consist of:
 
-		- If one parameter's values are not inside a list, GridSearchCV will not be
-		  able to handle them, so they must be enclosed into one.
+		- If one parameter's values are not inside a list, GridSearchCV
+		will not be able to handle them, so they must be enclosed into one.
 
-		- When an ensemble method, as OrderedPartitions, is chosen as classifier,
-		  transforms the dict of lists in which the parameters for the internal
-		  classifier are stated into a list of dicts (all possible combiantions of
-		  those different parameters).
+		- When an ensemble method, as OrderedPartitions, is chosen as
+		classifier, transforms the dict of lists in which the
+		parameters for the internal classifier are stated into a list
+		of dicts (all possible combiantions of those different parameters).
 
 
 		"""
@@ -413,7 +381,6 @@ class Utilities:
 				parameters['random_state'] = [random_seed]
 
 
-
 			# If there is just one value per parameter, it won't be necessary to use GridSearchCV
 			if all(not isinstance(p, list) or len(p) == 1 for _, p in parameters.items()):
 				# Pop out of list the lonely values
@@ -433,8 +400,16 @@ class Utilities:
 	def _get_optimal_estimator(self, train_inputs, train_outputs, classifier, parameters):
 
 		"""
-		Perform cross-validation technique for finding best
-		hyper-parameters out of all the options given in configuration file.
+		Perform cross-validation over one dataset and configuration.
+
+		Each configuration consists of one classifier and none, one or
+		multiple hyper-parameters, that, in turn, can contain one or
+		multiple values used to optimize the resulting model.
+
+		At the end of cross-validation phase, the model with the
+		especific combination of values from the hyper-parameters
+		that achieved the best metrics from all the combinations
+		will remain.
 
 		Parameters
 		----------
@@ -445,21 +420,20 @@ class Utilities:
 		train_outputs: array-like, shape (n_samples)
 			Target vector relative to train_inputs.
 
-		classifier: Classifier Object
-			Class implementing an mathematical model able to be trained and to
-			perform predictions over given datasets.
+		classifier: object
+			Class implementing a mathematical model able to be trained
+			and to perform predictions over given datasets.
 
 		parameters: dictionary
-			Dictionary containing parameters to cross-validate as keys
-			and the list of values that want to be compared as values.
+			Dictionary containing parameters to optimize as keys,
+			and the list of values that we want to compare as values.
 
 		Returns
 		-------
 
 		optimal: GridSearchCV object
 			An already fitted model of the given classifier,
-			with the best found parameters after performing cross-validation
-			over train samples from given partition (or dataset)
+			with the best found parameters after cross-validation
 		"""
 
 
@@ -491,9 +465,9 @@ class Utilities:
 
 			raise AttributeError("No metric named '%s'" % self._general_conf['cv_metric'].strip().lower())
 
+
 		gib = module.greater_is_better(self._general_conf['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
-
 
 		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,\
 					n_jobs=self._general_conf['jobs'], cv=self._general_conf['hyperparam_cv_nfolds'], iid=False)
@@ -509,15 +483,13 @@ class Utilities:
 
 		"""
 		Saves information about experiment through Results class
-
 		"""
-
 
 		print("\nSaving Results...")
 
-
 		# Names of each metric used
 		metrics_names = [x.strip().lower() for x in self._general_conf['metrics']] + ["cv_time", "time"]
+
 		# Saving results through Results class
 		self._results.save_results(self._general_conf['output_folder'], metrics_names)
 
@@ -551,9 +523,10 @@ def load_classifier(classifier_path, params=None):
 	-------
 
 	classifier: object
-		Returns a loaded classifier, either from an scikit-learn module, or from
-		a module of this framework.
-		Depending is params are specified, the object will instantiated or not.
+		Returns a loaded classifier, either from an scikit-learn module,
+		or from a module of this framework.
+		Depending if hyper-parameters are specified, the object will be
+		instantiated or not.
 
 	"""
 
@@ -577,7 +550,7 @@ def load_classifier(classifier_path, params=None):
 def is_int(value):
 
 	"""
-	Check if an string can be converted to int
+	Check if an string can be converted to int.
 
 	Parameters
 	----------
@@ -597,7 +570,7 @@ def is_int(value):
 def is_float(value):
 
 	"""
-	Check if an string can be converted to float
+	Check if an string can be converted to float.
 
 	Parameters
 	----------
@@ -619,7 +592,7 @@ def is_float(value):
 def is_boolean(value):
 
 	"""
-	Check if an string can be converted to Boolean
+	Check if an string can be converted to boolean.
 
 	Parameters
 	----------
@@ -640,7 +613,8 @@ def is_boolean(value):
 def get_key(key):
 
 	"""
-	Checks if the key of a dict can be converted to int, if not, returns the key as is
+	Checks if the key of a dict can be converted to int,
+	if not, returns the key as is.
 
 	Parameters
 	----------
