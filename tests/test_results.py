@@ -21,13 +21,21 @@ from results import Results
 
 
 class TestResults(unittest.TestCase):
+	"""
+	Class in charge of checking that the methods built inside Results
+	class are working as expected or not.
 
+	Results class is built in results.py. File placed at the root of
+	this framework.
+	"""
 
 	_results = Results()
 
 
 	def test_get_report_unit(self):
+		"""
 
+		"""
 		# Creating two different RU objects
 		dfs1 = ReportUnit('toy', 'conf_1')
 		dfs2 = ReportUnit('iris', 'conf_1')
@@ -46,6 +54,9 @@ class TestResults(unittest.TestCase):
 
 
 	def test_add_record(self):
+		"""
+
+		"""
 
 		# Adding row to ReportUnit object
 		partition = 0
@@ -118,7 +129,9 @@ class TestResults(unittest.TestCase):
 
 
 	def test_create_summary(self):
+		"""
 
+		"""
 
 		dataset = 'toy'
 		configuration = 'conf_1'
@@ -170,7 +183,9 @@ class TestResults(unittest.TestCase):
 
 
 	def test_save_results(self):
+		"""
 
+		"""
 
 		# First ReportUnit object
 		ru1 = ReportUnit("dataset1", "config1")

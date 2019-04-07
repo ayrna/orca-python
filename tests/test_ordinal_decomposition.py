@@ -15,6 +15,13 @@ from OrdinalDecomposition import OrdinalDecomposition
 # TODO: Testear este metodo como lo hacen en los tests del clasificador de naive bayes en scikit learn ???
 
 class TestOrdinalDecomposition(unittest.TestCase):
+	"""
+	Class testing OrdinalDecomposition classifier functionality.
+	This class will use a toy problem, consisting of 6 points in a
+	plane, divided into two different classes.
+
+	This classifier is built in classifiers/OrdinalDecomposition.py.
+	"""
 
 	# Data is just 6 separable points in the plane
 	X = array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
@@ -22,6 +29,10 @@ class TestOrdinalDecomposition(unittest.TestCase):
 
 
 	def test_coding_matrix(self):
+		"""
+		Checking if the coding matrix is built properly for each type
+		of ordinal decomposition.
+		"""
 
 		od = OrdinalDecomposition()
 
@@ -56,6 +67,10 @@ class TestOrdinalDecomposition(unittest.TestCase):
 
 	#TODO: Test decision methods outputs and check if they are correct (compute them on paper)
 	def test_decision_method(self):
+		"""
+		Check that each one of the 4 decision methods returns expected
+		values for one toy problem.
+		"""
 
 		# Checking Frank and Hall method cannot be used whitout ordered partitions
 		od = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
@@ -68,6 +83,9 @@ class TestOrdinalDecomposition(unittest.TestCase):
 
 
 	def test_ordinal_decomposition(self):
+		"""
+		Check if the method can correctly classify a toy problem.
+		"""
 
 		od = OrdinalDecomposition(dtype="ordered_partitions", decision_method="frank_hall",\
 								base_classifier="sklearn.svm.SVC",\
