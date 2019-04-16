@@ -1,11 +1,11 @@
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:1 -->
 
-1. [What is ORCA](#what-is-orca)
-2. [Installing ORCA](#installing-orca)
+1. [What is ORCA-python](#what-is-orca)
+2. [Installing ORCA-python](#installing-orca)
 	1. [Installation Requirements](#installation-requirements)
-	2. [Download ORCA](#download-orca)
+	2. [Download ORCA-python](#download-orca)
 	3. [Installation Testing](#installation-testing)
-3. [How to use ORCA](#how-to-use-orca)
+3. [How to use ORCA-python](#how-to-use-orca)
 	1. [Configuration Files](#configuration-files)
 		1. [general-conf](#general-conf)
 		2. [configurations](#configurations)
@@ -13,20 +13,20 @@
 
 <!-- /TOC -->
 
-## What is ORCA?
+## What is ORCA-python?
 
-ORCA is an experimental framework, completely built on Python (integrated with scikit-learn and sacred modules), 
+ORCA-python is an experimental framework, completely built on Python (integrated with scikit-learn and sacred modules), 
 that seeks to automatize the run of machine learning experiments through simple-to-understand configuration files.
 
-ORCA has been initially created to test ordinal classification, but it can handle regular classification algorithms,
+ORCA-python has been initially created to test ordinal classification, but it can handle regular classification algorithms,
 as long as they are implemented in scikit-learn, or self-implemented following compatibility guidelines form scikit-learn.
 
-In this README, we will explain how to use ORCA, and what you need to install in order to run it.
+In this README, we will explain how to use ORCA-python, and what you need to install in order to run it.
 
 
-# Installing ORCA
+# Installing ORCA-python
 
-ORCA has been developed and tested in GNU/Linux systems. It has been tested with Python 2.7.13 and Python 3.5.3.
+ORCA-python has been developed and tested in GNU/Linux systems. It has been tested with Python 2.7.13 and Python 3.5.3.
 
 ## Installation Requirements
 
@@ -42,9 +42,9 @@ in order to run an experiment:
 To install Python, you can use the package management system you like the most.\
 For the modules installation, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
 
-## Download ORCA
+## Download ORCA-python
 
-To download ORCA you can simply clone this GitHub repository by using the following commands:
+To download ORCA-python you can simply clone this GitHub repository by using the following commands:
 
   `$ git clone https://github.com/i22bomui/orca-python.git`
   
@@ -61,7 +61,7 @@ The way to run this test (and all experiments) is the following:
   ```
 
 
-# How to use ORCA
+# How to use ORCA-python
 
 
 This tutorial uses three small datasets (balance-scale, contact-lenses and tae) contained in "datasets" folder.
@@ -166,7 +166,6 @@ Each configuration has a name (whatever you want), and consists of:
 - **`parameters`**: hyper-paramers to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
 
 *In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the base classifier, which doesn't have a configuration name), with it's respective parameters to tune.*
-
 
 
 
