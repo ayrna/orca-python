@@ -16,7 +16,6 @@ from results import Results
 class Utilities:
 
 	"""
-
 	Utilities
 
 	Class in charge of running an experiment over N datasets, where we
@@ -165,8 +164,8 @@ class Utilities:
 
 						train_metrics['cv_time_train'] = np.nan
 						test_metrics['cv_time_test'] = np.nan
-						train_metrics['time_train'] = np.nan
-						test_metrics['time_test'] = np.nan
+						train_metrics['time_train'] = optimal_estimator.refit_time_
+						test_metrics['time_test'] = elapsed
 
 
 					# Saving this partition's results
@@ -329,8 +328,6 @@ class Utilities:
 		classifier, transforms the dict of lists in which the
 		parameters for the internal classifier are stated into a list
 		of dicts (all possible combiantions of those different parameters).
-
-
 		"""
 
 		random_seed = np.random.get_state()[1][0]
@@ -347,8 +344,6 @@ class Utilities:
 
 				try:
 
-					#TODO: Si hay algun parametro que contenga ';', falla (se esta usando para representar los valores)
-
 					# Creating a list for each parameter. Elements represented as 'parameterName-parameterValue'.
 					p_list = [ [p_name + ';' + str(v) for v in p] for p_name, p in parameters['parameters'].items() ]
 					# Permutations of all lists. Generates all possible combination of elements between lists.
@@ -360,12 +355,11 @@ class Utilities:
 					raise TypeError('All parameters for the inner classifier must be an iterable object')
 
 
-				# TODO: Debe haber una forma mas eficiente de hacer esto
 				# Returns non-string values back to it's normal self
 				for d in p_list:
 					for (k, v) in d.items():
 
-						if is_int(v):		#TODO: Solamente se usa para random_state (no admite floats)
+						if is_int(v):
 							d[k] = int(v)
 						elif is_float(v):
 							d[k] = float(v)
@@ -437,19 +431,16 @@ class Utilities:
 		"""
 
 
-
-		# TODO: Comprobar si hay que hacer los folds o no complica bastante la logica a la
-		#		hora de almacenar los datos (habria que indicarle a ReportUnit en Results que 
-		#		combinacion no tiene tiempos computacionales, y anhadir los nombres de las metricas
-		#		de los tiempos en saveResults y no en writeReport, ademas de los cambios en esta
-		#		clase)
-		
 		# No need to cross-validate when there is just one value per parameter
 		if all(not isinstance(p, list) for k, p in parameters.items()):
 
 			optimal = classifier(**parameters)
-			optimal.fit(train_inputs, train_outputs)
 
+			start = time()
+			optimal.fit(train_inputs, train_outputs)
+			elapsed = time() - start
+
+			optimal.refit_time_ = elapsed
 			return optimal
 
 
@@ -487,7 +478,7 @@ class Utilities:
 
 		print("\nSaving Results...")
 
-		# Names of each metric used
+		# Names of each metric used (plus computational times)
 		metrics_names = [x.strip().lower() for x in self._general_conf['metrics']] + ["cv_time", "time"]
 
 		# Saving results through Results class
@@ -567,6 +558,8 @@ def is_int(value):
 	except ValueError:
 		return False
 
+
+
 def is_float(value):
 
 	"""
@@ -608,6 +601,7 @@ def is_boolean(value):
 		return True
 	else:
 		return False
+
 
 
 def get_key(key):
