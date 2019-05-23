@@ -30,7 +30,7 @@ ORCA-python has been developed and tested in GNU/Linux systems. It has been test
 
 ## Installation Requirements
 
-Besides the need of the aforementioned Python interpreter, you will need to install the next Python modules
+Besides the need for the aforementioned Python interpreter, you will need to install the next Python modules
 in order to run an experiment (needs recent versions of scikit-learn >=0.20.0):
 
 - numpy (tested with version 1.15.2)
@@ -40,7 +40,7 @@ in order to run an experiment (needs recent versions of scikit-learn >=0.20.0):
 - scipy (tested with version 1.1.0)
 
 To install Python, you can use the package management system you like the most.\
-For the modules installation, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
+For the installation of the modules, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
 
 ## Download ORCA-python
 
@@ -97,14 +97,14 @@ For a better understanding of the way this files works, it's better to follow an
 *note that all the keys (variable names) must be strings, while all pair: value elements are separated by commas.*
 
 - **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one folder at a time. It can be indicated using a full path, or a relative one to the framework folder.
-- **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist insise `basedir`.
+- **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist inside `basedir`.
 - **`hyperparam_cv_folds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
 - **`output_folder`**: name of the folder where all experiment results will be stored.
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
-Most os this variables do have default values (specified in [config.py](https://github.com/i22bomui/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
+Most of this variables do have default values (specified in [config.py](https://github.com/i22bomui/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
 
 
 ### configurations
@@ -186,5 +186,3 @@ Both problems can be easily fixed. The seed can be specified after "with" in the
 while we can silence Sacred just by adding "-l ERROR" at the end of the line (not necessarily at the end).
 
   `$ python config.py with experiment_file.json seed=12345 -l ERROR`
-
-
