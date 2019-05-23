@@ -2,14 +2,14 @@
 
 1. [What is ORCA-python](#what-is-orca)
 2. [Installing ORCA-python](#installing-orca)
-	1. [Installation Requirements](#installation-requirements)
-	2. [Download ORCA-python](#download-orca)
-	3. [Installation Testing](#installation-testing)
+    1. [Installation Requirements](#installation-requirements)
+    2. [Download ORCA-python](#download-orca)
+    3. [Installation Testing](#installation-testing)
 3. [How to use ORCA-python](#how-to-use-orca)
-	1. [Configuration Files](#configuration-files)
-		1. [general-conf](#general-conf)
-		2. [configurations](#configurations)
-	2. [Running an Experiment](#running-an-experiment)
+    1. [Configuration Files](#configuration-files)
+        1. [general-conf](#general-conf)
+        2. [configurations](#configurations)
+    2. [Running an Experiment](#running-an-experiment)
 
 <!-- /TOC -->
 
@@ -72,7 +72,7 @@ The datasets are already partitioned with a 30-holdout experimental design (trai
 All experiments are run through configuration files, which are written in JSON format, and consist of two well differentiated 
 sections:
 
-  - **`general-conf`**: indicates basic information to run the experiment, such as the location to datasets, the different datasets names to run, etc. 
+  - **`general-conf`**: indicates basic information to run the experiment, such as the location to datasets, the names of the different datasets to run, etc. 
   - **`configurations`**: tells the framework what classification algorithms to apply over all the datasets, with the collection of hyper-parameters to tune.
 
 Each one of this sections will be inside a dictionary, having the said section names as keys.
@@ -85,13 +85,13 @@ For a better understanding of the way this files works, it's better to follow an
 ```
 "general_conf": {
 
-	"basedir": "ordinal-datasets/ordinal-regression/",
-	"datasets": ["tae", "balance-scale", "contact-lenses"],
-	"hyperparam_cv_folds": 3,
-	"jobs": 10,
-	"output_folder": "my_runs/",
-	"metrics": ["ccr", "mae", "amae", "mze"],
-	"cv_metric": "mae"
+    "basedir": "ordinal-datasets/ordinal-regression/",
+    "datasets": ["tae", "balance-scale", "contact-lenses"],
+    "hyperparam_cv_folds": 3,
+    "jobs": 10,
+    "output_folder": "my_runs/",
+    "metrics": ["ccr", "mae", "amae", "mze"],
+    "cv_metric": "mae"
 }
 ```
 *note that all the keys (variable names) must be strings, while all pair: value elements are separated by commas.*
@@ -114,56 +114,56 @@ this dictionary will contain, at the same time, one dictionary for each configur
 ```
 "configurations": {
 
-	"SVM": {
+    "SVM": {
 
-		"classifier": "sklearn.svm.SVC",
-		"parameters": {
-			"C": [0.001, 0.1, 1, 10, 100],
-			"gamma": [0.1, 1, 10]
-		}
-	},
-
-
-	"SVMOP": {
-
-		"classifier": "OrdinalDecomposition",
-		"parameters": {
-			"dtype": "OrderedPartitions",
-			"decision_method": "frank_hall",
-			"base_classifier": "sklearn.svm.SVC",
-			"parameters": {
-				"C": [0.01, 0.1, 1, 10],
-				"gamma": [0.01, 0.1, 1, 10],
-				"probability": ["True"]
-			}
-
-		}
-	},
+        "classifier": "sklearn.svm.SVC",
+        "parameters": {
+            "C": [0.001, 0.1, 1, 10, 100],
+            "gamma": [0.1, 1, 10]
+        }
+    },
 
 
-	"LR": {
+    "SVMOP": {
 
-		"classifier": "OrdinalDecomposition",
-		"parameters": {
-			"dtype": ["OrderedPartitions", "OneVsNext"],
-			"decision_method": "exponential_loss",
-			"base_classifier": "sklearn.linear_model.LogisticRegression",
-			"parameters": {
-				"C": [0.01, 0.1, 1, 10],
-				"penalty": ["l1","l2"]
-			}
+        "classifier": "OrdinalDecomposition",
+        "parameters": {
+            "dtype": "OrderedPartitions",
+            "decision_method": "frank_hall",
+            "base_classifier": "sklearn.svm.SVC",
+            "parameters": {
+                "C": [0.01, 0.1, 1, 10],
+                "gamma": [0.01, 0.1, 1, 10],
+                "probability": ["True"]
+            }
 
-		}
-	}
+        }
+    },
+
+
+    "LR": {
+
+        "classifier": "OrdinalDecomposition",
+        "parameters": {
+            "dtype": ["OrderedPartitions", "OneVsNext"],
+            "decision_method": "exponential_loss",
+            "base_classifier": "sklearn.linear_model.LogisticRegression",
+            "parameters": {
+                "C": [0.01, 0.1, 1, 10],
+                "penalty": ["l1","l2"]
+            }
+
+        }
+    }
 }
 ```
 
 Each configuration has a name (whatever you want), and consists of:
 
-- **`classifier`**: tells the framework wich classifier to use. Can be specified in two different ways:
-	- A relative path to the classifier in sklearn module.
-	- The name of a built-in class in Classifiers folder (found in the main folder of the project).
-- **`parameters`**: hyper-paramers to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
+- **`classifier`**: tells the framework which classifier to use. Can be specified in two different ways:
+    - A relative path to the classifier in sklearn module.
+    - The name of a built-in class in Classifiers folder (found in the main folder of the project).
+- **`parameters`**: hyper-parameters to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
 
 *In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the base classifier, which doesn't have a configuration name), with it's respective parameters to tune.*
 
@@ -172,12 +172,12 @@ Each configuration has a name (whatever you want), and consists of:
 ## Running an Experiment
 
 As viewed in [Installation Testing](#installation-testing), running an experiment is as simple as executing Config.py
-with the python interpreter, and tell what configuration file to use for this expetiment, resulting in the next command:
+with the python interpreter, and tell what configuration file to use for this experiment, resulting in the next command:
 
   `$ python config.py with experiment_file.json`
 
-Running an experiment this way has two problems though, one of them being an excesive verbosity from Sacred's python module,
-while the other consists in the non-reproducibility of the experiments results, due to the lack of a fixed seed.
+Running an experiment this way has two problems though, one of them being an excessive verbosity from Sacred's python module,
+while the other consists of the non-reproducibility of the results of the experiment, due to the lack of a fixed seed.
 
 Both problems can be easily fixed. The seed can be specified after "with" in the command:
 
