@@ -31,7 +31,7 @@ ORCA-python has been developed and tested in GNU/Linux systems. It has been test
 ## Installation Requirements
 
 Besides the need of the aforementioned Python interpreter, you will need to install the next Python modules
-in order to run an experiment:
+in order to run an experiment (needs recent versions of scikit-learn >=0.20.0):
 
 - numpy (tested with version 1.15.2)
 - pandas (tested with version 0.23.4)
