@@ -1,6 +1,6 @@
 
 from sys import path
-path.insert(0, '../')
+path.insert(0, '..')
 
 import numpy as np
 from sklearn.metrics.scorer import make_scorer
@@ -55,7 +55,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		predictions to give the final label (one among the real classes)
 		to a given set.
 
-	classifier: string
+	base_classifier: string
 		Inner classifier used to build a model for each binary subproblem.
 		It has to call a local classifier built into this framework,
 		or a class from scikit-learn.
@@ -93,7 +93,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	"""
 
 	#TODO: Especificar valores por defecto
-	def __init__(self, dtype="", decision_method="", base_classifier="",  parameters={}):
+	def __init__(self, dtype="ordered_partitions", decision_method="frank_hall", base_classifier="",  parameters={}):
 
 		self.dtype = dtype
 		self.decision_method = decision_method
@@ -222,9 +222,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		n_classes: int
 			Number of different classes in actual dataset
-		
-		dtype: string
-			Type of decomposition to be applied
 
 		Returns
 		-------
@@ -416,7 +413,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		# Probabilities of each set to belong to the last class
 		predicted_proba_y[:,-1] = np.ravel( self.classifiers_[-1].predict_proba(X)[:, positive_class_placement] )
-
 
 		return predicted_proba_y
 

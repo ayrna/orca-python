@@ -60,8 +60,8 @@ class Utilities:
 	def __init__(self, general_conf, configurations):
 
 
-		self._general_conf = general_conf
-		self._configurations = configurations
+		self.general_conf = general_conf
+		self.configurations = configurations
 
 
 	def run_experiment(self):
@@ -90,11 +90,11 @@ class Utilities:
 		print("###############################")
 
 		# Iterating over Datasets
-		for x in self._general_conf['datasets']:
+		for x in self.general_conf['datasets']:
 
 			# Getting dataset name and path
 			dataset_name = x.strip()
-			dataset_path = os.path.join(self._general_conf['basedir'], dataset_name)
+			dataset_path = os.path.join(self.general_conf['basedir'], dataset_name)
 
 			# Loading dataset into a list of partitions.
 			dataset = self._load_dataset(dataset_path)
@@ -103,7 +103,7 @@ class Utilities:
 
 
 			# Iterating over Configurations
-			for conf_name, configuration in self._configurations.items():
+			for conf_name, configuration in self.configurations.items():
 				print("Running", conf_name, "...")
 
 				classifier = load_classifier(configuration["classifier"])
@@ -126,10 +126,9 @@ class Utilities:
 						elapsed = time() - start
 
 
-
 					# Obtaining train and test metric's values.
 					train_metrics = OrderedDict(); test_metrics = OrderedDict()
-					for metric_name in self._general_conf['metrics']:
+					for metric_name in self.general_conf['metrics']:
 
 						try:
 							# Loading metric from file
@@ -283,8 +282,8 @@ class Utilities:
 		"""
 
 
-		base_path = self._general_conf['basedir']
-		dataset_list = self._general_conf['datasets']
+		base_path = self.general_conf['basedir']
+		dataset_list = self.general_conf['datasets']
 
 		# Check if home path is shortened
 		if base_path.startswith("~"):
@@ -308,8 +307,8 @@ class Utilities:
 			raise ValueError("Dataset list can only contain strings")
 
 
-		self._general_conf['basedir'] = base_path
-		self._general_conf['datasets'] = dataset_list
+		self.general_conf['basedir'] = base_path
+		self.general_conf['datasets'] = dataset_list
 
 
 
@@ -331,7 +330,7 @@ class Utilities:
 		"""
 
 		random_seed = np.random.get_state()[1][0]
-		for _, conf in self._configurations.items():
+		for _, conf in self.configurations.items():
 
 			parameters = conf['parameters']
 
@@ -447,21 +446,21 @@ class Utilities:
 		# More than one value per parameter. Cross-validation needed.
 		try:
 			module = __import__("metrics")
-			metric = getattr(module, self._general_conf['cv_metric'].lower().strip())
+			metric = getattr(module, self.general_conf['cv_metric'].lower().strip())
 
 		except AttributeError:
 
-			if type(self._general_conf['cv_metric']) == list:
+			if type(self.general_conf['cv_metric']) == list:
 				raise AttributeError("Cross-Validation Metric must be a string")
 
-			raise AttributeError("No metric named '%s'" % self._general_conf['cv_metric'].strip().lower())
+			raise AttributeError("No metric named '%s'" % self.general_conf['cv_metric'].strip().lower())
 
 
-		gib = module.greater_is_better(self._general_conf['cv_metric'].lower().strip())
+		gib = module.greater_is_better(self.general_conf['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
 
 		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,\
-					n_jobs=self._general_conf['jobs'], cv=self._general_conf['hyperparam_cv_nfolds'], iid=False)
+					n_jobs=self.general_conf['jobs'], cv=self.general_conf['hyperparam_cv_nfolds'], iid=False)
 
 		optimal.fit(train_inputs, train_outputs)
 
@@ -479,10 +478,10 @@ class Utilities:
 		print("\nSaving Results...")
 
 		# Names of each metric used (plus computational times)
-		metrics_names = [x.strip().lower() for x in self._general_conf['metrics']] + ["cv_time", "time"]
+		metrics_names = [x.strip().lower() for x in self.general_conf['metrics']] + ["cv_time", "time"]
 
 		# Saving results through Results class
-		self._results.save_results(self._general_conf['output_folder'], metrics_names)
+		self._results.save_results(self.general_conf['output_folder'], metrics_names)
 
 
 
