@@ -1,5 +1,5 @@
-import os
-import sys
+from sys import path as syspath
+from os import path as ospath
 import collections
 
 import unittest
@@ -8,11 +8,9 @@ from numpy import array
 import numpy.testing as npt
 import pandas.util.testing as pdt
 
-sys.path.append('../classifiers')
+syspath.append(ospath.join('..', 'classifiers'))
 
 from OrdinalDecomposition import OrdinalDecomposition
-
-# TODO: Testear este metodo como lo hacen en los tests del clasificador de naive bayes en scikit learn ???
 
 class TestOrdinalDecomposition(unittest.TestCase):
 	"""
@@ -66,11 +64,14 @@ class TestOrdinalDecomposition(unittest.TestCase):
 
 
 	#TODO: Test decision methods outputs and check if they are correct (compute them on paper)
+	#TODO: Can this be made at all?
+
 	def test_decision_method(self):
 		"""
 		Check that each one of the 4 decision methods returns expected
 		values for one toy problem.
 		"""
+
 
 		# Checking Frank and Hall method cannot be used whitout ordered partitions
 		od = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")

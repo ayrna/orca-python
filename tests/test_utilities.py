@@ -1,5 +1,6 @@
 import os
-import sys
+from sys import path as syspath
+from os import path as ospath
 import unittest
 
 import numpy.testing as npt
@@ -7,38 +8,33 @@ import pandas.util.testing as pdt
 import pandas as pd
 import numpy as np
 
-sys.path.append('../')
-sys.path.append('../classifiers')
+syspath.append('..')
+syspath.append(ospath.join('..', 'classifiers'))
+
 from utilities import Utilities
 from utilities import load_classifier
 
 
 class TestAuxiliarMethods(unittest.TestCase):
+	"""
+	This class will test whether all different auxiliar functions
+	built in Utilities class work as expected or not.
+
+	This class can be found in utilities.py, file located at the
+	root folder of this framework.
+	"""
 
 	general_conf = {}
 	configurations = {}
 
 	util = Utilities(general_conf, configurations)
 
-	def test_get_dataset_path(self):
-
-		path = '/path/without/final/backslash'
-		dataset = 'dataset'
-		dataset_path = self.util._get_dataset_path(path, dataset)
-
-		npt.assert_equal(dataset_path, '/path/without/final/backslash/dataset/')
-
-		path = '/path/with/final/backslash/'
-		dataset = 'dataset'
-		dataset_path = self.util._get_dataset_path(path, dataset)
-
-		npt.assert_equal(dataset_path, '/path/with/final/backslash/dataset/')
-
 
 	def test_load_complete_dataset(self):
-
-		# Loading dataset composed of 5 partitions, each one of them composed of a train and test file
-
+		"""
+		Loading dataset composed of 5 partitions, 
+		each one of them composed of a train and test file
+		"""
 		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/complete/"
 		partition_list = self.util._load_dataset(dataset_path)
 
@@ -49,8 +45,10 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 	def test_load_partitionless_dataset(self):
-
-		# This dataset is composed of only two csv files (train and test files)
+		"""
+		Loading dataset composed of only two csv
+		files (train and test files)
+		"""
 
 		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/partitionless/"
 		partition_list = self.util._load_dataset(dataset_path)
@@ -60,8 +58,9 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 	def test_load_nontestfile_dataset(self):
-
-		# Dataset composed of just five train files
+		"""
+		Loading dataset composed of just five train files
+		"""
 
 		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/nontestfile/"
 		partition_list = self.util._load_dataset(dataset_path)
@@ -71,11 +70,10 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 	def test_load_nontrainfile_dataset(self):
-
-		# This dataset has 2 partitions, but one of them lacks it's train file
-
-		# Trying to load a dataset where at least one of it's partitions
-		# doesn't have a train file, should raise an exception
+		"""
+		Loading dataset with 2 partitions, one of them lacking
+		it's train file. This should raise an exception.
+		"""
 
 		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/nontrainfile/"
 		npt.assert_raises(RuntimeError, self.util._load_dataset, dataset_path)
@@ -99,6 +97,13 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 	def test_check_params(self):
+		"""
+		Testing functionality of check_params function.
+
+		It will test the 3 different scenarios contemplated
+		within the framework for passing the configuration.
+		"""
+
 
 		# Normal use of configuration file with a non nested method
 		self.util._configurations = {'conf1': {'classifier': 'sklearn.svm.SVC',
@@ -158,12 +163,17 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 class TestMainMethod(unittest.TestCase):
+	"""
+	This class will test the proper behavior of the main
+	method of this framework, "run_experiment".
 
+	For this, a fixed configuration will be used.
+	"""
 
 
 	# Getting path to datasets folder
-	main_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/'
-	dataset_folder = main_folder + "datasets/"
+	main_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+	dataset_folder = os.path.join(main_folder, "datasets")
 
 	general_conf = {"basedir": dataset_folder,
 					"datasets": ["tae", "contact-lenses"],
@@ -197,6 +207,12 @@ class TestMainMethod(unittest.TestCase):
 
 	@npt.dec.slow
 	def test_run_experiment(self):
+		"""
+		To test the main method, a configuration will be run
+		until the end. Next we will check that every expected
+		result file has been created, having all of them the
+		proper dimensions and types.
+		"""
 
 		# TODO: Anhadir una variable para eliminar los mensajes (modo no verbose)
 
@@ -207,42 +223,43 @@ class TestMainMethod(unittest.TestCase):
 		#util.write_report()
 
 		# Checking if all outputs have been generated and are correct
-		outputs_folder = self.main_folder + "my_runs/"
+		outputs_folder = os.path.join(self.main_folder, "tests", "my_runs")
 		npt.assert_equal(os.path.exists(outputs_folder), True)
 
 		experiment_folder = sorted(os.listdir(outputs_folder))
-		experiment_folder = outputs_folder + experiment_folder[-1] + '/'
+		experiment_folder = os.path.join(outputs_folder, experiment_folder[-1])
 
 		for dataset in util._general_conf['datasets']:
 			for conf_name, _ in util._configurations.items():
 
 				# Check if the folder for that dataset-configurations exists
-				conf_folder = experiment_folder + dataset + "-" + conf_name + "/"
+				conf_folder = os.path.join(experiment_folder, (dataset + "-" + conf_name))
 				npt.assert_equal(os.path.exists(conf_folder), True)
 
 				# Checking CSV containning all metrics for that configuration
-				metrics_csv = pd.read_csv(conf_folder + dataset + "-" + conf_name + ".csv")
+				metrics_csv = pd.read_csv(os.path.join(conf_folder, (dataset + "-" + conf_name + ".csv")))
 				metrics_csv = metrics_csv.iloc[:,-12:]
+
 				npt.assert_equal(metrics_csv.shape, (30, 12))
 				npt.assert_equal(all(str(c) == "float64" for c in metrics_csv.dtypes), True)
 
 				# Checking that all models have been saved
-				models_folder = conf_folder + "models/"
+				models_folder = os.path.join(conf_folder, "models")
 				npt.assert_equal(os.path.exists(models_folder), True)
 				npt.assert_equal(len(os.listdir(models_folder)), 30)
 
 				# Checking that all predictions have been saved
-				predictions_folder = conf_folder + "predictions/"
+				predictions_folder = os.path.join(conf_folder, "predictions")
 				npt.assert_equal(os.path.exists(predictions_folder), True)
 				npt.assert_equal(len(os.listdir(predictions_folder)), 60)
 
 
 		# Checking if summaries are correct
-		train_summary = pd.read_csv(experiment_folder + "train_summary.csv")
+		train_summary = pd.read_csv(os.path.join(experiment_folder, "train_summary.csv"))
 		npt.assert_equal(train_summary.shape, (4, 13))
 		npt.assert_equal(all(str(c) == "float64" for c in train_summary.dtypes.iloc[1:]), True)
 
-		test_summary = pd.read_csv(experiment_folder + "test_summary.csv")
+		test_summary = pd.read_csv(os.path.join(experiment_folder, "test_summary.csv"))
 		npt.assert_equal(test_summary.shape, (4, 13))
 		npt.assert_equal(all(str(c) == "float64" for c in test_summary.dtypes.iloc[1:]), True)
 

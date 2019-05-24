@@ -14,7 +14,7 @@ import numpy.testing as npt
 import pandas.util.testing as pdt
 from sklearn.svm import SVC
 
-syspath.append('../')
+syspath.append('..')
 from results import ReportUnit
 from results import Results
 
@@ -34,7 +34,8 @@ class TestResults(unittest.TestCase):
 
 	def test_get_report_unit(self):
 		"""
-
+		Checking if get_report_unit method returns the correct
+		ReportUnit object and creates new ones properly
 		"""
 		# Creating two different RU objects
 		dfs1 = ReportUnit('toy', 'conf_1')
@@ -55,7 +56,10 @@ class TestResults(unittest.TestCase):
 
 	def test_add_record(self):
 		"""
+		Checking behavior of add_record method.
 
+		Two partitions for the same dataset and configuration will
+		be added and retreived later on to check if they are simillar.
 		"""
 
 		# Adding row to ReportUnit object
@@ -129,9 +133,7 @@ class TestResults(unittest.TestCase):
 
 
 	def test_create_summary(self):
-		"""
 
-		"""
 
 		dataset = 'toy'
 		configuration = 'conf_1'
@@ -160,6 +162,7 @@ class TestResults(unittest.TestCase):
 		mean_index = ['ccr_mean', 'mae_mean']
 		std_index = ['ccr_std', 'mae_std']
 
+		# Getting actual summaries from method
 		data = self._results._get_report_unit(dataset, configuration).metrics
 		df = pd.DataFrame(data=[row for partition,row in sorted(data.items())])
 		train_row, test_row = self._results._create_summary(df, mean_index, std_index)
@@ -183,9 +186,7 @@ class TestResults(unittest.TestCase):
 
 
 	def test_save_results(self):
-		"""
 
-		"""
 
 		# First ReportUnit object
 		ru1 = ReportUnit("dataset1", "config1")
