@@ -2,14 +2,14 @@
 
 1. [What is ORCA-python](#what-is-orca)
 2. [Installing ORCA-python](#installing-orca)
-	1. [Installation Requirements](#installation-requirements)
-	2. [Download ORCA-python](#download-orca)
-	3. [Installation Testing](#installation-testing)
+    1. [Installation Requirements](#installation-requirements)
+    2. [Download ORCA-python](#download-orca)
+    3. [Installation Testing](#installation-testing)
 3. [How to use ORCA-python](#how-to-use-orca)
-	1. [Configuration Files](#configuration-files)
-		1. [general-conf](#general-conf)
-		2. [configurations](#configurations)
-	2. [Running an Experiment](#running-an-experiment)
+    1. [Configuration Files](#configuration-files)
+        1. [general-conf](#general-conf)
+        2. [configurations](#configurations)
+    2. [Running an Experiment](#running-an-experiment)
 
 <!-- /TOC -->
 
@@ -30,8 +30,8 @@ ORCA-python has been developed and tested in GNU/Linux systems. It has been test
 
 ## Installation Requirements
 
-Besides the need of the aforementioned Python interpreter, you will need to install the next Python modules
-in order to run an experiment:
+Besides the need for the aforementioned Python interpreter, you will need to install the next Python modules
+in order to run an experiment (needs recent versions of scikit-learn >=0.20.0):
 
 - numpy (tested with version 1.15.2)
 - pandas (tested with version 0.23.4)
@@ -40,7 +40,7 @@ in order to run an experiment:
 - scipy (tested with version 1.1.0)
 
 To install Python, you can use the package management system you like the most.\
-For the modules installation, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
+For the installation of the modules, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
 
 ## Download ORCA-python
 
@@ -72,7 +72,7 @@ The datasets are already partitioned with a 30-holdout experimental design (trai
 All experiments are run through configuration files, which are written in JSON format, and consist of two well differentiated 
 sections:
 
-  - **`general-conf`**: indicates basic information to run the experiment, such as the location to datasets, the different datasets names to run, etc. 
+  - **`general-conf`**: indicates basic information to run the experiment, such as the location to datasets, the names of the different datasets to run, etc. 
   - **`configurations`**: tells the framework what classification algorithms to apply over all the datasets, with the collection of hyper-parameters to tune.
 
 Each one of this sections will be inside a dictionary, having the said section names as keys.
@@ -85,26 +85,26 @@ For a better understanding of the way this files works, it's better to follow an
 ```
 "general_conf": {
 
-	"basedir": "ordinal-datasets/ordinal-regression/",
-	"datasets": ["tae", "balance-scale", "contact-lenses"],
-	"hyperparam_cv_folds": 3,
-	"jobs": 10,
-	"output_folder": "my_runs/",
-	"metrics": ["ccr", "mae", "amae", "mze"],
-	"cv_metric": "mae"
+    "basedir": "ordinal-datasets/ordinal-regression/",
+    "datasets": ["tae", "balance-scale", "contact-lenses"],
+    "hyperparam_cv_folds": 3,
+    "jobs": 10,
+    "output_folder": "my_runs/",
+    "metrics": ["ccr", "mae", "amae", "mze"],
+    "cv_metric": "mae"
 }
 ```
 *note that all the keys (variable names) must be strings, while all pair: value elements are separated by commas.*
 
 - **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one folder at a time. It can be indicated using a full path, or a relative one to the framework folder.
-- **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist insise `basedir`.
+- **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist inside `basedir`.
 - **`hyperparam_cv_folds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
 - **`output_folder`**: name of the folder where all experiment results will be stored.
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
-Most os this variables do have default values (specified in [config.py](https://github.com/i22bomui/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
+Most of this variables do have default values (specified in [config.py](https://github.com/i22bomui/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
 
 
 ### configurations
@@ -114,56 +114,56 @@ this dictionary will contain, at the same time, one dictionary for each configur
 ```
 "configurations": {
 
-	"SVM": {
+    "SVM": {
 
-		"classifier": "sklearn.svm.SVC",
-		"parameters": {
-			"C": [0.001, 0.1, 1, 10, 100],
-			"gamma": [0.1, 1, 10]
-		}
-	},
-
-
-	"SVMOP": {
-
-		"classifier": "OrdinalDecomposition",
-		"parameters": {
-			"dtype": "OrderedPartitions",
-			"decision_method": "frank_hall",
-			"base_classifier": "sklearn.svm.SVC",
-			"parameters": {
-				"C": [0.01, 0.1, 1, 10],
-				"gamma": [0.01, 0.1, 1, 10],
-				"probability": ["True"]
-			}
-
-		}
-	},
+        "classifier": "sklearn.svm.SVC",
+        "parameters": {
+            "C": [0.001, 0.1, 1, 10, 100],
+            "gamma": [0.1, 1, 10]
+        }
+    },
 
 
-	"LR": {
+    "SVMOP": {
 
-		"classifier": "OrdinalDecomposition",
-		"parameters": {
-			"dtype": ["OrderedPartitions", "OneVsNext"],
-			"decision_method": "exponential_loss",
-			"base_classifier": "sklearn.linear_model.LogisticRegression",
-			"parameters": {
-				"C": [0.01, 0.1, 1, 10],
-				"penalty": ["l1","l2"]
-			}
+        "classifier": "OrdinalDecomposition",
+        "parameters": {
+            "dtype": "OrderedPartitions",
+            "decision_method": "frank_hall",
+            "base_classifier": "sklearn.svm.SVC",
+            "parameters": {
+                "C": [0.01, 0.1, 1, 10],
+                "gamma": [0.01, 0.1, 1, 10],
+                "probability": ["True"]
+            }
 
-		}
-	}
+        }
+    },
+
+
+    "LR": {
+
+        "classifier": "OrdinalDecomposition",
+        "parameters": {
+            "dtype": ["OrderedPartitions", "OneVsNext"],
+            "decision_method": "exponential_loss",
+            "base_classifier": "sklearn.linear_model.LogisticRegression",
+            "parameters": {
+                "C": [0.01, 0.1, 1, 10],
+                "penalty": ["l1","l2"]
+            }
+
+        }
+    }
 }
 ```
 
 Each configuration has a name (whatever you want), and consists of:
 
-- **`classifier`**: tells the framework wich classifier to use. Can be specified in two different ways:
-	- A relative path to the classifier in sklearn module.
-	- The name of a built-in class in Classifiers folder (found in the main folder of the project).
-- **`parameters`**: hyper-paramers to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
+- **`classifier`**: tells the framework which classifier to use. Can be specified in two different ways:
+    - A relative path to the classifier in sklearn module.
+    - The name of a built-in class in Classifiers folder (found in the main folder of the project).
+- **`parameters`**: hyper-parameters to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
 
 *In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the base classifier, which doesn't have a configuration name), with it's respective parameters to tune.*
 
@@ -172,12 +172,12 @@ Each configuration has a name (whatever you want), and consists of:
 ## Running an Experiment
 
 As viewed in [Installation Testing](#installation-testing), running an experiment is as simple as executing Config.py
-with the python interpreter, and tell what configuration file to use for this expetiment, resulting in the next command:
+with the python interpreter, and tell what configuration file to use for this experiment, resulting in the next command:
 
   `$ python config.py with experiment_file.json`
 
-Running an experiment this way has two problems though, one of them being an excesive verbosity from Sacred's python module,
-while the other consists in the non-reproducibility of the experiments results, due to the lack of a fixed seed.
+Running an experiment this way has two problems though, one of them being an excessive verbosity from Sacred's python module,
+while the other consists of the non-reproducibility of the results of the experiment, due to the lack of a fixed seed.
 
 Both problems can be easily fixed. The seed can be specified after "with" in the command:
 
@@ -186,5 +186,3 @@ Both problems can be easily fixed. The seed can be specified after "with" in the
 while we can silence Sacred just by adding "-l ERROR" at the end of the line (not necessarily at the end).
 
   `$ python config.py with experiment_file.json seed=12345 -l ERROR`
-
-
