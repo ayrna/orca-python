@@ -15,9 +15,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	"""
 	OrdinalDecomposition ensemble classifier
 
-	This class implements an ensemble model, where an ordinal problem
+	This class implements an ensemble model where an ordinal problem
 	is decomposed into several binary subproblems, each one of which
-	will generate a different model, though all will share same inner
+	will generate a different (binary) model, though all will share same base
 	classifier and parameters for it.
 
 	There are 4 different ways to decompose the original problem based
@@ -43,39 +43,37 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		+, +, +, -;		 ,  , +, -;		+, +, +, -;		+, -,  ,  ;
 		+, +, +, +;		 ,  ,  , +;		+, +, +, +;		-,  ,  ,  ;
 
-		where rows represents classes and columns classifiers. plus
+		where rows represent classes and columns represent base classifiers. plus
 		signs indicate that for that classifier, that class will be
 		part of the positive class, on the other hand, a minus sign
-		places that class into the the negative one for that binary
+		places that class into the negative one for that binary
 		problem. If there is no sign, then those samples will not be
-		taken into account when building the model.
+		used when building the model.
 
 	decision_method: string
-		Decision method used to transform from n different classifier
-		predictions to give the final label (one among the real classes)
-		to a given set.
+		Decision method that transforms the predictions of the n different
+		base classifiers to produce the final label (one among the real 
+		ordinal classes).
 
 	base_classifier: string
-		Inner classifier used to build a model for each binary subproblem.
-		It has to call a local classifier built into this framework,
-		or a class from scikit-learn.
+		Base classifier used to build a model for each binary subproblem.
+		The base classifier need to be a classifier of orca-python framework 
+		or any classifier available in scikit-learn. Other classifiers that 
+		implements the scikit-learn API can be used here. 
 
 	parameters: dict
-		This dictionary will contain the parameters which the inner
-		classifier will be built with. As this class has been created
-		so that cross-validation is carried out outside it, only one
-		value per parameter is allowed.
-
+		This dictionary will store the parameters used to build the base 
+		classifier. Only one value per parameter is allowed.
 
 	Attributes
 	----------
 
 	classes_: list
-		List that contains all different class labels found in original
+		List that contains all different class labels found in the original
 		dataset.
 
 	coding_matrix_: array-like, shape (n_targets, n_targets-1)
-		Matrix that defines which classes use when building each
+		Matrix that defines which classes will be used to build the model of each
 		subproblem, and in which binary class they belong inside
 		those new models. Further explained previously.
 
@@ -87,8 +85,10 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 	References
 	----------
-
-
+	P.A. Gutiérrez, M. Pérez-Ortiz, J. Sánchez-Monedero, F. Fernández-Navarro and C. Hervás-Martínez (2016),
+	"Ordinal regression methods: survey and experimental study",
+	IEEE Transactions on Knowledge and Data Engineering. Vol. 28. Issue 1
+	http://dx.doi.org/10.1109/TKDE.2015.2457911
 
 	"""
 
@@ -104,13 +104,13 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	def fit(self, X, y):
 
 		"""
-		Fit the model according to the given training data
+		Fit the model with the training data
 
 		Parameters
 		----------
 
-		X: {arra-like, sparse matrix}, shape (n_samples, n_features)
-			Training vector, where n_samples is the number of samples
+		X: {array-like, sparse matrix}, shape (n_samples, n_features)
+			Training patterns array, where n_samples is the number of samples
 			and n_features is the number of features
 
 		y: array-like, shape (n_samples)
@@ -128,7 +128,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		self.X_ = X
 		self.y_ = y
 
-		# Get list of different targets of dataset
+		# Get list of different labels of the dataset
 		self.classes_ = np.unique(y)
 
 		# Gives each train input its corresponding output label for each binary classifier
@@ -269,8 +269,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the exponential losses for each label of the
-		original ordinal multinomial problem. Transforms fron n 
-		binary subproblems to the origial ordinal problem.
+		original ordinal multinomial problem. Transforms n 
+		binary subproblems into the original ordinal problem.
 
 		Parameters
 		----------
@@ -287,7 +287,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		positive_class = 1
-		# Mapping decission probabilities for possitive class from [0 ~ 1] range to [-1 ~ 1]
+		# Mapping decission probabilities for positive class from [0 ~ 1] range to [-1 ~ 1]
 		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == positive_class)])*2 ) - 1
 									 for c in self.classifiers_]).T
 
@@ -307,8 +307,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the Hinge losses for each label of the
-		original ordinal multinomial problem. Transforms fron n 
-		binary subproblems to the origial ordinal problem.
+		original ordinal multinomial problem. Transforms from n 
+		binary subproblems to the original ordinal problem.
 
 		Parameters
 		----------
@@ -324,7 +324,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 
-		# Mapping decission probabilities for possitive class from [0 ~ 1] range to [-1 ~ 1]
+		# Mapping decission probabilities for positive class from [0 ~ 1] range to [-1 ~ 1]
 		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == 1)])*2 ) - 1
 									 for c in self.classifiers_]).T
 
@@ -342,8 +342,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the logaritmic losses for each label of the
-		original ordinal multinomial problem. Transforms fron n 
-		binary subproblems to the origial ordinal problem again.
+		original ordinal multinomial problem. Transforms from n 
+		binary subproblems to the original ordinal problem again.
 
 		Parameters
 		----------
@@ -359,7 +359,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 
-		# Mapping decission probabilities for possitive class from [0 ~ 1] range to [-1 ~ 1]
+		# Mapping decission probabilities for positive class from [0 ~ 1] range to [-1 ~ 1]
 		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == 1)])*2 ) - 1
 									 for c in self.classifiers_]).T
 
@@ -407,7 +407,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		for i, c in enumerate(self.classifiers_[1:], 1):
 
-			# Prbability of sets to belong to class i
+			# Probability of sets to belong to class i
 			predicted_proba_y[:,i] = np.ravel( self.classifiers_[i-1].predict_proba(X)[:, positive_class_placement] ) - \
 									np.ravel(self.classifiers_[i].predict_proba(X)[:, positive_class_placement])
 
