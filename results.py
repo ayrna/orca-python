@@ -104,7 +104,7 @@ class Results:
 		ru : ReportUnit object
 		"""
 
-		# Searchs for this combination of 'dataset' and 'configuration'
+		# Searches for this combination of 'dataset' and 'configuration'
 		for ru in self._reports:
 
 			if ru.dataset == dataset_name and \
@@ -215,12 +215,12 @@ class Results:
 		Inside this specifics subfolders, there will be:
 
 				- A CSV with one entry per partition, where there'll be
-				stored the best found parameters during 
+				stored the best parameters found during 
 				cross-validation, train and test metrics and 
 				computational times for building each model.
 
 				- Models subfolder where it'll be stored the best model 
-				built for each partition, writed as a Pickle.
+				built for each partition, wrote as a Pickle.
 
 				- Predictions subfolder with train and test label 
 				predictions obtained with the best found model.

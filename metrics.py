@@ -36,15 +36,19 @@ def amae(y, ypred):
 		warnings.simplefilter("ignore")
 		cm = confusion_matrix(y, ypred)
 		n_class = cm.shape[0]
-		costes = np.reshape(np.tile(range(n_class),n_class),(n_class,n_class))
-		costes = np.abs(costes - np.transpose(costes))
-		errores = costes*cm
+		costs = np.reshape(np.tile(range(n_class),n_class),(n_class,n_class))
+		costs = np.abs(costs - np.transpose(costs))
+		errores = costs*cm
 		amaes = np.sum(errores,axis=1)/np.sum(cm,axis=1).astype('double')
 		amaes = amaes[~np.isnan(amaes)]
 		return np.mean(amaes)
 
 def gm(y, ypred):
 	"""
+
+	GM - Geometric Mean
+
+	Geometric mean of the sensitivy (accuracy) for each class
 	
 	"""
 
