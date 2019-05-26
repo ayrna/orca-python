@@ -615,7 +615,7 @@ def get_key(key):
 
 	Returns
 	-------
-	int or boolean
+	int or string
 	"""
 
 	try:
