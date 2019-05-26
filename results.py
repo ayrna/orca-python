@@ -129,7 +129,7 @@ class Results:
 		Parameters
 		----------
 
-		partition: int ot string
+		partition: int or string
 			Number of partition to store.
 
 		best_params: dictionary
@@ -318,7 +318,6 @@ class Results:
 		"""
 		Summarices information from all partitions stored in a 
 		ReportUnit object into one line of a DataFrame.
-
 
 		Parameters
 		----------
