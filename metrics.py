@@ -6,7 +6,10 @@ from sklearn.metrics.classification import confusion_matrix
 import scipy.stats
 
 def greater_is_better(metric_name):
-
+	"""
+	Determines if greater values for one metric represent a better
+	classification rate or vice versa.
+	"""
 
 	greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
 	if metric_name in greater_is_better_metrics:
