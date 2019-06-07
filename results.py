@@ -169,7 +169,7 @@ class Results:
 
 			"""If some ensemble method has been used, then one of its
 			parameters will be a dictionary containing the best parameters
-			found for the meta classifier.
+			found for the base classifier.
 			"""
 			if type(p_value) == dict:
 				for (k, v) in p_value.items():

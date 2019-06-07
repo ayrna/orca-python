@@ -45,6 +45,9 @@ class Utilities:
 		the different values for the hyper-parameters used to
 		optimize the model during cross-validation phase.
 
+	verbose: boolean
+		Variable used for testing purposes. Silences all prints.
+
 	For more usage information, read User Guide of this framework.
 
 
@@ -57,11 +60,12 @@ class Utilities:
 	"""
 
 
-	def __init__(self, general_conf, configurations):
+	def __init__(self, general_conf, configurations, verbose=True):
 
 
 		self.general_conf = general_conf
 		self.configurations = configurations
+		self.verbose = verbose
 
 
 	def run_experiment(self):
@@ -85,9 +89,10 @@ class Utilities:
 		self._check_dataset_list()
 		self._check_params()
 
-		print("\n###############################")
-		print("\tRunning Experiment")
-		print("###############################")
+		if self.verbose:
+			print("\n###############################")
+			print("\tRunning Experiment")
+			print("###############################")
 
 		# Iterating over Datasets
 		for x in self.general_conf['datasets']:
@@ -98,19 +103,22 @@ class Utilities:
 
 			# Loading dataset into a list of partitions.
 			dataset = self._load_dataset(dataset_path)
-			print("\nRunning", dataset_name, "dataset")
-			print("--------------------------")
+			if self.verbose:
+				print("\nRunning", dataset_name, "dataset")
+				print("--------------------------")
 
 
 			# Iterating over Configurations
 			for conf_name, configuration in self.configurations.items():
-				print("Running", conf_name, "...")
+				if self.verbose:
+					print("Running", conf_name, "...")
 
 				classifier = load_classifier(configuration["classifier"])
 
 				# Iterating over partitions
 				for part_idx, partition in enumerate(dataset):
-					print("  Running Partition", part_idx)
+					if self.verbose:
+						print("  Running Partition", part_idx)
 
 					# Finding optimal classifier
 					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"], partition["train_outputs"],\
@@ -474,8 +482,8 @@ class Utilities:
 		"""
 		Saves information about experiment through Results class
 		"""
-
-		print("\nSaving Results...")
+		if self.verbose:
+			print("\nSaving Results...")
 
 		# Names of each metric used (plus computational times)
 		metrics_names = [x.strip().lower() for x in self.general_conf['metrics']] + ["cv_time", "time"]
