@@ -1,6 +1,7 @@
 import os
 from sys import path as syspath
 from os import path as ospath
+from shutil import rmtree
 import unittest
 
 import numpy.testing as npt
@@ -98,7 +99,7 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 	def test_check_params(self):
 		"""
-		Testing functionality of check_params function.
+		Testing functionality of check_params method.
 
 		It will test the 3 different scenarios contemplated
 		within the framework for passing the configuration.
@@ -106,51 +107,60 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 		# Normal use of configuration file with a non nested method
-		self.util._configurations = {'conf1': {'classifier': 'sklearn.svm.SVC',
+		self.util.configurations = {'conf1': {'classifier': 'sklearn.svm.SVC',
 												'parameters': {'C': [0.1, 1, 10],
-															'gamma': [0.1, 1, 100], 'probability': "True"}}}
+																'gamma': [0.1, 1, 100], 
+																'probability': "True"}}}
 
 		# Getting formatted_params and expected_params
-		self.util._check_params(); formatted_params = self.util._configurations['conf1']['parameters']
+		self.util._check_params(); formatted_params = self.util.configurations['conf1']['parameters']
 
-		random_state = self.util._configurations['conf1']['parameters']['random_state']
+		random_state = self.util.configurations['conf1']['parameters']['random_state']
 		expected_params = {'C': [0.1, 1, 10], 'gamma': [0.1, 1, 100], 'probability': ["True"], 'random_state': random_state}
 
 		npt.assert_equal(formatted_params, expected_params) 
 
+
 		# Configuration file using an ensemble method
-		self.util._configurations = {'conf2': {'classifier': 'sklearn.smv.SVC',
+		self.util.configurations = {'conf2': {'classifier': 'sklearn.smv.SVC',
 												'parameters': {'dtype': 'OrderedPartitions', 
 															'algorithm': 'sklearn.svm.SVC', 
 															'parameters': {'C': [1, 10], 
-																	'gamma': [1, 10], 'probability': ['True']}}}}
+																		'gamma': [1, 10], 
+																		'probability': ['True']}}}}
+
+
 
 		# Getting formatted_params and expected_params
-		self.util._check_params(); formatted_params = self.util._configurations['conf2']['parameters']
+		self.util._check_params(); formatted_params = self.util.configurations['conf2']['parameters']
 
-		random_state = self.util._configurations['conf2']['parameters']['parameters'][0]['random_state']
+		random_state = self.util.configurations['conf2']['parameters']['parameters'][0]['random_state']
 		expected_params = {	'dtype': ['OrderedPartitions'],
 							'algorithm': ['sklearn.svm.SVC'],
-							'parameters': [	{'C': 1.0, 'gamma': 1.0, 'probability': True, 'random_state': random_state},
-											{'C': 1.0, 'gamma': 10.0, 'probability': True, 'random_state': random_state}, 
-											{'C': 10.0, 'gamma': 1.0, 'probability': True, 'random_state': random_state}, 
-											{'C': 10.0, 'gamma': 10.0, 'probability': True, 'random_state': random_state}]
+							'parameters': [	{'C': 1, 'gamma': 1, 'probability': True, 'random_state': random_state},
+											{'C': 1, 'gamma': 10, 'probability': True, 'random_state': random_state}, 
+											{'C': 10, 'gamma': 1, 'probability': True, 'random_state': random_state}, 
+											{'C': 10, 'gamma': 10, 'probability': True, 'random_state': random_state}]
 						  }
 
 
-		npt.assert_equal(formatted_params, expected_params)
+		# Ordering list of parameters from formatted_params to prevent inconsistencies
+		formatted_params['parameters'] = sorted(formatted_params['parameters'], key=lambda k: k['C'])
+
+		npt.assert_equal(expected_params, formatted_params)
+
 
 
 		# Configuration file where it's not necessary to perform cross-validation
-		self.util._configurations = {'conf3': {'classifier': 'sklearn.smv.SVC',
+		self.util.configurations = {'conf3': {'classifier': 'sklearn.smv.SVC',
 												'parameters': {'dtype': 'OrderedPartitions', 
 															'algorithm': 'sklearn.svm.SVC', 
 															'parameters': {'C': [1], 'gamma': [1]}}}}
 
 		# Getting formatted_params and expected_params
-		self.util._check_params(); formatted_params = self.util._configurations['conf3']['parameters']
+		self.util._check_params(); formatted_params = self.util.configurations['conf3']['parameters']
 
-		random_state = self.util._configurations['conf3']['parameters']['parameters']['random_state']
+		random_state = self.util.configurations['conf3']['parameters']['parameters']['random_state']
 		expected_params = {	'dtype': 'OrderedPartitions',
 							'algorithm': 'sklearn.svm.SVC',
 							'parameters': {'C': 1, 'gamma': 1, 'random_state': random_state}}
@@ -160,6 +170,7 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 		# Resetting configurations to not interfere with other experiments
 		self.util.configurations = {}
+
 
 
 class TestMainMethod(unittest.TestCase):
@@ -214,13 +225,11 @@ class TestMainMethod(unittest.TestCase):
 		proper dimensions and types.
 		"""
 
-		# TODO: Anhadir una variable para eliminar los mensajes (modo no verbose)
-
 		# Declaring Utilities object and running the experiment
-		util = Utilities(self.general_conf, self.configurations)
-		#util.run_experiment()
+		util = Utilities(self.general_conf, self.configurations, verbose=False)
+		util.run_experiment()
 		# Saving results information
-		#util.write_report()
+		util.write_report()
 
 		# Checking if all outputs have been generated and are correct
 		outputs_folder = os.path.join(self.main_folder, "tests", "my_runs")
@@ -229,8 +238,9 @@ class TestMainMethod(unittest.TestCase):
 		experiment_folder = sorted(os.listdir(outputs_folder))
 		experiment_folder = os.path.join(outputs_folder, experiment_folder[-1])
 
-		for dataset in util._general_conf['datasets']:
-			for conf_name, _ in util._configurations.items():
+
+		for dataset in util.general_conf['datasets']:
+			for conf_name, _ in util.configurations.items():
 
 				# Check if the folder for that dataset-configurations exists
 				conf_folder = os.path.join(experiment_folder, (dataset + "-" + conf_name))
@@ -263,6 +273,7 @@ class TestMainMethod(unittest.TestCase):
 		npt.assert_equal(test_summary.shape, (4, 13))
 		npt.assert_equal(all(str(c) == "float64" for c in test_summary.dtypes.iloc[1:]), True)
 
+		rmtree(outputs_folder)
 
 # Running all tests
 if __name__ == "__main__":
