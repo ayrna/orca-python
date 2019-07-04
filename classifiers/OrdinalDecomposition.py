@@ -137,7 +137,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		self.classifiers_ = []
-		# Fitting n_targets-1 classifiers, each one with a different 
+		# Fitting n_targets - 1 classifiers, each one with a different
 		# combination of train inputs given by the coding_matrix
 		for n in range(len(class_labels[0,:])):
 
@@ -159,12 +159,12 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Parameters
 		----------
 
-		X : {array-like, sparse matrix}, shape (n_samples, n_features)
+		X: {array-like, sparse matrix}, shape (n_samples, n_features)
 
 		Returns
 		-------
 
-		predicted_y : array, shape (n_samples,)
+		predicted_y: array, shape (n_samples,)
 			Class labels for samples in X.
 		"""
 
@@ -174,30 +174,43 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		# Input validation
 		X = check_array(X)
 
+		predictions = self._get_predictions(X)
 
 		decision_method = self.decision_method.lower()
-
 		if decision_method == "exponential_loss":
 
-			losses = self._exponential_loss(X)
+			# Scaling predictions from [0,1] range to [-1,1]
+			predictions = (predictions*2 - 1)
+
+			# Transforming from binary problems to the original problem
+			losses = self._exponential_loss(predictions)
 			predicted_y = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "hinge_loss":
 			
-			losses = self._hinge_loss(X)
+			# Scaling predictions from [0,1] range to [-1,1]
+			predictions = (predictions*2 - 1)
+
+			# Transforming from binary problems to the original problem
+			losses = self._hinge_loss(predictions)
 			predicted_y = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "logaritmic_loss":
 
-			losses = self._logaritmic_loss(X)
+			# Scaling predictions from [0,1] range to [-1,1]
+			predictions = (predictions*2 - 1)
+
+			# Transforming from binary problems to the original problem
+			losses = self._logaritmic_loss(predictions)
 			predicted_y = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "frank_hall":
 
-			predicted_proba_y = self._frank_hall_method(X)
+			# Transforming from binary problems to the original problem
+			predicted_proba_y = self._frank_hall_method(predictions)
 			predicted_y = self.classes_[np.argmax(predicted_proba_y, axis=1)]
 
 
@@ -206,8 +219,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		return predicted_y
-
-
 
 
 
@@ -264,8 +275,32 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 
+	def _get_predictions(self, X):
 
-	def _exponential_loss(self, X):
+		"""
+		For each pattern inside the dataset X, this method returns
+		the probability for that pattern to belong to the positive
+		or negative class. There will be as many predictions as
+		different binary classifiers has been trained previously.
+
+		Parameters
+		----------
+
+		X: {array-like, sparse matrix}, shape (n_samples, n_features)
+
+		Returns
+		-------
+
+		predictions: array, shape (n_targets-1, n_samples, 2)
+		"""
+
+		# Mapping predicted probabilities from [0 ~ 1] range to [-1 ~ 1]
+		predictions = np.array(list(map(lambda c: c.predict_proba(X), self.classifiers_)))
+
+		return predictions
+
+
+	def _exponential_loss(self, predictions):
 
 		"""
 		Computation of the exponential losses for each label of the
@@ -275,35 +310,30 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Parameters
 		----------
 
-		X : {array-like, sparse matrix}, shape (n_samples, n_features)
+		predictions: array, shape (n_targets-1, n_samples, 2)
 
 		Returns
 		-------
 
-		e_losses : array, shape (n_samples, unique_labels)
+		e_losses: array, shape (n_samples, unique_labels)
 			Exponential losses for each sample of dataset X. One
 			different value for each class label.
 		"""
 
 
-		positive_class = 1
-		# Mapping decission probabilities for positive class from [0 ~ 1] range to [-1 ~ 1]
-		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == positive_class)])*2 ) - 1
-									 for c in self.classifiers_]).T
-
-
 		# Computing exponential losses
-		e_losses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
+		e_losses = np.zeros( (predictions[0].shape[0], self.coding_matrix_.shape[0]) )
 		for i in range(self.coding_matrix_.shape[0]):
 
-			e_losses[:,i] = np.sum(np.exp( -predictions * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) ), axis=1)
+			e_losses[:,i] = np.sum(np.exp( -(predictions[:,:,1].T) * np.tile(self.coding_matrix_[i,:],\
+											(predictions[0].shape[0], 1)) ), axis=1)
 
 		return e_losses
 
 
 
 
-	def _hinge_loss(self, X):
+	def _hinge_loss(self, predictions):
 
 		"""
 		Computation of the Hinge losses for each label of the
@@ -313,32 +343,29 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Parameters
 		----------
 
-		X : {array-like, sparse matrix}, shape (n_samples, n_features)
+		predictions: array, shape (n_targets-1, n_samples, 2)
 
 		Returns
 		-------
 
-		hLosses : array, shape (n_samples, unique_labels)
+		hLosses: array, shape (n_samples, unique_labels)
 			Hinge losses for each sample of dataset X. One
 			different value for each class label.
 
 		"""
 
-		# Mapping decission probabilities for positive class from [0 ~ 1] range to [-1 ~ 1]
-		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == 1)])*2 ) - 1
-									 for c in self.classifiers_]).T
-
 		# Computing Hinge losses
-		h_losses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
+		h_losses = np.zeros( (predictions[0].shape[0], self.coding_matrix_.shape[0]) )
 		for i in range(self.coding_matrix_.shape[0]):
 
-			h_losses[:,i] = np.sum( np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions) ), axis=1 )
+			h_losses[:,i] = np.sum( np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:], (predictions[0].shape[0], 1)) * predictions[:,:,1].T) ), axis=1 )
 
 		return h_losses
 
 
 
-	def _logaritmic_loss(self, X):
+
+	def _logaritmic_loss(self, predictions):
 
 		"""
 		Computation of the logaritmic losses for each label of the
@@ -348,33 +375,30 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Parameters
 		----------
 
-		X : {array-like, sparse matrix}, shape (n_samples, n_features)
+		predictions: array, shape (n_targets-1, n_samples, 2)
 
 		Returns
 		-------
 
-		eLosses : array, shape (n_samples, unique_labels)
+		eLosses: array, shape (n_samples, unique_labels)
 			Logaritmic losses for each sample of dataset X. One
 			different value for each class label.
 
 		"""
 
-		# Mapping decission probabilities for positive class from [0 ~ 1] range to [-1 ~ 1]
-		predictions = np.array([ ( np.ravel(c.predict_proba(X)[:, np.where(c.classes_ == 1)])*2 ) - 1
-									 for c in self.classifiers_]).T
 
 		# Computing logaritmic losses
-		l_losses = np.zeros( (X.shape[0], self.coding_matrix_.shape[0]) )
+		l_losses = np.zeros( (predictions[0].shape[0], self.coding_matrix_.shape[0]) )
 		for i in range(self.coding_matrix_.shape[0]):
 
-			l_losses[:,i] = np.sum( np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions)), axis=1 )
-
+			l_losses[:,i] = np.sum( np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:],\
+												 (predictions[0].shape[0], 1)) * predictions[:,:,1])), axis=1 )
 
 		return l_losses
 
 
 
-	def _frank_hall_method(self, X):
+	def _frank_hall_method(self, predictions):
 
 		"""
 		Decision method used to transform from n predictions of binary
@@ -383,13 +407,13 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Parameters
 		----------
 
-		X : {array-like, sparse matrix}, shape (n_samples, n_features)
+		predictions: array, shape (n_targets-1, n_samples, 2)
 
 		Returns
 		-------
 
-		predicted_y : array, shape (n_samples,)
-			Class labels for samples in X.
+		predicted_y: array, shape (n_samples,)
+			Class labels predicted for samples in dataset X.
 		"""
 
 
@@ -397,22 +421,20 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			raise AttributeError("When using Frank and Hall decision method, ordered_partitions must be used")
 
 
-
-		predicted_proba_y = np.empty( [X.shape[0], len(self.classifiers_) + 1] )
+		predicted_proba_y = np.empty([predictions[0].shape[0], len(self.classifiers_) + 1])
 		positive_class_placement = np.where(self.classifiers_[0].classes_ == 1)
 
-
 		# Probabilities of each set to belong to the first ordinal class
-		predicted_proba_y[:,0] = 1 - np.ravel( self.classifiers_[0].predict_proba(X)[:, positive_class_placement] )
+		predicted_proba_y[:,0] = 1 - np.ravel(predictions[0][:, positive_class_placement])
 
 		for i, c in enumerate(self.classifiers_[1:], 1):
 
 			# Probability of sets to belong to class i
-			predicted_proba_y[:,i] = np.ravel( self.classifiers_[i-1].predict_proba(X)[:, positive_class_placement] ) - \
-									np.ravel(self.classifiers_[i].predict_proba(X)[:, positive_class_placement])
+			predicted_proba_y[:,i] = np.ravel(predictions[i-1][:, positive_class_placement]) -\
+									np.ravel(predictions[i][:, positive_class_placement])
 
 		# Probabilities of each set to belong to the last class
-		predicted_proba_y[:,-1] = np.ravel( self.classifiers_[-1].predict_proba(X)[:, positive_class_placement] )
+		predicted_proba_y[:,-1] = np.ravel(predictions[-1][:, positive_class_placement])
 
 		return predicted_proba_y
 
