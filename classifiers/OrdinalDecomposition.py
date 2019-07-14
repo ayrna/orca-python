@@ -282,8 +282,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		"""
 		For each pattern inside the dataset X, this method returns
 		the probability for that pattern to belong to the positive
-		or negative class. There will be as many predictions as
-		different binary classifiers has been fitted previously.
+		class. There will be as many predictions (columns) as different
+		binary classifiers have been fitted previously.
 
 		Parameters
 		----------
@@ -293,10 +293,10 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		predictions: array, shape (n_targets-1, n_samples, 2)
+		predictions: array, shape (n_samples, n_targets-1)
 		"""
 
-		predictions = np.array(list(map(lambda c: c.predict_proba(X), self.classifiers_)))
+		predictions = np.array(list(map(lambda c: c.predict_proba(X)[:,1], self.classifiers_))).T
 
 		return predictions
 
@@ -306,29 +306,29 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the exponential losses for each label of the
-		original ordinal multinomial problem. Transforms n 
-		binary subproblems into the original ordinal problem.
+		original ordinal multinomial problem. Transforms from n-1 
+		binary subproblems to the original ordinal problem with n targets.
 
 		Parameters
 		----------
 
-		predictions: array, shape (n_targets-1, n_samples, 2)
+		predictions: array, shape (n_samples, n_targets-1)
 
 		Returns
 		-------
 
-		e_losses: array, shape (n_samples, unique_labels)
+		e_losses: array, shape (n_samples, n_targets)
 			Exponential losses for each sample of dataset X. One
 			different value for each class label.
 		"""
 
 
 		# Computing exponential losses
-		e_losses = np.zeros( (predictions.shape[1], self.coding_matrix_.shape[0]) )
-		for i in range(self.coding_matrix_.shape[0]):
+		e_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
+		for i in range(predictions.shape[1] + 1):
 
-			e_losses[:,i] = np.sum(np.exp( -(predictions[:,:,1].T) * np.tile(self.coding_matrix_[i,:],\
-											(predictions.shape[1], 1)) ), axis=1)
+			e_losses[:,i] = np.sum(np.exp(-predictions * np.tile(self.coding_matrix_[i,:],\
+											(predictions.shape[0], 1))), axis=1)
 
 		return e_losses
 
@@ -338,28 +338,28 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the Hinge losses for each label of the
-		original ordinal multinomial problem. Transforms from n 
-		binary subproblems to the original ordinal problem.
+		original ordinal multinomial problem. Transforms from n-1 
+		binary subproblems to the original ordinal problem with n targets.
 
 		Parameters
 		----------
 
-		predictions: array, shape (n_targets-1, n_samples, 2)
+		predictions: array, shape (n_samples, n_targets-1)
 
 		Returns
 		-------
 
-		hLosses: array, shape (n_samples, unique_labels)
+		hLosses: array, shape (n_samples, n_targets)
 			Hinge losses for each sample of dataset X. One
 			different value for each class label.
 
 		"""
 
 		# Computing Hinge losses
-		h_losses = np.zeros( (predictions.shape[1], self.coding_matrix_.shape[0]) )
-		for i in range(self.coding_matrix_.shape[0]):
+		h_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
+		for i in range(predictions.shape[1] + 1):
 
-			h_losses[:,i] = np.sum( np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:], (predictions.shape[1], 1)) * predictions[:,:,1].T) ), axis=1 )
+			h_losses[:,i] = np.sum( np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions) ), axis=1 )
 
 		return h_losses
 
@@ -369,18 +369,18 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the logaritmic losses for each label of the
-		original ordinal multinomial problem. Transforms from n 
-		binary subproblems to the original ordinal problem again.
+		original ordinal multinomial problem. Transforms from n-1 
+		binary subproblems to the original ordinal problem with n targets.
 
 		Parameters
 		----------
 
-		predictions: array, shape (n_targets-1, n_samples, 2)
+		predictions: array, shape (n_samples, n_targets-1)
 
 		Returns
 		-------
 
-		eLosses: array, shape (n_samples, unique_labels)
+		eLosses: array, shape (n_samples, n_targets)
 			Logaritmic losses for each sample of dataset X. One
 			different value for each class label.
 
@@ -388,10 +388,10 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		# Computing logaritmic losses
-		l_losses = np.zeros( (predictions.shape[1], self.coding_matrix_.shape[0]) )
-		for i in range(self.coding_matrix_.shape[0]):
+		l_losses = np.zeros( (predictions.shape[0], (predictions.shape[1] + 1)) )
+		for i in range(predictions.shape[1] + 1):
 
-			l_losses[:,i] = np.sum( np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:], (predictions.shape[1], 1)) * predictions[:,:,1].T)), axis=1 )
+			l_losses[:,i] = np.sum( np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions)), axis=1 )
 
 		return l_losses
 
@@ -400,39 +400,40 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	def _frank_hall_method(self, predictions):
 
 		"""
-		Decision method used to transform from n predictions of binary
-		problems to predictions of a multinomial ordinal classification
+		Returns the probability for each pattern of dataset to
+		belong to each one of the original targets.	Transforms from n-1
+		subproblems to the original ordinal problem with n targets.
 
 		Parameters
 		----------
 
-		predictions: array, shape (n_targets-1, n_samples, 2)
+		predictions: array, shape (n_samples, n_targets-1)
 
 		Returns
 		-------
 
-		predicted_y: array, shape (n_samples,)
+		predicted_proba_y: array, shape (n_samples, n_targets)
 			Class labels predicted for samples in dataset X.
 		"""
 
 
 		if self.dtype.lower() != "ordered_partitions":
-			raise AttributeError("When using Frank and Hall decision method, ordered_partitions must be used")
+			raise AttributeError("When using Frank and Hall decision method,\
+								ordered_partitions must be used")
 
 
-		predicted_proba_y = np.empty([predictions.shape[1], (predictions.shape[0] + 1)])
+		predicted_proba_y = np.empty([(predictions.shape[0]), (predictions.shape[1] + 1)])
 
 		# Probabilities of each set to belong to the first ordinal class
-		predicted_proba_y[:,0] = 1 - np.ravel(predictions[0][:, 1])
+		predicted_proba_y[:,0] = 1 - predictions[:,0]
 
-		for i in range(1, predictions.shape[0]):
+		for i in range(1, predictions.shape[1]):
 
 			# Probability of sets to belong to class i
-			predicted_proba_y[:,i] = np.ravel(predictions[i-1][:, 1]) -\
-									np.ravel(predictions[i][:, 1])
+			predicted_proba_y[:,i] = predictions[:,i-1] - predictions[:,i]
 
 		# Probabilities of each set to belong to the last class
-		predicted_proba_y[:,-1] = np.ravel(predictions[-1][:, 1])
+		predicted_proba_y[:,-1] = predictions[:,-1]
 
 		return predicted_proba_y
 
