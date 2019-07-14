@@ -36,7 +36,10 @@ class TestAuxiliarMethods(unittest.TestCase):
 		Loading dataset composed of 5 partitions, 
 		each one of them composed of a train and test file
 		"""
-		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/complete/"
+
+		dataset_path = os.path.dirname(os.path.abspath(__file__))
+		dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "complete")
+
 		partition_list = self.util._load_dataset(dataset_path)
 
 		# Check all partitions have been loaded
@@ -51,7 +54,9 @@ class TestAuxiliarMethods(unittest.TestCase):
 		files (train and test files)
 		"""
 
-		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/partitionless/"
+		dataset_path = os.path.dirname(os.path.abspath(__file__))
+		dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "partitionless")
+
 		partition_list = self.util._load_dataset(dataset_path)
 
 		npt.assert_equal(len(partition_list), 1)
@@ -63,7 +68,9 @@ class TestAuxiliarMethods(unittest.TestCase):
 		Loading dataset composed of just five train files
 		"""
 
-		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/nontestfile/"
+		dataset_path = os.path.dirname(os.path.abspath(__file__))
+		dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "nontestfile")
+
 		partition_list = self.util._load_dataset(dataset_path)
 
 		npt.assert_equal(len(partition_list), len([name for name in os.listdir(dataset_path)]))
@@ -76,7 +83,9 @@ class TestAuxiliarMethods(unittest.TestCase):
 		it's train file. This should raise an exception.
 		"""
 
-		dataset_path = os.path.dirname(os.path.abspath(__file__)) + "/test_datasets/test_load_dataset/nontrainfile/"
+		dataset_path = os.path.dirname(os.path.abspath(__file__))
+		dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "nontrainfile")
+
 		npt.assert_raises(RuntimeError, self.util._load_dataset, dataset_path)
 
 
@@ -186,6 +195,7 @@ class TestMainMethod(unittest.TestCase):
 	main_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 	dataset_folder = os.path.join(main_folder, "datasets")
 
+	# Declaring a simple configuration
 	general_conf = {"basedir": dataset_folder,
 					"datasets": ["tae", "contact-lenses"],
 					"hyperparam_cv_nfolds": 3,
