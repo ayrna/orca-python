@@ -6,12 +6,20 @@ from collections import OrderedDict
 from itertools import product
 from sys import path
 
+from ast import literal_eval
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics.scorer import make_scorer
 
 from results import Results
+
+
+#TODO: metodos que no reciban como parametro random_seed daran error al ejecutarse,
+#		ya que en sus __init__ no aparece, pero GridSearchCV se lo pasa como variable
+
+# La funcion a modificar es _check_params
 
 class Utilities:
 
@@ -103,6 +111,7 @@ class Utilities:
 
 			# Loading dataset into a list of partitions.
 			dataset = self._load_dataset(dataset_path)
+
 			if self.verbose:
 				print("\nRunning", dataset_name, "dataset")
 				print("--------------------------")
@@ -113,6 +122,7 @@ class Utilities:
 				if self.verbose:
 					print("Running", conf_name, "...")
 
+				#Loading classifier
 				classifier = load_classifier(configuration["classifier"])
 
 				# Iterating over partitions
@@ -286,7 +296,6 @@ class Utilities:
 			experiment.
 			If 'all' is specified without any other string, then all
 			datasets in basedir folder will be run.
-
 		"""
 
 
@@ -326,7 +335,7 @@ class Utilities:
 		Checks if all given configurations are sintactly correct.
 
 		Performs two different transformations over parameter
-		dictionaries when needed. Those consist of:
+		dictionaries when needed:
 
 		- If one parameter's values are not inside a list, GridSearchCV
 		will not be able to handle them, so they must be enclosed into one.
@@ -343,7 +352,6 @@ class Utilities:
 			parameters = conf['parameters']
 
 			# If parameter is a dict named 'parameters', then an ensemble method it's being used
-			# we need to transform a dict of lists, into a list of dicts.
 			if 'parameters' in parameters and type(parameters['parameters'] == dict):
 
 				# Using given seed as random_state value
@@ -351,7 +359,7 @@ class Utilities:
 
 				try:
 
-					# Creating a list for each parameter. Elements represented as 'parameterName-parameterValue'.
+					# Creating a list for each parameter. Elements represented as 'parameterName;parameterValue'.
 					p_list = [ [p_name + ';' + str(v) for v in p] for p_name, p in parameters['parameters'].items() ]
 					# Permutations of all lists. Generates all possible combination of elements between lists.
 					p_list = [ list(item) for item in list(product(*p_list)) ]
@@ -366,12 +374,10 @@ class Utilities:
 				for d in p_list:
 					for (k, v) in d.items():
 
-						if is_int(v):
-							d[k] = int(v)
-						elif is_float(v):
-							d[k] = float(v)
-						elif is_boolean(v):
-							d[k] = bool(v)
+						try:
+							d[k] = literal_eval(v)
+						except ValueError:
+							pass
 
 				parameters['parameters'] = p_list
 
@@ -467,6 +473,7 @@ class Utilities:
 		gib = module.greater_is_better(self.general_conf['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
 
+
 		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,\
 					n_jobs=self.general_conf['jobs'], cv=self.general_conf['hyperparam_cv_nfolds'], iid=False)
 
@@ -528,11 +535,13 @@ def load_classifier(classifier_path, params=None):
 
 	"""
 
+	# Path to framework local classifier
 	if (len(classifier_path.split('.')) == 1):
 
 		classifier = __import__(classifier_path)
 		classifier = getattr(classifier, classifier_path)
 
+	# Path to Scikit-Learn classifier
 	else:
 
 		classifier = __import__(classifier_path.rsplit('.', 1)[0], fromlist="None")
@@ -542,72 +551,6 @@ def load_classifier(classifier_path, params=None):
 		classifier = classifier(**params)
 
 	return classifier
-
-
-
-def is_int(value):
-
-	"""
-	Check if an string can be converted to int.
-
-	Parameters
-	----------
-	value: string
-
-	Returns
-	-------
-	Int
-	"""
-
-	try:
-		int(value)
-		return True
-	except ValueError:
-		return False
-
-
-
-def is_float(value):
-
-	"""
-	Check if an string can be converted to float.
-
-	Parameters
-	----------
-	value: string
-
-	Returns
-	-------
-	Float
-	"""
-
-	try:
-		float(value)
-		return True
-	except ValueError:
-		return False
-
-
-
-def is_boolean(value):
-
-	"""
-	Check if an string can be converted to boolean.
-
-	Parameters
-	----------
-	value: string
-
-	Returns
-	-------
-	Boolean
-	"""
-
-
-	if value == "True" or value == "False":
-		return True
-	else:
-		return False
 
 
 
