@@ -8,7 +8,8 @@ import scipy.stats
 def greater_is_better(metric_name):
 	"""
 	Determines if greater values for one metric represent a better
-	classification rate or vice versa.
+	classification rate or vice versa. Needed when declaring a
+	new scorer through make_scorer from sklearn.
 	"""
 
 	greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
