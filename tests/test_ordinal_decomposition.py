@@ -57,7 +57,7 @@ class TestOrdinalDecomposition(unittest.TestCase):
 							 [ 1, 1, 1,-1], 
 							 [ 1, 1, 1, 1]])
 
-		actual_cm = od._coding_matrix(5)
+		actual_cm = od._coding_matrix(od.dtype, 5)
 
 		npt.assert_array_equal(actual_cm, expected_cm)
 
@@ -70,7 +70,7 @@ class TestOrdinalDecomposition(unittest.TestCase):
 							 [ 0, 0, 1,-1], 
 							 [ 0, 0, 0, 1]])
 
-		actual_cm = od._coding_matrix(5)
+		actual_cm = od._coding_matrix(od.dtype, 5)
 
 		npt.assert_array_equal(actual_cm, expected_cm)
 
@@ -83,7 +83,7 @@ class TestOrdinalDecomposition(unittest.TestCase):
 							 [ 1, 1, 1,-1], 
 							 [ 1, 1, 1, 1]])
 
-		actual_cm = od._coding_matrix(5)
+		actual_cm = od._coding_matrix(od.dtype, 5)
 
 		npt.assert_array_equal(actual_cm, expected_cm)
 
@@ -96,7 +96,7 @@ class TestOrdinalDecomposition(unittest.TestCase):
 							 [ 1,-1, 0, 0], 
 							 [-1, 0, 0, 0]])
 
-		actual_cm = od._coding_matrix(5)
+		actual_cm = od._coding_matrix(od.dtype, 5)
 
 		npt.assert_array_equal(actual_cm, expected_cm)
 
@@ -120,7 +120,7 @@ class TestOrdinalDecomposition(unittest.TestCase):
 
 		# Checking decision_methods work as intended
 		od = OrdinalDecomposition(dtype="ordered_partitions")
-		od.coding_matrix_ = od._coding_matrix(5)
+		od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
 
 		# Predicted probabilities from a 5 class ordinal dataset (positive class)
 		predictions = array(
