@@ -1,12 +1,5 @@
 from __future__ import print_function
 
-
-def warn(*args, **kwargs):
-    pass
-import warnings
-warnings.warn = warn
-
-
 import os
 from time import time
 from collections import OrderedDict
