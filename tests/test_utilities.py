@@ -43,9 +43,9 @@ class TestAuxiliarMethods(unittest.TestCase):
 		partition_list = self.util._load_dataset(dataset_path)
 
 		# Check all partitions have been loaded
-		npt.assert_equal(len(partition_list), ( len([name for name in os.listdir(dataset_path)]) / 2 ))
+		npt.assert_equal(len(partition_list), (len([name for name in os.listdir(dataset_path)]) / 2))
 		# Check if every partition has train and test inputs and outputs (4 diferent dictionaries)
-		npt.assert_equal(all([ len(partition) == 4 for partition in partition_list ]), True)
+		npt.assert_equal(all([len(partition[1]) == 4 for partition in partition_list]), True)
 
 
 	def test_load_partitionless_dataset(self):
@@ -60,12 +60,12 @@ class TestAuxiliarMethods(unittest.TestCase):
 		partition_list = self.util._load_dataset(dataset_path)
 
 		npt.assert_equal(len(partition_list), 1)
-		npt.assert_equal(all([ len(partition) == 4 for partition in partition_list ]), True)
+		npt.assert_equal(all([len(partition[1]) == 4 for partition in partition_list]), True)
 
 
 	def test_load_nontestfile_dataset(self):
 		"""
-		Loading dataset composed of just five train files
+		Loading dataset composed of five train files
 		"""
 
 		dataset_path = os.path.dirname(os.path.abspath(__file__))
@@ -74,7 +74,7 @@ class TestAuxiliarMethods(unittest.TestCase):
 		partition_list = self.util._load_dataset(dataset_path)
 
 		npt.assert_equal(len(partition_list), len([name for name in os.listdir(dataset_path)]))
-		npt.assert_equal(all([ len(partition) == 2 for partition in partition_list ]), True)
+		npt.assert_equal(all([len(partition[1]) == 2 for partition in partition_list]), True)
 
 
 	def test_load_nontrainfile_dataset(self):
@@ -131,9 +131,9 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 		# Configuration file using an ensemble method
-		self.util.configurations = {'conf2': {'classifier': 'sklearn.smv.SVC',
+		self.util.configurations = {'conf2': {'classifier': 'OrderedPartitions',
 												'parameters': {'dtype': 'OrderedPartitions', 
-															'algorithm': 'sklearn.svm.SVC', 
+															'base_classifier': 'sklearn.svm.SVC', 
 															'parameters': {'C': [1, 10], 
 																		'gamma': [1, 10], 
 																		'probability': ['True']}}}}
@@ -145,8 +145,8 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 		random_state = self.util.configurations['conf2']['parameters']['parameters'][0]['random_state']
 		expected_params = {	'dtype': ['OrderedPartitions'],
-							'algorithm': ['sklearn.svm.SVC'],
-							'parameters': [	{'C': 1, 'gamma': 1, 'probability': True, 'random_state': random_state},
+							'base_classifier': ['sklearn.svm.SVC'],
+							'parameters': 	[{'C': 1, 'gamma': 1, 'probability': True, 'random_state': random_state},
 											{'C': 1, 'gamma': 10, 'probability': True, 'random_state': random_state}, 
 											{'C': 10, 'gamma': 1, 'probability': True, 'random_state': random_state}, 
 											{'C': 10, 'gamma': 10, 'probability': True, 'random_state': random_state}]
@@ -161,9 +161,9 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 		# Configuration file where it's not necessary to perform cross-validation
-		self.util.configurations = {'conf3': {'classifier': 'sklearn.smv.SVC',
+		self.util.configurations = {'conf3': {'classifier': 'OrdinalDecomposition',
 												'parameters': {'dtype': 'OrderedPartitions', 
-															'algorithm': 'sklearn.svm.SVC', 
+															'base_classifier': 'sklearn.svm.SVC', 
 															'parameters': {'C': [1], 'gamma': [1]}}}}
 
 		# Getting formatted_params and expected_params
@@ -171,7 +171,7 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 		random_state = self.util.configurations['conf3']['parameters']['parameters']['random_state']
 		expected_params = {	'dtype': 'OrderedPartitions',
-							'algorithm': 'sklearn.svm.SVC',
+							'base_classifier': 'sklearn.svm.SVC',
 							'parameters': {'C': 1, 'gamma': 1, 'random_state': random_state}}
 
 		npt.assert_equal(formatted_params, expected_params)
