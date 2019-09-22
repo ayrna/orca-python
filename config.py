@@ -1,5 +1,4 @@
 import os
-
 from sacred import Experiment
 
 from utilities import Utilities

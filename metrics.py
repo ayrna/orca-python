@@ -83,7 +83,7 @@ def mmae(y, ypred):
 	"""
 	MMAE - Maximum MAE
 
-	MAE value of the class with higher distance from the 
+	MAE value of the class with higher distance from the
 	true values to the predicted ones.
 	"""
 
@@ -102,7 +102,7 @@ def ms(y, ypred):
 	"""
 	MS - Minimum Sensitivity
 
-	Lowest percentage of patterns correctly predicted as 
+	Lowest percentage of patterns correctly predicted as
 	belonging to each class, with respect to the total number
 	of examples in the corresponding class.
 	"""
@@ -181,7 +181,8 @@ def spearman(y, ypred):
 
 		n = len(y)
 		num = ((y - np.repeat(np.mean(y), n)) * (ypred - np.repeat(np.mean(ypred), n))).sum()
-		div = np.sqrt((pow(y - np.repeat(np.mean(y), n), 2)).sum() * (pow(ypred - np.repeat(np.mean(ypred), n), 2)).sum())
+		div = np.sqrt((pow(y - np.repeat(np.mean(y), n), 2)).sum()
+						* (pow(ypred - np.repeat(np.mean(ypred), n), 2)).sum())
 
 		if num == 0:
 			return 0
