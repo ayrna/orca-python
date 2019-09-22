@@ -17,8 +17,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 	This class implements an ensemble model where an ordinal problem
 	is decomposed into several binary subproblems, each one of which
-	will generate a different (binary) model, though all will share same base
-	classifier and parameters for it.
+	will generate a different (binary) model, though all will share
+	same base classifier and parameters for it.
 
 	There are 4 different ways to decompose the original problem based
 	on how the coding matrix is built.
@@ -43,39 +43,39 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		+, +, +, -;		 ,  , +, -;		+, +, +, -;		+, -,  ,  ;
 		+, +, +, +;		 ,  ,  , +;		+, +, +, +;		-,  ,  ,  ;
 
-		where rows represent classes and columns represent base classifiers. plus
-		signs indicate that for that classifier, that class will be
-		part of the positive class, on the other hand, a minus sign
-		places that class into the negative one for that binary
-		problem. If there is no sign, then those samples will not be
-		used when building the model.
+		where rows represent classes and columns represent base
+		classifiers. plus signs indicate that for that classifier,
+		the label will be part of the positive class, on the other
+		hand, a minus sign places that class into the negative one
+		for that binary problem. If there is no sign, then those
+		samples will not be used when building the model.
 
 	decision_method: string
-		Decision method that transforms the predictions of the n different
-		base classifiers to produce the final label (one among the real 
-		ordinal classes).
+		Decision method that transforms the predictions of the n
+		different base classifiers to produce the final label (one
+		among the real ordinal classes).
 
 	base_classifier: string
-		Base classifier used to build a model for each binary subproblem.
-		The base classifier need to be a classifier of orca-python framework 
-		or any classifier available in scikit-learn. Other classifiers that 
-		implements the scikit-learn API can be used here. 
+		Base classifier used to build a model for each binary
+		subproblem. The base classifier need to be a classifier of
+		orca-python framework or any classifier available in sklearn.
+		Other classifiers implemented in sklearn's API can be used here
 
 	parameters: dict
-		This dictionary will store the parameters used to build the base 
-		classifier. Only one value per parameter is allowed.
+		This dictionary will store the parameters used to build the
+		base classifier. Only one value per parameter is allowed.
 
 	Attributes
 	----------
 
 	classes_: list
-		List that contains all different class labels found in the original
-		dataset.
+		List that contains all different class labels found in the
+		original dataset.
 
 	coding_matrix_: array-like, shape (n_targets, n_targets-1)
-		Matrix that defines which classes will be used to build the model of each
-		subproblem, and in which binary class they belong inside
-		those new models. Further explained previously.
+		Matrix that defines which classes will be used to build the
+		model of each subproblem, and in which binary class they
+		belong inside those new models. Further explained previously.
 
 	classifiers_: list of classifiers
 		Initialy empty, will include all fitted models for each
@@ -85,15 +85,15 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 	References
 	----------
-	P.A. Gutierrez, M. Perez-Ortiz, J. Sanchez-Monedero, F. Fernandez-Navarro and C. Hervas-Martinez (2016),
+	P.A. Gutierrez, M. Perez-Ortiz, J. Sanchez-Monedero,
+	F. Fernandez-Navarro and C. Hervas-Martinez (2016),
 	"Ordinal regression methods: survey and experimental study",
 	IEEE Transactions on Knowledge and Data Engineering. Vol. 28. Issue 1
 	http://dx.doi.org/10.1109/TKDE.2015.2457911
-
 	"""
 
-	#TODO: Especificar valores por defecto
-	def __init__(self, dtype="ordered_partitions", decision_method="frank_hall", base_classifier="",  parameters={}):
+	def __init__(self, dtype="ordered_partitions", decision_method="frank_hall",
+				base_classifier="sklearn.linear_model.LogisticRegression",  parameters={}):
 
 		self.dtype = dtype
 		self.decision_method = decision_method
@@ -110,11 +110,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		----------
 
 		X: {array-like, sparse matrix}, shape (n_samples, n_features)
-			Training patterns array, where n_samples is the number of samples
-			and n_features is the number of features
+			Training patterns array, where n_samples is the number of
+			samples and n_features is the number of features.
 
 		y: array-like, shape (n_samples)
-			Target vector relative to X
+			Target vector relative to X.
 
 		Returns
 		-------
@@ -130,7 +130,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		# Get list of different labels of the dataset
 		self.classes_ = np.unique(y)
 
-		# Gives each train input its corresponding output label for each binary classifier
+		# Give each train input its corresponding output label
+		# for each binary classifier
 		self.coding_matrix_ = self._coding_matrix(self.dtype.lower(), len(self.classes_))
 		class_labels = self.coding_matrix_[(np.digitize(y, self.classes_) - 1), :]
 
@@ -141,8 +142,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		for n in range(len(class_labels[0,:])):
 
 			estimator = load_classifier(self.base_classifier, self.parameters)
-			estimator.fit(X[ np.where(class_labels[:,n] != 0) ], \
-						  np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T) )
+			estimator.fit(X[np.where(class_labels[:,n] != 0)],
+						  np.ravel(class_labels[np.where(class_labels[:,n] != 0), n].T))
 
 			self.classifiers_.append(estimator)
 
@@ -154,7 +155,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 	def predict(self, X):
 
 		"""
-		Performs classification on samples in X
+		Performs classification on samples in X.
 
 		Parameters
 		----------
@@ -217,7 +218,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		else:
-			raise AttributeError('The specified loss method "%s" is not implemented' % decision_method)
+			raise AttributeError('The specified loss method "%s" is not implemented'
+									% decision_method)
 
 
 		return predicted_y
@@ -250,13 +252,13 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		if dtype == "ordered_partitions":
 
-			coding_matrix = np.triu( (-2 * np.ones(n_classes - 1)) ) + 1
+			coding_matrix = np.triu((-2 * np.ones(n_classes - 1))) + 1
 			coding_matrix = np.vstack([coding_matrix, np.ones((1, n_classes-1))])
 
 		elif dtype == "one_vs_next":
 
 			plus_ones = np.diagflat(np.ones((1, n_classes - 1), dtype=int), -1)
-			minus_ones = -( np.eye(n_classes, n_classes - 1, dtype=int) )
+			minus_ones = -(np.eye(n_classes, n_classes - 1, dtype=int))
 			coding_matrix = minus_ones + plus_ones[:,:-1]
 
 		elif dtype == "one_vs_followers":
@@ -269,7 +271,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 			plusones = np.triu(np.ones(n_classes))
 			minusones = -np.diagflat(np.ones((1, n_classes - 1)), -1)
-			coding_matrix = np.flip( (plusones + minusones)[:,:-1], axis=1 )
+			coding_matrix = np.flip((plusones + minusones)[:,:-1], axis=1)
 
 		else:
 
@@ -308,8 +310,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the exponential losses for each label of the
-		original ordinal multinomial problem. Transforms from n-1 
-		binary subproblems to the original ordinal problem with n targets.
+		original ordinal multinomial problem. Transforms from n-1
+		binary subproblems to the original ordinal problem with
+		n targets.
 
 		Parameters
 		----------
@@ -329,7 +332,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		e_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
 		for i in range(predictions.shape[1] + 1):
 
-			e_losses[:,i] = np.sum(np.exp(-predictions * np.tile(self.coding_matrix_[i,:],\
+			e_losses[:,i] = np.sum(np.exp(-predictions * np.tile(self.coding_matrix_[i,:],
 											(predictions.shape[0], 1))), axis=1)
 
 		return e_losses
@@ -340,8 +343,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the Hinge losses for each label of the
-		original ordinal multinomial problem. Transforms from n-1 
-		binary subproblems to the original ordinal problem with n targets.
+		original ordinal multinomial problem. Transforms from n-1
+		binary subproblems to the original ordinal problem with
+		n targets.
 
 		Parameters
 		----------
@@ -361,7 +365,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		h_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
 		for i in range(predictions.shape[1] + 1):
 
-			h_losses[:,i] = np.sum( np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions) ), axis=1 )
+			h_losses[:,i] = np.sum(np.maximum(0, (1 - np.tile(self.coding_matrix_[i,:],
+																(predictions.shape[0], 1))
+														* predictions)), axis=1)
 
 		return h_losses
 
@@ -371,8 +377,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 		"""
 		Computation of the logaritmic losses for each label of the
-		original ordinal multinomial problem. Transforms from n-1 
-		binary subproblems to the original ordinal problem with n targets.
+		original ordinal multinomial problem. Transforms from n-1
+		binary subproblems to the original ordinal problem with
+		n targets.
 
 		Parameters
 		----------
@@ -390,10 +397,12 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		# Computing logaritmic losses
-		l_losses = np.zeros( (predictions.shape[0], (predictions.shape[1] + 1)) )
+		l_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
 		for i in range(predictions.shape[1] + 1):
 
-			l_losses[:,i] = np.sum( np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:], (predictions.shape[0], 1)) * predictions)), axis=1 )
+			l_losses[:,i] = np.sum(np.log(1 + np.exp(-2 * np.tile(self.coding_matrix_[i,:],
+																	(predictions.shape[0], 1))
+															* predictions)), axis=1)
 
 		return l_losses
 
