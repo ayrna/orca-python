@@ -1,5 +1,12 @@
 from __future__ import print_function
 
+
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
+
+
 import os
 from time import time
 from collections import OrderedDict
@@ -7,19 +14,16 @@ from itertools import product
 from sys import path
 
 from ast import literal_eval
+from pkg_resources import get_distribution
 
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics.scorer import make_scorer
 
 from results import Results
 
-
-#TODO: metodos que no reciban como parametro random_seed daran error al ejecutarse,
-#		ya que en sus __init__ no aparece, pero GridSearchCV se lo pasa como variable
-
-# La funcion a modificar es _check_params
 
 class Utilities:
 
@@ -89,13 +93,13 @@ class Utilities:
 		the information into a Results object.
 		"""
 
-
-		self._results = Results()
+		self._results = Results(self.general_conf['output_folder'])
 		# Adding classifier folder to sys path.
 		path.insert(0, 'classifiers')
 
 		self._check_dataset_list()
 		self._check_params()
+
 
 		if self.verbose:
 			print("\n###############################")
@@ -126,13 +130,15 @@ class Utilities:
 				classifier = load_classifier(configuration["classifier"])
 
 				# Iterating over partitions
-				for part_idx, partition in enumerate(dataset):
+				for part_idx, partition in dataset:
 					if self.verbose:
 						print("  Running Partition", part_idx)
 
 					# Finding optimal classifier
-					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"], partition["train_outputs"],\
-																	classifier, configuration["parameters"])
+					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"],
+																	partition["train_outputs"],
+																	classifier,
+																	configuration["parameters"])
 
 					# Getting train and test predictions
 					train_predicted_y = optimal_estimator.predict(partition["train_inputs"])
@@ -154,7 +160,8 @@ class Utilities:
 							metric = getattr(module, metric_name.strip().lower())
 
 						except AttributeError:
-							raise AttributeError("No metric named '%s'" % metric_name.strip().lower())
+							raise AttributeError("No metric named '%s'" 
+												% metric_name.strip().lower())
 
 						# Get train scores
 						train_score = metric(partition["train_outputs"], train_predicted_y)
@@ -186,9 +193,10 @@ class Utilities:
 
 
 					# Saving this partition's results
-					self._results.add_record(part_idx, optimal_estimator.best_params_, optimal_estimator.best_estimator_,\
-											{'dataset': dataset_name, 'config': conf_name},\
-											{'train': train_metrics, 'test': test_metrics},\
+					self._results.add_record(part_idx, optimal_estimator.best_params_,
+											optimal_estimator.best_estimator_,
+											{'dataset': dataset_name, 'config': conf_name},
+											{'train': train_metrics, 'test': test_metrics},
 											{'train': train_predicted_y, 'test': test_predicted_y})
 
 
@@ -208,18 +216,19 @@ class Utilities:
 		Returns
 		-------
 
-		partition_list: list of dicts
+		partition_list: list of tuples
 			List of partitions found inside a dataset folder.
 			Each partition is stored into a dictionary, disjoining
-			train and test inputs, and outputs.
+			train and test inputs and outputs.
 		"""
 
 
 		try:
 
 			# Creating dicts for all partitions (saving partition order as keys)
-			partition_list = {filename[filename.find('.') + 1:]: {} for filename in os.listdir(dataset_path)\
-								if filename.startswith("train_")}
+			partition_list = {filename[filename.find('.') + 1:]: {} for filename
+																	in os.listdir(dataset_path)
+																	if filename.startswith("train_")}
 
 			# Loading each dataset
 			for filename in os.listdir(dataset_path):
@@ -238,11 +247,12 @@ class Utilities:
 			raise ValueError("No such file or directory: '%s'" % dataset_path)
 
 		except KeyError:
-			raise RuntimeError("Found partition without train files: partition %s" % filename[filename.find('.') + 1:])
+			raise RuntimeError("Found partition without train files: partition %s"
+								% filename[filename.find('.') + 1:])
 
 
-		# Saving partitions as a sorted list of dicts (according to it's partition order)
-		partition_list = list(OrderedDict(sorted(partition_list.items(), key=(lambda t: get_key(t[0])))).values())
+		# Saving partitions as a sorted list of (index, partition) tuple
+		partition_list = sorted(partition_list.items(), key=(lambda t: get_key(t[0])))
 
 		return partition_list
 
@@ -266,7 +276,7 @@ class Utilities:
 		-------
 
 		inputs: {array-like, sparse-matrix}, shape (n_samples, n_features)
-			vector of sample's features.
+			Vector of sample's features.
 
 		outputs: array-like, shape (n_samples)
 			Target vector relative to inputs.
@@ -316,8 +326,8 @@ class Utilities:
 		# Check if 'all' is the only value, and if it is, expand it
 		if len(dataset_list) == 1 and dataset_list[0] == 'all':
 
-			dataset_list = [ item for item in os.listdir(base_path) \
-						if os.path.isdir(os.path.join(base_path, item)) ]
+			dataset_list = [item for item in os.listdir(base_path) \
+								if os.path.isdir(os.path.join(base_path, item))]
 
 
 		elif not all(isinstance(item, basestring) for item in dataset_list):
@@ -349,25 +359,36 @@ class Utilities:
 		random_seed = np.random.get_state()[1][0]
 		for _, conf in self.configurations.items():
 
-			parameters = conf['parameters']
+			parameters = conf['parameters'] # Aliasing
 
-			# If parameter is a dict named 'parameters', then an ensemble method it's being used
+			# If parameter is a dict named 'parameters',
+			# then an ensemble method it's being used
 			if 'parameters' in parameters and type(parameters['parameters'] == dict):
 
-				# Using given seed as random_state value
-				parameters['parameters']['random_state'] = [random_seed]
+				try:
+					# Cheking if base_classifier has random_state attribute
+					load_classifier(parameters['base_classifier'])().random_state
+					# Using given seed as random_state value
+					parameters['parameters']['random_state'] = [random_seed]
+
+				except AttributeError:
+					pass # No random_state attribute found
 
 				try:
 
-					# Creating a list for each parameter. Elements represented as 'parameterName;parameterValue'.
-					p_list = [ [p_name + ';' + str(v) for v in p] for p_name, p in parameters['parameters'].items() ]
-					# Permutations of all lists. Generates all possible combination of elements between lists.
-					p_list = [ list(item) for item in list(product(*p_list)) ]
-					# Creates a list of dictionaries, containing all combinations of given parameters
-					p_list = [ dict( [item.split(';') for item in p] ) for p in p_list ]
+					# Creating a list for each parameter.
+					# Elements represented as 'parameterName;parameterValue'.
+					p_list = [[p_name + ';' + str(v) for v in p] for p_name, p in
+								parameters['parameters'].items()]
+					# Permutations of all lists. Generates all possible
+					# combination of elements between lists.
+					p_list = [list(item) for item in list(product(*p_list))]
+					# Creates a list of dictionaries, containing all
+					# combinations of given parameters
+					p_list = [dict([item.split(';') for item in p]) for p in p_list]
 
 				except TypeError:
-					raise TypeError('All parameters for the inner classifier must be an iterable object')
+					raise TypeError('All parameters for base_classifier must be list')
 
 
 				# Returns non-string values back to it's normal self
@@ -384,11 +405,20 @@ class Utilities:
 
 			# No ensemble classifier was specified
 			else:
-				# Using given seed as random_state value
-				parameters['random_state'] = [random_seed]
+
+				try:
+					# Cheking if classifier has random_state attribute
+					load_classifier(conf['classifier'])().random_state
+					# Using given seed as random_state value
+					parameters['random_state'] = [random_seed]
+
+				except AttributeError:
+					pass # No random_state attribute found
 
 
-			# If there is just one value per parameter, it won't be necessary to use GridSearchCV
+
+			# If there is just one value per parameter, it
+			# won't be necessary to use GridSearchCV
 			if all(not isinstance(p, list) or len(p) == 1 for _, p in parameters.items()):
 				# Pop out of list the lonely values
 				for p_name, p in parameters.items():
@@ -458,24 +488,32 @@ class Utilities:
 
 
 		# More than one value per parameter. Cross-validation needed.
+
 		try:
 			module = __import__("metrics")
 			metric = getattr(module, self.general_conf['cv_metric'].lower().strip())
 
 		except AttributeError:
 
-			if type(self.general_conf['cv_metric']) == list:
-				raise AttributeError("Cross-Validation Metric must be a string")
+			if type(self.general_conf['cv_metric']) != str:
+				raise AttributeError("cv_metric must be string")
 
-			raise AttributeError("No metric named '%s'" % self.general_conf['cv_metric'].strip().lower())
+			raise AttributeError("No metric named '%s' implemented"
+								% self.general_conf['cv_metric'].strip().lower())
 
 
+		# Making custom metrics compatible with sklearn
 		gib = module.greater_is_better(self.general_conf['cv_metric'].lower().strip())
 		scoring_function = make_scorer(metric, greater_is_better=gib)
 
+		# Creating object to split train data for cross-validation
+		# This will make GridSearch have a pseudo-random beheaviour
+		skf = StratifiedKFold(n_splits=self.general_conf['hyperparam_cv_nfolds'],
+								shuffle=True, random_state=np.random.get_state()[1][0])
 
-		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,\
-					n_jobs=self.general_conf['jobs'], cv=self.general_conf['hyperparam_cv_nfolds'], iid=False)
+		# Performing cross-validation phase
+		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,
+								n_jobs=self.general_conf['jobs'], cv=skf, iid=False)
 
 		optimal.fit(train_inputs, train_outputs)
 
@@ -489,20 +527,63 @@ class Utilities:
 		"""
 		Saves information about experiment through Results class
 		"""
+
 		if self.verbose:
 			print("\nSaving Results...")
 
 		# Names of each metric used (plus computational times)
-		metrics_names = [x.strip().lower() for x in self.general_conf['metrics']] + ["cv_time", "time"]
+		metrics_names = [x.strip().lower() for x in self.general_conf['metrics']] \
+													+ ["cv_time", "time"]
 
 		# Saving results through Results class
-		self._results.save_results(self.general_conf['output_folder'], metrics_names)
+		self._results.save_summaries(metrics_names)
 
 
 
 ##########################
 # END OF UTILITIES CLASS #
 ##########################
+
+
+def check_packages_version():
+
+	"""
+	Checks if minimum version of packages used by this
+	framework are installed.
+	"""
+
+
+	print("Checking packages version...")
+
+	print("NumPy...", end=" ")
+	if get_distribution("numpy").version < "1.15.2":
+		print("OUTDATED. Upgrade to 1.15.2 or newer")
+	else:
+		print("OK")
+
+	print("Pandas...", end=" ")
+	if get_distribution("pandas").version < "0.23.4":
+		print("OUTDATED. Upgrade to 0.23.4 or newer")
+	else:
+		print("OK")
+
+	print("Sacred...", end=" ")
+	if get_distribution("sacred").version < "0.7.3":
+		print("OUTDATED. Upgrade to 0.7.3 or newer")
+	else:
+		print("OK")
+
+	print("Scikit-Learn...", end=" ")
+	if get_distribution("scikit-learn").version < "0.20.0":
+		print("OUTDATED. Upgrade to 0.20.0 or newer")
+	else:
+		print("OK")
+
+	print("SciPy...", end=" ")
+	if get_distribution("scipy").version < "1.1.0":
+		print("OUTDATED. Upgrade to 1.1.0 or newer")
+	else:
+		print("OK")
 
 
 
@@ -520,16 +601,16 @@ def load_classifier(classifier_path, params=None):
 		framework, or relative to scikit-learn package.
 
 	params: dictionary
-		Parameters to initialize the classifier with. Used when loading a
-		classifiers inside of an ensemble algorithm.
+		Parameters to initialize the classifier with. Used when loading
+		a classifiers inside of an ensemble algorithm (base_classifier)
 
 
 	Returns
 	-------
 
 	classifier: object
-		Returns a loaded classifier, either from an scikit-learn module,
-		or from a module of this framework.
+		Returns a loaded classifier, either from an scikit-learn
+		module, or from a module of this framework.
 		Depending if hyper-parameters are specified, the object will be
 		instantiated or not.
 
@@ -573,11 +654,6 @@ def get_key(key):
 		return int(key)
 	except ValueError:
 		return key
-
-
-
-
-
 
 
 
