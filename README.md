@@ -176,7 +176,7 @@ with the python interpreter, and tell what configuration file to use for this ex
 
   `$ python config.py with experiment_file.json`
 
-Running an experiment this way has two problems though, one of them being an excessive verbosity from Sacred's python module,
+Running an experiment this way has two problems though, one of them being an excessive verbosity from Sacred,
 while the other consists of the non-reproducibility of the results of the experiment, due to the lack of a fixed seed.
 
 Both problems can be easily fixed. The seed can be specified after "with" in the command:
