@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+
 import os
 from time import time
 from collections import OrderedDict
@@ -354,7 +355,7 @@ class Utilities:
 
 			parameters = conf['parameters'] # Aliasing
 
-			# If parameter is a dict named 'parameters',
+			# If parameter has a dict named 'parameters',
 			# then an ensemble method it's being used
 			if 'parameters' in parameters and type(parameters['parameters'] == dict):
 
@@ -461,9 +462,11 @@ class Utilities:
 		Returns
 		-------
 
-		optimal: GridSearchCV object
+		optimal: GridSearchCV object or classifier object
 			An already fitted model of the given classifier,
-			with the best found parameters after cross-validation
+			with the best found parameters after cross-validation.
+			If cross-validation is not needed, it will return the
+			classifier model already trained.
 		"""
 
 
@@ -481,14 +484,13 @@ class Utilities:
 
 
 		# More than one value per parameter. Cross-validation needed.
-
 		try:
 			module = __import__("metrics")
 			metric = getattr(module, self.general_conf['cv_metric'].lower().strip())
 
 		except AttributeError:
 
-			if type(self.general_conf['cv_metric']) != str:
+			if not isinstance(self.general_conf['cv_metric'], str):
 				raise AttributeError("cv_metric must be string")
 
 			raise AttributeError("No metric named '%s' implemented"
@@ -518,7 +520,8 @@ class Utilities:
 	def write_report(self):
 
 		"""
-		Saves information about experiment through Results class
+		Saves summarized information about experiment
+		through Results class.
 		"""
 
 		if self.verbose:
