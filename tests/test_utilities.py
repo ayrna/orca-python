@@ -131,7 +131,7 @@ class TestAuxiliarMethods(unittest.TestCase):
 
 
 		# Configuration file using an ensemble method
-		self.util.configurations = {'conf2': {'classifier': 'OrderedPartitions',
+		self.util.configurations = {'conf2': {'classifier': 'OrdinalDecomposition',
 												'parameters': {'dtype': 'OrderedPartitions', 
 															'base_classifier': 'sklearn.svm.SVC', 
 															'parameters': {'C': [1, 10], 
