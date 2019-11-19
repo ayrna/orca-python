@@ -91,12 +91,12 @@ class Results:
 								% dataset_folder)
 
 
-		# Saving partition's model
+		# Saving partition model
 		model_filename = configuration['dataset'] + "-" + configuration['config'] + "." + partition
 		with open(os.path.join(models_folder, model_filename), 'wb') as output:
 			pickle.dump(best_model, output)
 
-		# Saving model's predictions
+		# Saving model predictions
 		pred_filename = configuration['dataset'] + "-" + configuration['config'] + "." + partition
 		np.savetxt(os.path.join(predictions_folder, 'train_' + pred_filename),
 					predictions['train'], fmt='%d')
@@ -120,6 +120,7 @@ class Results:
 					dataframe_row[k] = v
 			else:
 				dataframe_row[p_name] = p_value
+
 
 		# Concatenating train and test metrics
 		for (tm_name, tm_value), (ts_name, ts_value) \

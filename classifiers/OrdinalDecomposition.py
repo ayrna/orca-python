@@ -1,11 +1,11 @@
 
-from sys import path
-path.insert(0, '..')
-
 import numpy as np
 from sklearn.metrics.scorer import make_scorer
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+
+from sys import path
+path.append('..')
 
 from utilities import load_classifier
 
@@ -137,8 +137,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 		self.classifiers_ = []
-		# Fitting n_targets - 1 classifiers, each one with a different
-		# combination of train inputs given by the coding_matrix
+		# Fitting n_targets - 1 classifiers
 		for n in range(len(class_labels[0,:])):
 
 			estimator = load_classifier(self.base_classifier, self.parameters)
@@ -169,10 +168,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			Class labels for samples in X.
 		"""
 
-		# Check is fit had been called
-		check_is_fitted(self, ['X_', 'y_'])
 
-		# Input validation
+		check_is_fitted(self, ['X_', 'y_'])
 		X = check_array(X)
 
 		# Getting predicted labels for dataset from each classifier
