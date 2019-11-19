@@ -5,10 +5,10 @@ import os
 from time import time
 from collections import OrderedDict
 from itertools import product
-from sys import path
+from sys import path as syspath
 
 from ast import literal_eval
-from pkg_resources import get_distribution
+from pkg_resources import parse_version, get_distribution
 
 import pandas as pd
 import numpy as np
@@ -73,6 +73,8 @@ class Utilities:
 		self.configurations = configurations
 		self.verbose = verbose
 
+		syspath.append('classifiers')
+
 
 	def run_experiment(self):
 
@@ -88,8 +90,6 @@ class Utilities:
 		"""
 
 		self._results = Results(self.general_conf['output_folder'])
-		# Adding classifier folder to sys path.
-		path.insert(0, 'classifiers')
 
 		self._check_dataset_list()
 		self._check_params()
@@ -103,11 +103,10 @@ class Utilities:
 		# Iterating over Datasets
 		for x in self.general_conf['datasets']:
 
-			# Getting dataset name and path
 			dataset_name = x.strip()
 			dataset_path = os.path.join(self.general_conf['basedir'], dataset_name)
 
-			# Loading dataset into a list of partitions.
+
 			dataset = self._load_dataset(dataset_path)
 
 			if self.verbose:
@@ -117,18 +116,20 @@ class Utilities:
 
 			# Iterating over Configurations
 			for conf_name, configuration in self.configurations.items():
+
 				if self.verbose:
 					print("Running", conf_name, "...")
 
-				#Loading classifier
+
 				classifier = load_classifier(configuration["classifier"])
 
 				# Iterating over partitions
 				for part_idx, partition in dataset:
+
 					if self.verbose:
 						print("  Running Partition", part_idx)
 
-					# Finding optimal classifier
+
 					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"],
 																	partition["train_outputs"],
 																	classifier,
@@ -144,7 +145,7 @@ class Utilities:
 						elapsed = time() - start
 
 
-					# Obtaining train and test metric's values.
+					# Obtaining train and test metrics values.
 					train_metrics = OrderedDict(); test_metrics = OrderedDict()
 					for metric_name in self.general_conf['metrics']:
 
@@ -186,7 +187,7 @@ class Utilities:
 						test_metrics['time_test'] = elapsed
 
 
-					# Saving this partition's results
+					# Saving the results for this partition
 					self._results.add_record(part_idx, optimal_estimator.best_params_,
 											optimal_estimator.best_estimator_,
 											{'dataset': dataset_name, 'config': conf_name},
@@ -245,7 +246,7 @@ class Utilities:
 								% filename[filename.find('.') + 1:])
 
 
-		# Saving partitions as a sorted list of (index, partition) tuple
+		# Saving partitions as a sorted list of (index, partition) tuples
 		partition_list = sorted(partition_list.items(), key=(lambda t: get_key(t[0])))
 
 		return partition_list
@@ -323,7 +324,6 @@ class Utilities:
 			dataset_list = [item for item in os.listdir(base_path) \
 								if os.path.isdir(os.path.join(base_path, item))]
 
-
 		elif not all(isinstance(item, basestring) for item in dataset_list):
 			raise ValueError("Dataset list can only contain strings")
 
@@ -353,20 +353,21 @@ class Utilities:
 		random_seed = np.random.get_state()[1][0]
 		for _, conf in self.configurations.items():
 
+
 			parameters = conf['parameters'] # Aliasing
 
-			# If parameter has a dict named 'parameters',
-			# then an ensemble method it's being used
+			# Adding given seed as random_state value
+			if check_for_random_state(conf['classifier']):
+				parameters['random_state'] = [random_seed]
+
+
+			# An ensemble method is going to be used
 			if 'parameters' in parameters and type(parameters['parameters'] == dict):
 
-				try:
-					# Cheking if base_classifier has random_state attribute
-					load_classifier(parameters['base_classifier'])().random_state
-					# Using given seed as random_state value
+				# Adding given seed as random_state value
+				if check_for_random_state(parameters['base_classifier']):
 					parameters['parameters']['random_state'] = [random_seed]
 
-				except AttributeError:
-					pass # No random_state attribute found
 
 				try:
 
@@ -397,29 +398,13 @@ class Utilities:
 				parameters['parameters'] = p_list
 
 
-			# No ensemble classifier was specified
-			else:
-
-				try:
-					# Cheking if classifier has random_state attribute
-					load_classifier(conf['classifier'])().random_state
-					# Using given seed as random_state value
-					parameters['random_state'] = [random_seed]
-
-				except AttributeError:
-					pass # No random_state attribute found
-
-
-
-			# If there is just one value per parameter, it
-			# won't be necessary to use GridSearchCV
+			# No need to cross-validate when there is just one value per parameter
 			if all(not isinstance(p, list) or len(p) == 1 for _, p in parameters.items()):
-				# Pop out of list the lonely values
+				# Pop lonely values out of list
 				for p_name, p in parameters.items():
 					if isinstance(p, list):
 						parameters[p_name] = p[0]
 
-			# There are enough parameters to perform cross-validation
 			else:
 				# Convert non-list values to lists
 				for p_name, p in parameters.items():
@@ -483,7 +468,6 @@ class Utilities:
 			return optimal
 
 
-		# More than one value per parameter. Cross-validation needed.
 		try:
 			module = __import__("metrics")
 			metric = getattr(module, self.general_conf['cv_metric'].lower().strip())
@@ -552,31 +536,31 @@ def check_packages_version():
 	print("Checking packages version...")
 
 	print("NumPy...", end=" ")
-	if get_distribution("numpy").version < "1.15.2":
+	if parse_version(get_distribution("numpy").version) < parse_version("1.15.2"):
 		print("OUTDATED. Upgrade to 1.15.2 or newer")
 	else:
 		print("OK")
 
 	print("Pandas...", end=" ")
-	if get_distribution("pandas").version < "0.23.4":
+	if parse_version(get_distribution("pandas").version) < parse_version("0.23.4"):
 		print("OUTDATED. Upgrade to 0.23.4 or newer")
 	else:
 		print("OK")
 
 	print("Sacred...", end=" ")
-	if get_distribution("sacred").version < "0.7.3":
+	if parse_version(get_distribution("sacred").version) < parse_version("0.7.3"):
 		print("OUTDATED. Upgrade to 0.7.3 or newer")
 	else:
 		print("OK")
 
 	print("Scikit-Learn...", end=" ")
-	if get_distribution("scikit-learn").version < "0.20.0":
+	if parse_version(get_distribution("scikit-learn").version) < parse_version("0.20.0"):
 		print("OUTDATED. Upgrade to 0.20.0 or newer")
 	else:
 		print("OK")
 
 	print("SciPy...", end=" ")
-	if get_distribution("scipy").version < "1.1.0":
+	if parse_version(get_distribution("scipy").version) < parse_version("1.1.0"):
 		print("OUTDATED. Upgrade to 1.1.0 or newer")
 	else:
 		print("OK")
@@ -624,10 +608,36 @@ def load_classifier(classifier_path, params=None):
 		classifier = __import__(classifier_path.rsplit('.', 1)[0], fromlist="None")
 		classifier = getattr(classifier, classifier_path.rsplit('.', 1)[1])
 
+	# Instancing meta-classifier with given parameters
 	if params is not None:
 		classifier = classifier(**params)
 
 	return classifier
+
+
+
+def check_for_random_state(classifier):
+
+	"""
+	Checks if classifiers has an attribute named random_state
+
+	Parameters
+	----------
+	classifier: object
+		Instance of an sklearn compatible classifier
+
+	Returns
+	-------
+	boolean
+	"""
+
+	try:
+
+		load_classifier(classifier)().random_state
+		return True
+
+	except AttributeError:
+		return False
 
 
 
