@@ -102,14 +102,11 @@ class TestOrdinalDecomposition(unittest.TestCase):
 
 
 
-	def test_decision_method(self):
+	def test_frank_hall_method(self):
 		"""
-		Check that all 4 decision methods return expected values 
+		Check that frank and hall method returns expected values 
 		for one toy problem (starting off predicted probabilities
-		given by each binary classifier)
-
-		Excepting frank_hall method, the rest of them need the predictions
-		array's values to range in [-1, 1] instead of the default [0, 1].
+		given by each binary classifier).
 		"""
 
 
@@ -118,7 +115,6 @@ class TestOrdinalDecomposition(unittest.TestCase):
 		npt.assert_raises(AttributeError, od._frank_hall_method, self.X)
 
 
-		# Checking decision_methods work as intended
 		od = OrdinalDecomposition(dtype="ordered_partitions")
 		od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
 
@@ -136,9 +132,8 @@ class TestOrdinalDecomposition(unittest.TestCase):
 							[1.		 , 0.93172, 0.6774 , 0.43379]])
 
 
-		# Checking frank_hall	
-		actual_predicted_probabilities = od._frank_hall_method(predictions)
 
+		actual_predicted_probabilities = od._frank_hall_method(predictions)
 		expected_predicted_probabilities = array([
 					[0.92505,	0.07492,	-0.06858,	 0.06856,	 0.00005],
 					[0.99983,	0.00017,	-0.03174,	 0.03163,	 0.00011],
@@ -151,16 +146,39 @@ class TestOrdinalDecomposition(unittest.TestCase):
 					[0.,		0.16431,	-0.08181,	-0.03238,	 0.94988],
 					[0.,		0.06828,	 0.25432,	 0.24361,	 0.43379]])
 
+		# Asserting similarity
 		npt.assert_allclose(actual_predicted_probabilities, expected_predicted_probabilities, rtol=1e-04, atol=0)
 
+
+	def test_exponential_loss_method(self):
+		"""
+		Check that exponential loss method returns expected values
+		for one toy problem (starting off predicted probabilities
+		given by each binary classifier).
+		"""
+
+		od = OrdinalDecomposition(dtype="ordered_partitions")
+		od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+
+		# Predicted probabilities from a 5 class ordinal dataset (positive class)
+		predictions = array(
+							[[0.07495, 0.00003, 0.06861, 0.00005],
+							[0.00017 , 0.	  , 0.03174, 0.00011],
+							[0.99235 , 0.04285, 0.0485 , 0.00004],
+							[0.95376 , 0.16388, 0.03857, 0.00028],
+							[0.99726 , 0.20159, 0.61801, 0.00037],
+							[1.		 , 0.90501, 0.44459, 0.00011],
+							[1.		 , 0.97307, 0.99424, 0.14627],
+							[1.		 , 0.64663, 0.45326, 0.06143],
+							[1.		 , 0.83569, 0.9175 , 0.94988],
+							[1.		 , 0.93172, 0.6774 , 0.43379]])
 
 		# Interpoling values from [0, 1] range to [-1, 1]
 		predictions = (2*predictions) - 1
 
 
-		# Checking exponential_loss
-		actual_elosses = od._exponential_loss(predictions)
 
+		actual_elosses = od._exponential_loss(predictions)
 		expected_elosses = array(	[[1.5852 , 3.49769, 5.8479 , 7.79566, 10.14575],
 									 [1.49583, 3.84519, 6.19559, 8.35469, 10.70441],
 									 [3.85107, 1.54761, 3.64184, 5.70348, 8.05364],
@@ -172,13 +190,38 @@ class TestOrdinalDecomposition(unittest.TestCase):
 									 [9.43904, 7.08864, 5.64271, 3.77177, 1.71942],
 									 [7.39145, 5.04105, 3.09146, 2.36688, 2.63249]])
 
+		# Asserting similarity
 		npt.assert_allclose(actual_elosses, expected_elosses, rtol=1e-04, atol=0)
 
 
+	def test_logaritmic_loss_method(self):
+		"""
+		Check that exponential loss method returns expected values
+		for one toy problem (starting off predicted probabilities
+		given by each binary classifier).
+		"""
 
-		# Checking logaritmic_loss
+		od = OrdinalDecomposition(dtype="ordered_partitions")
+		od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+
+		# Predicted probabilities from a 5 class ordinal dataset (positive class)
+		predictions = array(
+							[[0.07495, 0.00003, 0.06861, 0.00005],
+							[0.00017 , 0.	  , 0.03174, 0.00011],
+							[0.99235 , 0.04285, 0.0485 , 0.00004],
+							[0.95376 , 0.16388, 0.03857, 0.00028],
+							[0.99726 , 0.20159, 0.61801, 0.00037],
+							[1.		 , 0.90501, 0.44459, 0.00011],
+							[1.		 , 0.97307, 0.99424, 0.14627],
+							[1.		 , 0.64663, 0.45326, 0.06143],
+							[1.		 , 0.83569, 0.9175 , 0.94988],
+							[1.		 , 0.93172, 0.6774 , 0.43379]])
+
+		# Interpoling values from [0, 1] range to [-1, 1]
+		predictions = (2*predictions) - 1
+
+
 		actual_llosses = od._logaritmic_loss(predictions)
-
 		expected_llosses = array(	[[0.58553, 2.28573, 4.28561, 6.01117, 8.01097],
 									 [0.52385, 2.52317, 4.52317, 6.39621, 8.39577],
 									 [2.52807, 0.55867, 2.38727, 4.19327, 6.19311],
@@ -190,13 +233,38 @@ class TestOrdinalDecomposition(unittest.TestCase):
 									 [7.49674, 5.49674, 4.15398, 2.48398, 0.68446],
 									 [5.69657, 3.69657, 1.96969, 1.26009, 1.52493]])
 
+		# Asserting similarity
 		npt.assert_allclose(actual_llosses, expected_llosses, rtol=1e-04, atol=0)
 
 
+	def test_hinge_loss_method(self):
+		"""
+		Check that exponential loss method returns expected values
+		for one toy problem (starting off predicted probabilities
+		given by each binary classifier).
+		"""
 
-		# Checking hinge_loss
+		od = OrdinalDecomposition(dtype="ordered_partitions")
+		od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+
+		# Predicted probabilities from a 5 class ordinal dataset (positive class)
+		predictions = array(
+							[[0.07495, 0.00003, 0.06861, 0.00005],
+							[0.00017 , 0.	  , 0.03174, 0.00011],
+							[0.99235 , 0.04285, 0.0485 , 0.00004],
+							[0.95376 , 0.16388, 0.03857, 0.00028],
+							[0.99726 , 0.20159, 0.61801, 0.00037],
+							[1.		 , 0.90501, 0.44459, 0.00011],
+							[1.		 , 0.97307, 0.99424, 0.14627],
+							[1.		 , 0.64663, 0.45326, 0.06143],
+							[1.		 , 0.83569, 0.9175 , 0.94988],
+							[1.		 , 0.93172, 0.6774 , 0.43379]])
+
+		# Interpoling values from [0, 1] range to [-1, 1]
+		predictions = (2*predictions) - 1
+
+
 		actual_hlosses = od._hinge_loss(predictions)
-
 		expected_hlosses = array(	[[0.28728, 1.98748, 3.98736, 5.71292, 7.71272],
 									 [0.06404, 2.06336, 4.06336, 5.9364 , 7.93596],
 									 [2.16748, 0.19808, 2.02668, 3.83268, 5.83252],
@@ -208,6 +276,7 @@ class TestOrdinalDecomposition(unittest.TestCase):
 									 [7.40614, 5.40614, 4.06338, 2.39338, 0.59386],
 									 [6.08582, 4.08582, 2.35894, 1.64934, 1.91418]])
 
+		# Asserting similarity
 		npt.assert_allclose(actual_hlosses, expected_hlosses, rtol=1e-04, atol=0)
 
 
