@@ -1,5 +1,5 @@
 import os
-import datetime
+from datetime import date, datetime
 from collections import OrderedDict
 
 import numpy as np
@@ -29,8 +29,8 @@ class Results:
 
 
 		# Getting experiment's folder name
-		folder_name = "exp-" + datetime.date.today().strftime("%y-%m-%d") \
-						+ "-" + datetime.datetime.now().strftime("%H-%M-%S")
+		folder_name = "exp-" + date.today().strftime("%y-%m-%d") \
+						+ "-" + datetime.now().strftime("%H-%M-%S")
 
 		self._experiment_folder = os.path.join(output_folder, folder_name)
 

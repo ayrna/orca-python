@@ -2,7 +2,7 @@ from __future__ import division
 
 import warnings
 import numpy as np
-from sklearn.metrics.classification import confusion_matrix
+from sklearn.metrics import confusion_matrix
 import scipy.stats
 
 def greater_is_better(metric_name):

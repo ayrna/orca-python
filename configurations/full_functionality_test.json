@@ -50,6 +50,7 @@
 				"decision_method": "exponential_loss",
 				"base_classifier": "sklearn.linear_model.LogisticRegression",
 				"parameters": {
+					"solver": ["liblinear"],
 					"C": [0.01, 0.1, 1, 10],
 					"penalty": ["l1","l2"]
 				}

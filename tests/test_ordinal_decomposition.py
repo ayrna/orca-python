@@ -6,7 +6,7 @@ import unittest
 
 from numpy import array
 import numpy.testing as npt
-import pandas.util.testing as pdt
+import pandas.testing as pdt
 
 syspath.append(ospath.join('..', 'classifiers'))
 

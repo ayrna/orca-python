@@ -1,11 +1,11 @@
 from __future__ import print_function
 
-
 import os
 from time import time
 from collections import OrderedDict
 from itertools import product
 from sys import path as syspath
+from copy import deepcopy
 
 from ast import literal_eval
 from pkg_resources import parse_version, get_distribution
@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics.scorer import make_scorer
+from sklearn.metrics import make_scorer
 
 from results import Results
 
@@ -69,8 +69,8 @@ class Utilities:
 	def __init__(self, general_conf, configurations, verbose=True):
 
 
-		self.general_conf = general_conf
-		self.configurations = configurations
+		self.general_conf = deepcopy(general_conf)
+		self.configurations = deepcopy(configurations)
 		self.verbose = verbose
 
 		syspath.append('classifiers')
@@ -492,7 +492,7 @@ class Utilities:
 
 		# Performing cross-validation phase
 		optimal = GridSearchCV(estimator=classifier(), param_grid=parameters, scoring=scoring_function,
-								n_jobs=self.general_conf['jobs'], cv=skf, iid=False)
+								n_jobs=self.general_conf['jobs'], cv=skf)
 
 		optimal.fit(train_inputs, train_outputs)
 
