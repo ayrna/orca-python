@@ -33,14 +33,16 @@ ORCA-python has been developed and tested in GNU/Linux systems. It has been test
 Besides the need for the aforementioned Python interpreter, you will need to install the next Python modules
 in order to run an experiment (needs recent versions of scikit-learn >=0.20.0):
 
-- numpy (tested with version 1.15.2)
-- pandas (tested with version 0.23.4)
-- sacred (tested with version 0.7.3)
-- scikit-learn (tested with version 0.20.0)
-- scipy (tested with version 1.1.0)
+- numpy (tested with version 1.18.1)
+- pandas (tested with version 1.0.1)
+- sacred (tested with version 0.8.1)
+- scikit-learn (tested with version 0.22.1)
+- scipy (tested with version 1.4.1)
 
 To install Python, you can use the package management system you like the most.\
 For the installation of the modules, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
+
+A `requirements.txt` file has been added to ease the installation of the different dependencies through `pip`.
 
 ## Download ORCA-python
 
