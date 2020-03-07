@@ -5,6 +5,7 @@
 
 		"basedir": "datasets/",
 		"datasets": ["tae", "balance-scale", "contact-lenses"],
+		"precompute": "",
 		"hyperparam_cv_nfolds": 3,
 		"jobs": 10,
 		"output_folder": "my_runs/",

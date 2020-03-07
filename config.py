@@ -10,6 +10,7 @@ def default_config():
 	# Giving default values
 	general_conf = {"basedir": "",
 					"dataset": "",
+					"precompute": "",
 					"hyperparam_cv_nfolds": 3,
 					"jobs": 1,
 					"metrics": "ccr",

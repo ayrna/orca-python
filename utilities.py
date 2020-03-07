@@ -109,6 +109,12 @@ class Utilities:
 
 			dataset = self._load_dataset(dataset_path)
 
+			#Normalization or Standardization of the Dataset partitions if requested
+			if self.general_conf['precompute'].strip().lower() == 'normalize':
+				dataset = self._normalize_data(dataset)
+			elif self.general_conf['precompute'].strip().lower() == 'standardize':
+				dataset = self._normalize_data(dataset)
+
 			if self.verbose:
 				print("\nRunning", dataset_name, "dataset")
 				print("--------------------------")
@@ -330,6 +336,16 @@ class Utilities:
 
 		self.general_conf['basedir'] = base_path
 		self.general_conf['datasets'] = dataset_list
+
+
+
+	def _normalize_data(self, dataset):
+		return dataset
+
+
+
+	def _standardize_data(self, dataset):
+		return dataset
 
 
 
