@@ -15,6 +15,7 @@ import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import make_scorer
+from sklearn import preprocessing
 
 from results import Results
 
@@ -109,12 +110,6 @@ class Utilities:
 
 			dataset = self._load_dataset(dataset_path)
 
-			#Normalization or Standardization of the Dataset partitions if requested
-			if self.general_conf['precompute'].strip().lower() == 'normalize':
-				dataset = self._normalize_data(dataset)
-			elif self.general_conf['precompute'].strip().lower() == 'standardize':
-				dataset = self._normalize_data(dataset)
-
 			if self.verbose:
 				print("\nRunning", dataset_name, "dataset")
 				print("--------------------------")
@@ -135,6 +130,12 @@ class Utilities:
 					if self.verbose:
 						print("  Running Partition", part_idx)
 
+
+					#Normalization or Standardization of the partition if requested
+					if self.general_conf['precompute'].strip().lower() == 'norm':
+						partition["train_inputs"], partition["test_inputs"] = self._normalize_data(partition["train_inputs"], partition["test_inputs"])
+					elif self.general_conf['precompute'].strip().lower() == 'std':
+						partition["train_inputs"], partition["test_inputs"] = self._normalize_data(partition["train_inputs"], partition["test_inputs"])
 
 					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"],
 																	partition["train_outputs"],
@@ -339,13 +340,43 @@ class Utilities:
 
 
 
-	def _normalize_data(self, dataset):
-		return dataset
+	def _normalize_data(self, train_data, test_data):
+
+		"""
+		Normalize the data. Test data normalization will be base on train data
+
+		Parameters
+		----------
+		train_data: 2d array
+			contain the train data features
+		test_data: 2d array
+			contain the test data features
+		"""
+
+
+		mm_scaler = preprocessing.MinMaxScaler().fit(train_data)
+
+		return mm_scaler.transform(train_data), mm_scaler.transform(test_data)
 
 
 
-	def _standardize_data(self, dataset):
-		return dataset
+	def _standardize_data(self, train_data, test_data):
+
+		"""
+		Standardize the data. Test data standardization will be base on train data
+
+		Parameters
+		----------
+		train_data: 2d array
+			contain the train data features
+		test_data: 2d array
+			contain the test data features
+		"""
+
+
+		std_scaler = preprocessing.StandardScaler().fit(train_data)
+
+		return std_scaler.transform(train_data), std_scaler.transform(test_data)
 
 
 
