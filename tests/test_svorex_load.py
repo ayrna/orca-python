@@ -18,6 +18,8 @@ class TestSvorexLoad(unittest.TestCase):
 
 	This classifier is built in classifiers/SVOREX.py.
 	"""
+
+	dataset_path = ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_redsvm_svorex_load_dataset")
 		
 	def test_redsvm_load(self):
 		
@@ -27,23 +29,23 @@ class TestSvorexLoad(unittest.TestCase):
 		print("++++++++++++++++")
 		print()
 
-		datasets_names = ["test_datasets/test_redsvm_svorex_load_dataset/train_automobile.0", 
-						"test_datasets/test_redsvm_svorex_load_dataset/train_balance-scale.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_bondrate.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_car.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_contact-lenses.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_ERA.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_ESL.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_eucalyptus.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_LEV.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_newthyroid.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_pasture.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_squash-stored.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_squash-unstored.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_SWD.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_tae.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_toy.0",
-						"test_datasets/test_redsvm_svorex_load_dataset/train_winequality-red.0"]
+		datasets_names = [ospath.join(self.dataset_path,"train_automobile.0"),
+						ospath.join(self.dataset_path,"train_balance-scale.0"),
+						ospath.join(self.dataset_path,"train_bondrate.0"),
+						ospath.join(self.dataset_path,"train_car.0"),
+						ospath.join(self.dataset_path,"train_contact-lenses.0"),
+						ospath.join(self.dataset_path,"train_ERA.0"),
+						ospath.join(self.dataset_path,"train_ESL.0"),
+						ospath.join(self.dataset_path,"train_eucalyptus.0"),
+						ospath.join(self.dataset_path,"train_LEV.0"),
+						ospath.join(self.dataset_path,"train_newthyroid.0"),
+						ospath.join(self.dataset_path,"train_pasture.0"),
+						ospath.join(self.dataset_path,"train_squash-stored.0"),
+						ospath.join(self.dataset_path,"train_squash-unstored.0"),
+						ospath.join(self.dataset_path,"train_SWD.0"),
+						ospath.join(self.dataset_path,"train_tae.0"),
+						ospath.join(self.dataset_path,"train_toy.0"),
+						ospath.join(self.dataset_path,"train_winequality-red.0")]
 
 		classifiers = [SVOREX(kernel_type=0)]
 

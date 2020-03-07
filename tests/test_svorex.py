@@ -18,8 +18,10 @@ class TestRedsvm(unittest.TestCase):
 	This classifier is built in classifiers/SVOREX.py.
 	"""
 
-	train_file = np.loadtxt("test_datasets/test_svorex_dataset/train.0")
-	test_file = np.loadtxt("test_datasets/test_svorex_dataset/test.0")
+	dataset_path = ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_svorex_dataset")
+
+	train_file = np.loadtxt(ospath.join(dataset_path,"train.0"))
+	test_file = np.loadtxt(ospath.join(dataset_path,"test.0"))
 
 	def test_svorex_fit_correct(self):
 		#Check if this algorithm can correctly classify a toy problem.
@@ -30,9 +32,9 @@ class TestRedsvm(unittest.TestCase):
 
 		X_test = self.test_file[:,0:(-1)]
 
-		expected_predictions = ["test_datasets/test_svorex_dataset/expectedPredictions.0", 
-								"test_datasets/test_svorex_dataset/expectedPredictions.1",
-								"test_datasets/test_svorex_dataset/expectedPredictions.2"]
+		expected_predictions = [ospath.join(self.dataset_path,"expectedPredictions.0"), 
+								ospath.join(self.dataset_path,"expectedPredictions.1"),
+								ospath.join(self.dataset_path,"expectedPredictions.2"),]
 
 		classifiers = [SVOREX(kernel_type=0, t=0.002, c=0.5, k=0.1),
 					   SVOREX(kernel_type=1, t=0.002, c=0.5, k=0.1),
