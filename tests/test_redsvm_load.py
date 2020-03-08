@@ -1,11 +1,12 @@
 from sys import path as syspath
 from os import path as ospath
+import ntpath
 
 import unittest
 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
-import ntpath
+from  sklearn import preprocessing
 
 syspath.append(ospath.join('..', 'classifiers'))
 
@@ -63,6 +64,8 @@ class TestRedsvmLoad(unittest.TestCase):
 
 			X_train = dataset[:,0:(-1)]
 			y_train = dataset[:,(-1)]
+
+			X_train = preprocessing.StandardScaler().fit_transform(X_train)
 			
 			print("-------------")
 			print("Dataset {}...".format(ntpath.basename(dataset_name)))
