@@ -136,6 +136,8 @@ class Utilities:
 						partition["train_inputs"], partition["test_inputs"] = self._normalize_data(partition["train_inputs"], partition["test_inputs"])
 					elif self.general_conf['precompute'].strip().lower() == 'std':
 						partition["train_inputs"], partition["test_inputs"] = self._normalize_data(partition["train_inputs"], partition["test_inputs"])
+					elif self.general_conf['precompute'].strip().lower() != '':
+						raise AttributeError("Precompute named '%s' unknown" % self.general_conf['precompute'].strip().lower())
 
 					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"],
 																	partition["train_outputs"],
