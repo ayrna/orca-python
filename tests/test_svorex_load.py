@@ -1,16 +1,18 @@
 from sys import path as syspath
 from os import path as ospath
 import ntpath
+from shutil import rmtree
 
 import unittest
 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
-from sklearn import preprocessing
+from  sklearn import preprocessing
 
+syspath.append('..')
 syspath.append(ospath.join('..', 'classifiers'))
 
-from SVOREX import SVOREX
+from utilities import Utilities
 
 
 class TestSvorexLoad(unittest.TestCase):
@@ -20,54 +22,48 @@ class TestSvorexLoad(unittest.TestCase):
 	This classifier is built in classifiers/SVOREX.py.
 	"""
 
+	# Getting path to datasets folder
 	dataset_path = ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_redsvm_svorex_load_dataset")
+	
+	# Declaring a simple configuration
+	general_conf = {"basedir": dataset_path,
+					"datasets": ["automobile", "balance-scale", "bondrate", "car", "contact-lenses", "ERA", "ESL", "eucalyptus", "LEV", "newthyroid",
+								 "pasture", "squash-stored", "squash-unstored", "SWD", "tae", "toy", "winequality-red"],
+					"input_preprocessing": "std",
+					"hyperparam_cv_nfolds": 3,
+					"jobs": 10,
+					"output_folder": "my_runs/",
+					"metrics": ["ccr", "mae", "amae", "mze"],
+					"cv_metric": "mae"}
+
+	configurations = {
+		"svorex_gaussian": {
+
+			"classifier": "SVOREX",
+			"parameters": {
+				"kernel_type": 0,
+				"c": [1.e-03, 1.e-02, 1.e-01, 1.e+00, 1.e+01, 1.e+02, 1.e+03],
+				"k": [1.e-03, 1.e-02, 1.e-01, 1.e+00, 1.e+01, 1.e+02, 1.e+03]
+			}
+
+		}
+	}
 		
 	def test_redsvm_load(self):
 		
 		print("\n")
-		print("++++++++++++++++")
+		print("###############################")
 		print("SVOREX load test")
-		print("++++++++++++++++")
-		print()
+		print("###############################")
 
-		datasets_names = [ospath.join(self.dataset_path,"train_automobile.0"),
-						ospath.join(self.dataset_path,"train_balance-scale.0"),
-						ospath.join(self.dataset_path,"train_bondrate.0"),
-						ospath.join(self.dataset_path,"train_car.0"),
-						ospath.join(self.dataset_path,"train_contact-lenses.0"),
-						ospath.join(self.dataset_path,"train_ERA.0"),
-						ospath.join(self.dataset_path,"train_ESL.0"),
-						ospath.join(self.dataset_path,"train_eucalyptus.0"),
-						ospath.join(self.dataset_path,"train_LEV.0"),
-						ospath.join(self.dataset_path,"train_newthyroid.0"),
-						ospath.join(self.dataset_path,"train_pasture.0"),
-						ospath.join(self.dataset_path,"train_squash-stored.0"),
-						ospath.join(self.dataset_path,"train_squash-unstored.0"),
-						ospath.join(self.dataset_path,"train_SWD.0"),
-						ospath.join(self.dataset_path,"train_tae.0"),
-						ospath.join(self.dataset_path,"train_toy.0"),
-						ospath.join(self.dataset_path,"train_winequality-red.0")]
+		# Declaring Utilities object and running the experiment
+		util = Utilities(self.general_conf, self.configurations, verbose=True)
+		util.run_experiment()
+		# Saving results information
+		util.write_report()
 
-		classifiers = [SVOREX(kernel_type=0)]
-
-		parameters = {'c': np.full(7,10.)**np.arange(-3,4), 'k': np.full(7,10.)**np.arange(-3,4)}
-		
-		for dataset_name in datasets_names:
-			dataset = np.loadtxt(dataset_name)
-
-			X_train = dataset[:,0:(-1)]
-			y_train = dataset[:,(-1)]
-
-			X_train = preprocessing.StandardScaler().fit_transform(X_train)
-			
-			print("-------------")
-			print("Dataset {}...".format(ntpath.basename(dataset_name)))
-
-			for classifier in classifiers:
-				grid = GridSearchCV(classifier, parameters, n_jobs=-1, cv=3)
-				grid.fit(X_train, y_train)
-
-			print("Done!")
+		#Delete all the test results after load test
+		rmtree("my_runs")
 
 
 if __name__ == '__main__':
