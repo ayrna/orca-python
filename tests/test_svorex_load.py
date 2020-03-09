@@ -25,7 +25,7 @@ class TestSvorexLoad(unittest.TestCase):
 	# Getting path to datasets folder
 	dataset_path = ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_redsvm_svorex_load_dataset")
 
-	# Parameters for experiments
+	# Parameters values for experiments
 	values = np.logspace(-3, 3, 7).tolist()
 	
 	# Declaring a simple configuration
