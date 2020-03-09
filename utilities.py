@@ -345,7 +345,7 @@ class Utilities:
 	def _normalize_data(self, train_data, test_data):
 
 		"""
-		Normalize the data. Test data normalization will be base on train data
+		Normalize the data. Test data normalization will be based on train data
 
 		Parameters
 		----------
@@ -365,7 +365,7 @@ class Utilities:
 	def _standardize_data(self, train_data, test_data):
 
 		"""
-		Standardize the data. Test data standardization will be base on train data
+		Standardize the data. Test data standardization will be based on train data
 
 		Parameters
 		----------
