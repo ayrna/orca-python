@@ -236,7 +236,7 @@ class TestMainMethod(unittest.TestCase):
 	# Declaring a simple configuration
 	general_conf = {"basedir": dataset_folder,
 					"datasets": ["tae", "contact-lenses"],
-					"precompute": "std",
+					"input_preprocessing": "std",
 					"hyperparam_cv_nfolds": 3,
 					"jobs": 10,
 					"output_folder": "my_runs/",
