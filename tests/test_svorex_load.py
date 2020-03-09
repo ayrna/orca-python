@@ -24,6 +24,9 @@ class TestSvorexLoad(unittest.TestCase):
 
 	# Getting path to datasets folder
 	dataset_path = ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_redsvm_svorex_load_dataset")
+
+	# Parameters for experiments
+	values = np.logspace(-3, 3, 7).tolist()
 	
 	# Declaring a simple configuration
 	general_conf = {"basedir": dataset_path,
@@ -42,8 +45,8 @@ class TestSvorexLoad(unittest.TestCase):
 			"classifier": "SVOREX",
 			"parameters": {
 				"kernel_type": 0,
-				"c": [1.e-03, 1.e-02, 1.e-01, 1.e+00, 1.e+01, 1.e+02, 1.e+03],
-				"k": [1.e-03, 1.e-02, 1.e-01, 1.e+00, 1.e+01, 1.e+02, 1.e+03]
+				"c": values,
+				"k": values
 			}
 
 		}
