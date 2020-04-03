@@ -197,13 +197,13 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			predicted_y = self.classes_[np.argmin(losses, axis=1)]
 
 
-		elif decision_method == "logaritmic_loss":
+		elif decision_method == "logarithmic_loss":
 
 			# Scaling predictions from [0,1] range to [-1,1]
 			predictions = (predictions*2 - 1)
 
 			# Transforming from binary problems to the original problem
-			losses = self._logaritmic_loss(predictions)
+			losses = self._logarithmic_loss(predictions)
 			predicted_y = self.classes_[np.argmin(losses, axis=1)]
 
 
@@ -370,10 +370,10 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 
 
-	def _logaritmic_loss(self, predictions):
+	def _logarithmic_loss(self, predictions):
 
 		"""
-		Computation of the logaritmic losses for each label of the
+		Computation of the logarithmic losses for each label of the
 		original ordinal multinomial problem. Transforms from n-1
 		binary subproblems to the original ordinal problem with
 		n targets.
@@ -387,13 +387,13 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		-------
 
 		eLosses: array, shape (n_samples, n_targets)
-			Logaritmic losses for each sample of dataset X. One
+			logarithmic losses for each sample of dataset X. One
 			different value for each class label.
 
 		"""
 
 
-		# Computing logaritmic losses
+		# Computing logarithmic losses
 		l_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
 		for i in range(predictions.shape[1] + 1):
 
@@ -435,10 +435,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		# Probabilities of each set to belong to the first ordinal class
 		predicted_proba_y[:,0] = 1 - predictions[:,0]
 
-		for i in range(1, predictions.shape[1]):
-
-			# Probability of sets to belong to class i
-			predicted_proba_y[:,i] = predictions[:,i-1] - predictions[:,i]
+		# Probabilities for the central classes
+		predicted_proba_y[:,1:-1] = predictions[:,:-1] - predictions[:,1:]
 
 		# Probabilities of each set to belong to the last class
 		predicted_proba_y[:,-1] = predictions[:,-1]
