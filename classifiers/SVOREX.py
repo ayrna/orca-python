@@ -42,11 +42,11 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 	#Set parameters values
 	def __init__(self, kernel_type=0, p=2, t=0.001, c=1, k=1):
 
-		self.kernel_type = kernel_type
-		self.p = p
-		self.t = t
-		self.c = c
-		self.k = k
+		self.kernel_type_ = kernel_type
+		self.p_ = p
+		self.t_ = t
+		self.c_ = c
+		self.k_ = k
 		
 
 	def fit(self, X, y):
@@ -77,13 +77,13 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
 		arg = ""
 		#Prepare the kernel type arguments
-		if (self.kernel_type == 1):
+		if (self.kernel_type_ == 1):
 			arg = "-L"
-		elif (self.kernel_type == 2):
-			arg = "-P {}".format(self.p)
+		elif (self.kernel_type_ == 2):
+			arg = "-P {}".format(self.p_)
 			
 		# Fit the model
-		options = "svorex {} -T {} -K {} -C {}".format(arg, str(self.t), str(self.k), str(self.c))
+		options = "svorex {} -T {} -K {} -C {}".format(arg, str(self.t_), str(self.k_), str(self.c_))
 		self.classifier_ = svorextrain.run(self.y_.tolist(), self.X_.tolist(), options)
 		
 		return self
