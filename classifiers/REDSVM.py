@@ -2,6 +2,7 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.multiclass import unique_labels
 
 from libsvmRank.python import svmtrain, svmpredict
 
@@ -86,14 +87,14 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 		self: object
 		"""
 
+		# Check that X and y have correct shape
 		X, y = check_X_y(X, y)
-
-		self.X_ = X
-		self.y_ = y
+		# Store the classes seen during fit
+		self.classes_ = unique_labels(y)
 		
-		#Set the default g value if necesary
+		#Set the default g value if necessary
 		if self.g == None:
-			self.g = 1 / np.size(self.X_, 1)
+			self.g = 1 / np.size(X, 1)
 			
 		# Fit the model
 		options = "-s 5 -t {} -d {} -g {} -r {} -c {} -m {} -e {} -h {} -q".format(str(self.t),
@@ -104,7 +105,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 																				str(self.m),
 																				str(self.e),
 																				str(self.h))
-		self.classifier_ = svmtrain.run(self.y_.tolist(), self.X_.tolist(), options)
+		self.classifier_ = svmtrain.run(y.tolist(), X.tolist(), options)
 		
 		return self
 
@@ -127,7 +128,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 		"""
 		
 		# Check is fit had been called
-		check_is_fitted(self, ['X_', 'y_'])
+		check_is_fitted(self, ['classifier_'])
 
 		# Input validation
 		X = check_array(X)
