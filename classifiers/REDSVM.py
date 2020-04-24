@@ -45,7 +45,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 	d degree : set degree in kernel function (default 3)
 	g gamma : set gamma in kernel function (default 1/num_features)
 	r coef0 : set coef0 in kernel function (default 0)
-	c cost : set the parameter C of C-SVC, epsilon-SVR, and nu-SVR (default 1)
+	c cost : set the parameter C (default 1)
 	m cachesize : set cache memory size in MB (default 100)
 	e epsilon : set tolerance of termination criterion (default 0.001)
 	h shrinking : whether to use the shrinking heuristics, 0 or 1 (default 1)
