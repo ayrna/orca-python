@@ -55,14 +55,14 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 	#Set parameters values
 	def __init__(self, t=2, d=3, g=None, r=0, c=1, m=100, e=0.001, h=1):
 
-		self.t_ = t
-		self.d_ = d
-		self.g_ = g
-		self.r_ = r
-		self.c_ = c
-		self.m_ = m
-		self.e_ = e
-		self.h_ = h
+		self.t = t
+		self.d = d
+		self.g = g
+		self.r = r
+		self.c = c
+		self.m = m
+		self.e = e
+		self.h = h
 		
 
 	def fit(self, X, y):
@@ -92,18 +92,18 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 		self.y_ = y
 		
 		#Set the default g value if necesary
-		if self.g_ == None:
-			self.g_ = 1 / np.size(self.X_, 1)
+		if self.g == None:
+			self.g = 1 / np.size(self.X_, 1)
 			
 		# Fit the model
-		options = "-s 5 -t {} -d {} -g {} -r {} -c {} -m {} -e {} -h {} -q".format(str(self.t_),
-																				str(self.d_),
-																				str(self.g_),
-																				str(self.r_),
-																				str(self.c_),
-																				str(self.m_),
-																				str(self.e_),
-																				str(self.h_))
+		options = "-s 5 -t {} -d {} -g {} -r {} -c {} -m {} -e {} -h {} -q".format(str(self.t),
+																				str(self.d),
+																				str(self.g),
+																				str(self.r),
+																				str(self.c),
+																				str(self.m),
+																				str(self.e),
+																				str(self.h))
 		self.classifier_ = svmtrain.run(self.y_.tolist(), self.X_.tolist(), options)
 		
 		return self
