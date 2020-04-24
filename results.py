@@ -252,7 +252,3 @@ class Results:
 														test_summary_row.iloc[len(std_index):].keys()), ()))]
 
 		return train_summary_row, test_summary_row
-		
-
-
-

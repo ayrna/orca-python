@@ -25,6 +25,3 @@ def main(general_conf, configurations):
 	interface = Utilities(general_conf, configurations)
 	interface.run_experiment()
 	interface.write_report()
-
-
-
