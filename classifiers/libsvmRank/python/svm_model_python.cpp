@@ -42,7 +42,7 @@ PyObject* modelToPython(struct svm_model* model){
 		for(i = 0; i < n; i++){
 			list_el = Py_BuildValue("d", rho[i]);
 			PyList_Append(rho_list, list_el);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(list_el);
@@ -55,7 +55,7 @@ PyObject* modelToPython(struct svm_model* model){
 		for(i = 0; i < n; i++){
 			list_el = Py_BuildValue("d", rho[i]);
 			PyList_Append(rho_list, list_el);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(list_el);
@@ -72,7 +72,7 @@ PyObject* modelToPython(struct svm_model* model){
 		for (i = 0; i < nr_class; i++){
 			list_el = Py_BuildValue("i", label[i]);
 			PyList_Append(label_list, list_el);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(list_el);
@@ -88,7 +88,7 @@ PyObject* modelToPython(struct svm_model* model){
 		for (i = 0; i < n; i++){
 			list_el = Py_BuildValue("d", probA[i]);
 			PyList_Append(probA_list, list_el);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(list_el);
@@ -104,7 +104,7 @@ PyObject* modelToPython(struct svm_model* model){
 		for (i = 0; i < n; i++){
 			list_el = Py_BuildValue("d", probB[i]);
 			PyList_Append(probB_list, list_el);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(list_el);
@@ -120,7 +120,7 @@ PyObject* modelToPython(struct svm_model* model){
 		for (i = 0; i < nr_class; i++){
 			list_el = Py_BuildValue("i", nSV[i]);
 			PyList_Append(nSV_list, list_el);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(list_el);
@@ -137,14 +137,14 @@ PyObject* modelToPython(struct svm_model* model){
 		for (j = 0; j < model->l; j++){
 			list_el = Py_BuildValue("d", sv_coef[i][j]);
 			PyList_Append(sv_coef_listAux, list_el);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(list_el);
 		}
 		
 		PyList_Append(sv_coef_list, sv_coef_listAux);
-		//PyList_Append increment the passed in PyObjects references so is necesary
+		//PyList_Append increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(sv_coef_listAux);
@@ -170,7 +170,7 @@ PyObject* modelToPython(struct svm_model* model){
 			);
 
 			PyList_Append(svmNode_listAux, svmNode_dict);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(svmNode_dict);
@@ -188,7 +188,7 @@ PyObject* modelToPython(struct svm_model* model){
 				);
 
 				PyList_Append(svmNode_listAux, svmNode_dict);
-				//PyList_Append increment the passed in PyObjects references so is necesary
+				//PyList_Append increment the passed PyObjects references so is necesary
 				//to decrement them in order to let python free memory when the model 
 				//is not longer needed
 				Py_DECREF(svmNode_dict);
@@ -197,7 +197,7 @@ PyObject* modelToPython(struct svm_model* model){
 		}
 
 		PyList_Append(svmNode_list, svmNode_listAux);
-		//PyList_Append increment the passed in PyObjects references so is necesary
+		//PyList_Append increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(svmNode_listAux);
@@ -230,7 +230,7 @@ PyObject* modelToPython(struct svm_model* model){
     			"nSV", nSV_list,
     			"free_sv", model->free_sv
     	   );
-	//Pybuild increment the passed in PyObjects references so is necesary
+	//Pybuild increment the passed PyObjects references so is necesary
 	//to decrement them in order to let python free memory when the model 
 	//is not longer needed
 	Py_DECREF(param_dict);

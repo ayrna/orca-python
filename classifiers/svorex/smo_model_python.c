@@ -19,7 +19,7 @@ PyObject* modelToPython(smo_Settings* model){
 	while (trainnode!=NULL){
 		list_el = Py_BuildValue("d", (model->alpha+j)->alpha);
 		PyList_Append(alpha_list, list_el);
-		//PyList_Append increment the passed in PyObjects references so is necesary
+		//PyList_Append increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(list_el);
@@ -33,7 +33,7 @@ PyObject* modelToPython(smo_Settings* model){
 	for(i=0; i<(int)trainlist->dimen; i++){
 		list_el = Py_BuildValue("d", model->ard[i]);
 		PyList_Append(ard_list, list_el);
-		//PyList_Append increment the passed in PyObjects references so is necesary
+		//PyList_Append increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(list_el);
@@ -45,7 +45,7 @@ PyObject* modelToPython(smo_Settings* model){
 	for (i=1; i<(int)trainlist->classes; i++){
 		list_el = Py_BuildValue("d",model->biasj[i-1]);
 		PyList_Append(biasj_list, list_el);
-		//PyList_Append increment the passed in PyObjects references so is necesary
+		//PyList_Append increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(list_el);
@@ -62,7 +62,7 @@ PyObject* modelToPython(smo_Settings* model){
 		for(i=0; i<(int)trainlist->dimen; i++){
 			list_el = Py_BuildValue("d", trainnode->point[i]);
 			PyList_Append(pairs_point_list, list_el);
-			//PyList_Append increment the passed in PyObjects references so is necesary
+			//PyList_Append increment the passed PyObjects references so is necesary
 			//to decrement them in order to let python free memory when the model 
 			//is not longer needed
 			Py_DECREF(list_el);
@@ -83,13 +83,13 @@ PyObject* modelToPython(smo_Settings* model){
 												"point", pairs_point_list,
 												"target", trainnode->target
     	  		 							);
-		//Pybuild increment the passed in PyObjects references so is necesary
+		//Pybuild increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(pairs_point_list);
 
 		PyList_Append(pairs_data_node_list, pairs_data_node_dict);
-		//PyList_Append increment the passed in PyObjects references so is necesary
+		//PyList_Append increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(pairs_data_node_dict);
@@ -105,14 +105,14 @@ PyObject* modelToPython(smo_Settings* model){
 	for(i=0; i<(int)trainlist->dimen; i++){
 		list_el = Py_BuildValue("d", trainlist->x_mean[i]);
 		PyList_Append(x_mean_list, list_el);
-		//PyList_Append increment the passed in PyObjects references so is necesary
+		//PyList_Append increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(list_el);
 
 		list_el = Py_BuildValue("d", trainlist->x_devi[i]);
 		PyList_Append(x_devi_list, list_el);
-		//PyList_Append increment the passed in PyObjects references so is necesary
+		//PyList_Append increment the passed PyObjects references so is necesary
 		//to decrement them in order to let python free memory when the model 
 		//is not longer needed
 		Py_DECREF(list_el);
@@ -149,7 +149,7 @@ PyObject* modelToPython(smo_Settings* model){
 											"x_devi", x_devi_list,
 											"data_nodes_list", pairs_data_node_list
     	  		 						);
-	//Pybuild increment the passed in PyObjects references so is necesary
+	//Pybuild increment the passed PyObjects references so is necesary
 	//to decrement them in order to let python free memory when the model 
 	//is not longer needed
 	Py_DECREF(x_mean_list);
@@ -175,7 +175,7 @@ PyObject* modelToPython(smo_Settings* model){
 								"biasj", biasj_list,
 								"bias", model->bias
     	   					);
-	//Pybuild increment the passed in PyObjects references so is necesary
+	//Pybuild increment the passed PyObjects references so is necesary
 	//to decrement them in order to let python free memory when the model 
 	//is not longer needed
 	Py_DECREF(ard_list);
