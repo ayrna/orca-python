@@ -2,6 +2,7 @@ from sys import path as syspath
 from os import path as ospath
 import ntpath
 from shutil import rmtree
+import gc
 
 import unittest
 
@@ -53,6 +54,7 @@ class TestSvorexLoad(unittest.TestCase):
 	}
 		
 	def test_redsvm_load(self):
+		gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_SAVEALL)
 		
 		print("\n")
 		print("###############################")
