@@ -238,7 +238,8 @@ PyObject* run(PyObject* self, PyObject* args)
 	if(smo_routine (smosetting) == FALSE){
 		Clear_smo_Settings( smosetting ) ;
 		Clear_def_Settings( defsetting ) ;
-		
+
+		PyErr_SetString(PyExc_MemoryError, "The train process failed");
 		return NULL;
 	}
 

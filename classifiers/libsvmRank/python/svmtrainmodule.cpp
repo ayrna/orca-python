@@ -114,6 +114,16 @@ PyObject* run(PyObject* self, PyObject* args){
 	PyObject*  py_model;
 
 	model = svm_train(&prob, &param);
+
+	if (model == NULL){
+		PyErr_SetString(PyExc_ValueError, "The trained model is null");
+		svm_destroy_param(&param);
+		free(prob.y);
+		free(prob.x);
+		free(x_space);
+		return NULL;
+	}
+	
 	py_model = modelToPython(model);
 
 	svm_free_and_destroy_model(&model);
