@@ -60,7 +60,7 @@ PyObject* fit(PyObject* self, PyObject* args)
 		printf("  -v     activates the verbose mode to display message.\n") ;		
 		printf("  -L     use imbalanced Linear kernel (default Gaussian kernel).\n") ;
 		printf("  -P  p  use Polynomial kernel with order p (default Gaussian kernel).\n") ;
-		printf("  -E  e  set Epsilon at e for regression only (default 0.1). (Not used for orca-python)\n") ;
+		printf("  -E  e  set Epsilon at e for regression only (default 0.1). (Not used in orca-python)\n") ;
 		printf("  -T  t  set Tolerance at t (default 0.001).\n") ;
 		printf("  -K o set kappa value at o (default 1).\n") ;	
 		printf("  -C o set C value at o (default  1).\n") ;

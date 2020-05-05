@@ -46,9 +46,9 @@ void exit_with_help()
 	"-m cachesize : set cache memory size in MB (default 100)\n"
 	"-e epsilon : set tolerance of termination criterion (default 0.001)\n"
 	"-h shrinking : whether to use the shrinking heuristics, 0 or 1 (default 1)\n"
-	"-b probability_estimates : whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)\n"
+	"-b probability_estimates : whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0) (Not used in orca-python)\n"
 	"-wi weight : set the parameter C of class i to weight*C, for C-SVC (default 1)\n"
-	"-v n : n-fold cross validation mode\n"
+	"-v n : n-fold cross validation mode (Not used in orca-python)\n"
 	"-q : quiet mode (no outputs)\n"
 	);
 }
