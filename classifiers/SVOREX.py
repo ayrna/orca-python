@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 
-from svorex import svorextrain, svorexpredict
+from svorex import svorex
 
 
 class SVOREX(BaseEstimator, ClassifierMixin):
@@ -85,7 +85,7 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 			
 		# Fit the model
 		options = "svorex {} -T {} -K {} -C {}".format(arg, str(self.t), str(self.k), str(self.c))
-		self.classifier_ = svorextrain.run(y.tolist(), X.tolist(), options)
+		self.classifier_ = svorex.fit(y.tolist(), X.tolist(), options)
 		
 		return self
 
@@ -113,6 +113,6 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 		# Input validation
 		X = check_array(X)
 
-		predicted_y = svorexpredict.run(X.tolist(), self.classifier_)
+		predicted_y = svorex.predict(X.tolist(), self.classifier_)
 		
 		return predicted_y

@@ -4,13 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "svm-module-functions.hpp"
 #include "svm.h"
-#include "svm_model_python.h"
+#include "svm-model-python.h"
 
 #define CMD_LEN 2048
 #define Malloc(type,n) (type *)malloc((n)*sizeof(type))
 
-PyObject* predict(PyObject* features, struct svm_model *model, const int predict_probability)
+PyObject* predictLabels(PyObject* features, struct svm_model *model)
 {
 	PyObject* predicted_labels = Py_BuildValue("[]"), *list_el = NULL;
 	int feature_number, testing_instance_number;
@@ -118,99 +119,32 @@ PyObject* predict(PyObject* features, struct svm_model *model, const int predict
 	return predicted_labels;
 }
 
-void exit_with_help()
-{
-	printf(
-		"Usage: [predicted_label, accuracy, decision_values/prob_estimates] = svmpredict(testing_label_vector, testing_instance_matrix, model, 'libsvm_options')\n"
-		"Parameters:\n"
-		"  model: SVM model structure from svmtrain.\n"
-		"  libsvm_options:\n"
-		"    -b probability_estimates: whether to predict probability estimates, 0 or 1 (default 0); one-class SVM not supported yet\n"
-		"Returns:\n"
-		"  predicted_label: SVM prediction output vector.\n"
-		"  accuracy: a vector with accuracy, mean squared error, squared correlation coefficient.\n"
-		"  prob_estimates: If selected, probability estimate vector.\n"
-	);
-}
-
 /* Interface function of Python*/
-PyObject* run(PyObject* self, PyObject* args){
-	int prob_estimate_flag = 0;
+PyObject* predict(PyObject* self, PyObject* args){
 	struct svm_model *model;
 	PyObject* predictedLabels = NULL;
 
 	PyObject* features = NULL;
 	PyObject* py_model = NULL;
-	char* options = NULL;
 
 	/*Parse arguments*/
 
 	/*options is NULL terminated*/
-	if (!PyArg_ParseTuple(args, "OOs", &features, &py_model, &options)){
+	if (!PyArg_ParseTuple(args, "OO", &features, &py_model)){
 		PyErr_SetString(PyExc_RuntimeError, "Unable to parse arguments");
 		return NULL;
 	}
 
 	if(PyDict_Check(py_model))
 	{
-		/* parse options*/
-		if(options[0] != '\0')
-		{
-			int i, argc = 1;
-			char* argv[CMD_LEN/2];
-
-			/* put options in argv[]*/
-			if((argv[argc] = strtok(options, " ")) != NULL)
-				while((argv[++argc] = strtok(NULL, " ")) != NULL)
-					;
-
-			for(i=1;i<argc;i++)
-			{
-				if(argv[i][0] != '-') break;
-				if(++i>=argc)
-				{
-					exit_with_help();
-					PyErr_SetString(PyExc_SyntaxError, "Options syntax not correct!");
-					return NULL;
-				}
-				switch(argv[i-1][1])
-				{
-					case 'b':
-						prob_estimate_flag = atoi(argv[i]);
-						break;
-					default:
-						char str[128];
-						snprintf(str, 128, "Unknown option: -%c", argv[i-1][1]);
-						exit_with_help();
-						PyErr_SetString(PyExc_ValueError, str);
-						return NULL;
-				}
-			}
-		}
-
 		model = pythonToModel(py_model);
 		if (model == NULL)
 		{
 			PyErr_SetString(PyExc_MemoryError, "Unable to translate python model to C");
 			return NULL;
 		}
-
-		if(prob_estimate_flag)
-		{
-			if(svm_check_probability_model(model)==0)
-			{
-				svm_free_and_destroy_model(&model);
-				PyErr_SetString(PyExc_ValueError, "Model does not support probabiliy estimates");
-				return NULL;
-			}
-		}
-		/*else
-		{
-			if(svm_check_probability_model(model)!=0)
-				printf("Model supports probability estimates, but disabled in predicton.\n");
-		}*/
 		
-		predictedLabels = predict(features, model, prob_estimate_flag);
+		predictedLabels = predictLabels(features, model);
 		/* destroy model*/
 		svm_free_and_destroy_model(&model);
 	}
@@ -222,47 +156,3 @@ PyObject* run(PyObject* self, PyObject* args){
 
 	return predictedLabels;
 }
-
-/*Python module init*/
-#if PY_MAJOR_VERSION >= 3
-#define IS_PY3K
-#endif
-
-static PyMethodDef svmPredictMethod[] = {
-	{ "run", run, METH_VARARGS, "Predict labels" },
-	{ NULL, NULL, 0, NULL }
-};
-
-#ifndef IS_PY3K /*For Python 2*/
-	#ifdef __cplusplus
-		extern "C" {
-	#endif
-			DL_EXPORT(void) initsvmpredict(void)
-			{
-			  Py_InitModule("svmpredict", svmPredictMethod);
-			}
-	#ifdef __cplusplus
-		}
-	#endif
-#else /*For Python 3*/
-	static struct PyModuleDef svmpredictmodule = {
-	    PyModuleDef_HEAD_INIT,
-	    "svmpredict",   /* name of module */
-	    NULL, 		 /* module documentation, may be NULL */
-	    -1,       	 /* size of per-interpreter state of the module,
-	                 or -1 if the module keeps state in global variables. */
-	    svmPredictMethod
-	};
-
-	#ifdef __cplusplus
-		extern "C" {
-	#endif
-			PyMODINIT_FUNC
-			PyInit_svmpredict(void){
-			    return PyModule_Create(&svmpredictmodule);
-			}
-	#ifdef __cplusplus
-		}
-	#endif
-#endif
-/******************/

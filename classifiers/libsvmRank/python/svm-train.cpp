@@ -5,8 +5,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "svm-module-functions.hpp"
 #include "svm.h"
-#include "svm_model_python.h"
+#include "svm-model-python.h"
 
 #define CMD_LEN 2048
 #define Malloc(type,n) (type *)malloc((n)*sizeof(type))
@@ -16,7 +17,7 @@ void print_null(const char *s) {}
 void exit_with_help()
 {
 	printf(
-	"Usage: model = svmtrain(training_label_vector, training_instance_matrix, 'libsvm_options');\n"
+	"\nUsage: model = svm.fit(training_label_vector, training_instance_matrix, 'libsvm_options')\n"
 	"libsvm_options:\n"
 	"-s svm_type : set type of SVM (default 0)\n"
 	"	0 -- C-SVC\n"
@@ -65,7 +66,7 @@ int cross_validation;
 int nr_fold;
 
 /* Interface function of Python*/
-PyObject* run(PyObject* self, PyObject* args){
+PyObject* fit(PyObject* self, PyObject* args){
 	const char *error_msg;
 
 	/* fix random seed to have same results for each run*/
@@ -88,7 +89,7 @@ PyObject* run(PyObject* self, PyObject* args){
 	}
 
 	if(parse_command_line(options)){
-		//exit_with_help();
+		exit_with_help();
 		svm_destroy_param(&param);
 		PyErr_SetString(PyExc_SyntaxError, "Options syntax not correct!");
 		return NULL;
@@ -135,50 +136,6 @@ PyObject* run(PyObject* self, PyObject* args){
 
 	return py_model;
 }
-
-/*Python module init*/
-#if PY_MAJOR_VERSION >= 3
-#define IS_PY3K
-#endif
-
-static PyMethodDef svmTrainMethod[] = {
-	{ "run", run, METH_VARARGS, "Fits a model" },
-	{ NULL, NULL, 0, NULL }
-};
-
-#ifndef IS_PY3K /*For Python 2*/
-	#ifdef __cplusplus
-		extern "C" {
-	#endif
-			DL_EXPORT(void) initsvmtrain(void)
-			{
-			  Py_InitModule("svmtrain", svmTrainMethod);
-			}
-	#ifdef __cplusplus
-		}
-	#endif
-#else /*For Python 3*/
-	static struct PyModuleDef svmtrainmodule = {
-	    PyModuleDef_HEAD_INIT,
-	    "svmtrain",   /* name of module */
-	    NULL, 		 /* module documentation, may be NULL */
-	    -1,       	 /* size of per-interpreter state of the module,
-	                 or -1 if the module keeps state in global variables. */
-	    svmTrainMethod
-	};
-
-	#ifdef __cplusplus
-		extern "C" {
-	#endif
-			PyMODINIT_FUNC
-			PyInit_svmtrain(void){
-			    return PyModule_Create(&svmtrainmodule);
-			}
-	#ifdef __cplusplus
-		}
-	#endif
-#endif
-/******************/
 
 void do_cross_validation()
 {

@@ -14,13 +14,14 @@
 #endif
 #include <string.h>
 
+#include "svorex_module_functions.h"
 #include "smo.h"
 #include "smo_loadproblem_python.h"
 #include "smo_model_python.h"
 
 #define CMD_LEN 2048
 
-PyObject* run(PyObject* self, PyObject* args)
+PyObject* fit(PyObject* self, PyObject* args)
 {
    	//Python parameters
    	PyObject* labels = NULL;
@@ -53,19 +54,17 @@ PyObject* run(PyObject* self, PyObject* args)
 
 	if ( NULL == (defsetting = Create_def_Settings_Python()) )
 	{
-		/*
 		// display help	
-		printf("\nUsage:  svms [-v] [...] [-K k] file \n\n") ;
-		printf("  file   specifies the file containing training samples.\n") ;
+		printf("\nUsage:  model = svorex.fit(training_label_vector, training_instance_matrix, 'svorex_options')\n") ;
+		printf("svorex_options:\n") ;
 		printf("  -v     activates the verbose mode to display message.\n") ;		
 		printf("  -L     use imbalanced Linear kernel (default Gaussian kernel).\n") ;
 		printf("  -P  p  use Polynomial kernel with order p (default Gaussian kernel).\n") ;
-		printf("  -E  e  set Epsilon at e for regression only (default 0.1).\n") (Not used for orca-python);
+		printf("  -E  e  set Epsilon at e for regression only (default 0.1). (Not used for orca-python)\n") ;
 		printf("  -T  t  set Tolerance at t (default 0.001).\n") ;
 		printf("  -K o set kappa value at o (default 1).\n") ;	
-		printf("  -C o set C value at o (default  1).\n") ;	
-		printf("\n") ;
-		*/
+		printf("  -C o set C value at o (default  1).\n") ;
+		
 		if (NULL !=defsetting)
 			Clear_def_Settings( defsetting ) ;
 
@@ -252,48 +251,4 @@ PyObject* run(PyObject* self, PyObject* args)
 
 	return py_model;
 }
-//end of main.c 
-
-/*Python module init*/
-#if PY_MAJOR_VERSION >= 3
-#define IS_PY3K
-#endif
-
-static PyMethodDef svorexTrainMethod[] = {
-	{ "run", run, METH_VARARGS, "Fits a model" },
-	{ NULL, NULL, 0, NULL }
-};
-
-#ifndef IS_PY3K /*For Python 2*/
-	#ifdef __cplusplus
-		extern "C" {
-	#endif
-			DL_EXPORT(void) initsvorex(void)
-			{
-			  Py_InitModule("svorextrain", svorexTrainMethod);
-			}
-	#ifdef __cplusplus
-		}
-	#endif
-#else /*For Python 3*/
-	static struct PyModuleDef svorextrainmodule = {
-	    PyModuleDef_HEAD_INIT,
-	    "svorextrain",   /* name of module */
-	    NULL, 		 /* module documentation, may be NULL */
-	    -1,       	 /* size of per-interpreter state of the module,
-	                 or -1 if the module keeps state in global variables. */
-	    svorexTrainMethod
-	};
-
-	#ifdef __cplusplus
-		extern "C" {
-	#endif
-			PyMODINIT_FUNC
-			PyInit_svorextrain(void){
-			    return PyModule_Create(&svorextrainmodule);
-			}
-	#ifdef __cplusplus
-		}
-	#endif
-#endif
-/******************/
+//end of svorex_train.c 

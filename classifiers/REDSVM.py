@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 
-from libsvmRank.python import svmtrain, svmpredict
+from libsvmRank.python import svm
 
 
 class REDSVM(BaseEstimator, ClassifierMixin):
@@ -105,7 +105,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 																				str(self.m),
 																				str(self.e),
 																				str(self.h))
-		self.classifier_ = svmtrain.run(y.tolist(), X.tolist(), options)
+		self.classifier_ = svm.fit(y.tolist(), X.tolist(), options)
 		
 		return self
 
@@ -133,6 +133,6 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 		# Input validation
 		X = check_array(X)
 
-		predicted_y = svmpredict.run(X.tolist(), self.classifier_, "")
+		predicted_y = svm.predict(X.tolist(), self.classifier_)
 		
 		return predicted_y

@@ -13,10 +13,11 @@
     #include <malloc.h>
 #endif
 
+#include "svorex_module_functions.h"
 #include "smo.h"
 #include "smo_model_python.h"
 
-PyObject* run(PyObject* self, PyObject* args)
+PyObject* predict(PyObject* self, PyObject* args)
 {
 	smo_Settings* model = NULL;
 	Data_List* testdata = NULL;
@@ -117,48 +118,4 @@ PyObject* run(PyObject* self, PyObject* args)
 
 	return predicted_labels;
 }
-//end of main.c 
-
-/*Python module init*/
-#if PY_MAJOR_VERSION >= 3
-#define IS_PY3K
-#endif
-
-static PyMethodDef svorexPredictMethod[] = {
-	{ "run", run, METH_VARARGS, "Predict labels" },
-	{ NULL, NULL, 0, NULL }
-};
-
-#ifndef IS_PY3K /*For Python 2*/
-	#ifdef __cplusplus
-		extern "C" {
-	#endif
-			DL_EXPORT(void) initsvorex(void)
-			{
-			  Py_InitModule("svorexpredict", svorexPredictMethod);
-			}
-	#ifdef __cplusplus
-		}
-	#endif
-#else /*For Python 3*/
-	static struct PyModuleDef svorexpredictmodule = {
-	    PyModuleDef_HEAD_INIT,
-	    "svorexpredict",   /* name of module */
-	    NULL, 		 /* module documentation, may be NULL */
-	    -1,       	 /* size of per-interpreter state of the module,
-	                 or -1 if the module keeps state in global variables. */
-	    svorexPredictMethod
-	};
-
-	#ifdef __cplusplus
-		extern "C" {
-	#endif
-			PyMODINIT_FUNC
-			PyInit_svorexpredict(void){
-			    return PyModule_Create(&svorexpredictmodule);
-			}
-	#ifdef __cplusplus
-		}
-	#endif
-#endif
-/******************/
+//end of svorex_predict.c 

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "svm.h"
-#include "svm_model_python.h"
+#include "svm-model-python.h"
 
 PyObject* modelToPython(struct svm_model* model){
 	int n, nr_class, i, j, x_index;
