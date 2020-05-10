@@ -30,7 +30,7 @@ BOOL smo_ordinal_Python (smo_Settings * settings)
         PyErr_SetString(PyExc_RuntimeError, "Error cleaning Alphas");
 		return FALSE;
     }
-    if(Clean_Alphas( ALPHA, settings ) == FALSE){
+    if(Check_Alphas( ALPHA, settings ) == FALSE){
         PyErr_SetString(PyExc_RuntimeError, "Error checking Alphas");
 		return FALSE;
     }

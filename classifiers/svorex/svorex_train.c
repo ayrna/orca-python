@@ -234,7 +234,7 @@ PyObject* fit(PyObject* self, PyObject* args)
 	defsetting->training.featuretype = NULL ;
 
 	//Train process
-	if(smo_routine (smosetting) == FALSE){
+	if(smo_routine_Python (smosetting) == FALSE){
 		Clear_smo_Settings( smosetting ) ;
 		Clear_def_Settings( defsetting ) ;
 
