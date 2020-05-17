@@ -48,22 +48,18 @@ void exit_with_help()
 	"-h shrinking : whether to use the shrinking heuristics, 0 or 1 (default 1)\n"
 	"-b probability_estimates : whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0) (Not used in orca-python)\n"
 	"-wi weight : set the parameter C of class i to weight*C, for C-SVC (default 1)\n"
-	"-v n : n-fold cross validation mode (Not used in orca-python)\n"
 	"-q : quiet mode (no outputs)\n"
 	);
 }
 
 int parse_command_line(char* options);
 const char* read_problem(PyObject* label_vec, PyObject* instance_mat);
-void do_cross_validation();
 
 /* svm arguments*/
 struct svm_parameter param;		/* set by parse_command_line*/
 struct svm_problem prob;		/* set by read_problem*/
 struct svm_model *model;
 struct svm_node *x_space;
-int cross_validation;
-int nr_fold;
 
 /* Interface function of Python*/
 PyObject* fit(PyObject* self, PyObject* args){
@@ -137,59 +133,6 @@ PyObject* fit(PyObject* self, PyObject* args){
 	return py_model;
 }
 
-void do_cross_validation()
-{
-	int i;
-	int total_correct = 0;
-	double total_error = 0;
-	double sumv = 0, sumy = 0, sumvv = 0, sumyy = 0, sumvy = 0;
-	double *target = Malloc(double,prob.l);
-
-	svm_cross_validation(&prob,&param,nr_fold,target);
-	if(param.svm_type == EPSILON_SVR ||
-	   param.svm_type == NU_SVR)
-	{
-		for(i=0;i<prob.l;i++)
-		{
-			double y = prob.y[i];
-			double v = target[i];
-			total_error += (v-y)*(v-y);
-			sumv += v;
-			sumy += y;
-			sumvv += v*v;
-			sumyy += y*y;
-			sumvy += v*y;
-		}
-		printf("Cross Validation Mean squared error = %g\n",total_error/prob.l);
-		printf("Cross Validation Squared correlation coefficient = %g\n",
-			((prob.l*sumvy-sumv*sumy)*(prob.l*sumvy-sumv*sumy))/
-			((prob.l*sumvv-sumv*sumv)*(prob.l*sumyy-sumy*sumy))
-			);
-	}
-	else if(param.svm_type == C_RNK ||
-		param.svm_type == SVORIM)
-
-	{
-		int nloss = 0;
-	  	for(i=0;i<prob.l;i++){
-			if(target[i] == prob.y[i])
-				++total_correct;
-			nloss += abs((int)(target[i]) - (int)(prob.y[i]));
-		}
-		printf("Cross Validation Average absolute error = %g\n",(double)nloss/prob.l);
-
-	}
-	else
-	{
-		for(i=0;i<prob.l;i++)
-			if(target[i] == prob.y[i])
-				++total_correct;
-		printf("Cross Validation Accuracy = %g%%\n",100.0*total_correct/prob.l);
-	}
-	free(target);
-}
-
-/* nrhs should be 3*/
 int parse_command_line(char* options)
 {
 	int i, argc = 1;
@@ -211,7 +154,6 @@ int parse_command_line(char* options)
 	param.nr_weight = 0;
 	param.weight_label = NULL;
 	param.weight = NULL;
-	cross_validation = 0;
 
 	/* put options in argv[]*/
 	if((argv[argc] = strtok(options, " ")) != NULL)
@@ -267,15 +209,6 @@ int parse_command_line(char* options)
 				svm_set_print_string_function(&print_null);
 				i--;
 				break;
-			case 'v':
-				cross_validation = 1;
-				nr_fold = atoi(argv[i]);
-				if(nr_fold < 2)
-				{
-					printf("n-fold cross validation: n must >= 2\n");
-					return 1;
-				}
-				break;
 			case 'w':
 				++param.nr_weight;
 				param.weight_label = (int *)realloc(param.weight_label,sizeof(int)*param.nr_weight);
@@ -292,7 +225,6 @@ int parse_command_line(char* options)
 	return 0;
 }
 
-/* read in a problem (in svmlight format)*/
 const char* read_problem(PyObject* label_vec, PyObject* instance_mat)
 {
 	int i, j, k;
