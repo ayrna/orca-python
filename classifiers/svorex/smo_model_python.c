@@ -245,7 +245,7 @@ smo_Settings* pythonToModel(PyObject* model){
 	}
 	
 	for (i = 0; i < n; i++)
-			pairs->x_mean[i] = PyFloat_AsDouble(PyList_GetItem(x_mean_list, i));
+		pairs->x_mean[i] = PyFloat_AsDouble(PyList_GetItem(x_mean_list, i));
 
 	//pairs->x_devi
 	x_devi_list = PyDict_GetItemString(pairs_dict, "x_devi");
@@ -335,6 +335,11 @@ smo_Settings* pythonToModel(PyObject* model){
 		free(model_out);
 		return NULL;
 	}
+
+	//Empty values
+	pairs->labels = NULL;
+	pairs->labelnum = NULL;
+	pairs->filename = NULL;
 
 	model_out->pairs = pairs;
 

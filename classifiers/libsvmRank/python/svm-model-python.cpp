@@ -215,8 +215,7 @@ PyObject* modelToPython(struct svm_model* model){
     			"s:O,"
     			"s:O,"
     			"s:O,"
-    			"s:O,"
-    			"s:i"
+    			"s:O"
     			"}",
     			"param", param_dict,
     			"nr_class", model->nr_class,
@@ -227,8 +226,7 @@ PyObject* modelToPython(struct svm_model* model){
     			"probA", probA_list,
     			"probB", probB_list,
     			"label", label_list,
-    			"nSV", nSV_list,
-    			"free_sv", model->free_sv
+    			"nSV", nSV_list
     	   );
 	//Pybuild increment the passed PyObjects references so is necesary
 	//to decrement them in order to let python free memory when the model 
@@ -431,7 +429,7 @@ struct svm_model* pythonToModel(PyObject* model){
 	}
 
 	/*free_sv*/
-	model_out->free_sv = (int) PyLong_AsLong(PyDict_GetItemString(model, "free_sv"));
+	model_out->free_sv = 1;
 
 	return model_out;
 }
