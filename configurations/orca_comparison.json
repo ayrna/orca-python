@@ -1,0 +1,43 @@
+{
+
+
+	"general_conf": {
+
+		"basedir": "datasets/",
+		"datasets": ["balance-scale", "calhousing-5", "calhousing-10", "car", "census2-5", "census2-10", "contact-lenses", "ERA", "tae", "winequality-red"],
+		"input_preprocessing": "std",
+		"hyperparam_cv_nfolds": 5,
+		"jobs": -1,
+		"output_folder": "my_runs/",
+		"metrics": ["ccr", "mae", "mze"],
+		"cv_metric": "mae"
+
+	},
+
+
+	"configurations": {
+
+		"redsvm": {
+
+			"classifier": "REDSVM",
+			"parameters": {
+				"c": [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+				"g": [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+			}
+
+        },
+        
+        "svorex": {
+
+			"classifier": "SVOREX",
+			"parameters": {
+				"c": [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+				"k": [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+			}
+
+		}
+
+	}
+
+
+}
