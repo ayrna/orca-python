@@ -3,7 +3,7 @@
 1. [What is ORCA-python](#what-is-orca)
 2. [Installing ORCA-python](#installing-orca)
     1. [Installation Requirements](#installation-requirements)
-    2. [Download ORCA-python](#download-orca)
+    2. [Download ORCA-Python](#download-orca-python)
     3. [Algorithms Compilation](#algorithms-compilation)
     4. [Installation Testing](#installation-testing)
 3. [How to use ORCA-python](#how-to-use-orca)
@@ -45,7 +45,7 @@ For the installation of the modules, you may follow this [Python's Official Guid
 
 A `requirements.txt` file has been added to ease the installation of the different dependencies through `pip`.
 
-## Download ORCA-python
+## Download ORCA-Python
 
 To download ORCA-python you can simply clone this GitHub repository by using the following commands:
 
@@ -67,7 +67,7 @@ The way to run this test (and all experiments) is the following:
 
   ```
   # Go to framework main folder
-  $ python config.py with configurations/full\_functionality\_test.json -l ERROR
+  $ python config.py with configurations/full_functionality_test.json -l ERROR
   ```
 
 
