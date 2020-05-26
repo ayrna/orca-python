@@ -67,7 +67,7 @@ The way to run this test (and all experiments) is the following:
 
   ```
   # Go to framework main folder
-  $ python config.py with configurations/single_test.json -l ERROR
+  $ python config.py with configurations/full\_functionality\_test.json -l ERROR
   ```
 
 
