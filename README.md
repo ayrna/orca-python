@@ -4,7 +4,8 @@
 2. [Installing ORCA-python](#installing-orca)
     1. [Installation Requirements](#installation-requirements)
     2. [Download ORCA-python](#download-orca)
-    3. [Installation Testing](#installation-testing)
+    3. [Download ORCA-python](#Algorithms compilation)
+    4. [Installation Testing](#installation-testing)
 3. [How to use ORCA-python](#how-to-use-orca)
     1. [Configuration Files](#configuration-files)
         1. [general-conf](#general-conf)
@@ -52,7 +53,7 @@ To download ORCA-python you can simply clone this GitHub repository by using the
   
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
 
-## Compilación de algoritmos
+## Algorithms compilation
 Even if ORCA-Python is written in Python, some algorithms like REDSVM or SVOREX are implemented in C++ and C. Before using the framework is necesary to compile these algorithms using the `make` command in the repository root.
 
 The algorithms will be compiled for the system or virtual environment default Python interpreter. If the framework is executed with another interpreter different from the one used for compiling, the algorithms wont work.
