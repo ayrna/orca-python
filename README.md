@@ -48,9 +48,16 @@ A `requirements.txt` file has been added to ease the installation of the differe
 
 To download ORCA-python you can simply clone this GitHub repository by using the following commands:
 
-  `$ git clone https://github.com/i22bomui/orca-python.git`
+  `$ git clone https://github.com/ayrna/orca-python`
   
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
+
+## Compilación de algoritmos
+Even if ORCA-Python is written in Python, some algorithms like REDSVM or SVOREX are implemented in C++ and C. Before using the framework is necesary to compile these algorithms using the `make` command in the repository root.
+
+The algorithms will be compiled for the system or virtual environment default Python interpreter. If the framework is executed with another interpreter different from the one used for compiling, the algorithms wont work.
+
+If executing the framework with a different Python interpreter is necesary, execute the `make clean` command in the repository root to clean the old compilation and use the `make` command again.
 
 ## Installation Testing
 
