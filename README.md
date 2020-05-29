@@ -1,6 +1,6 @@
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:1 -->
 
-1. [What is ORCA-python?](#what-is-orca-python?)
+1. [What is ORCA-python?](#what-is-orca-python)
 2. [Installing ORCA-python](#installing-orca-python)
     1. [Installation Requirements](#installation-requirements)
     2. [Download ORCA-Python](#download-orca-python)
