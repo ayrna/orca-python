@@ -111,7 +111,7 @@ For a better understanding of the way this files works, it's better to follow an
 - **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist inside `basedir`.
 - **`hyperparam_cv_folds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
-- **`input_preprocessing`**: type of preprocessing to apply to the data, **`std`** for standardization and **`norm`** for normalization. Can be ommited and no preprocessing will be applied.
+- **`input_preprocessing`**: type of preprocessing to apply to the data, **`std`** for standardization and **`norm`** for normalization. Assigning an empty srtring will omit the preprocessing process.
 - **`output_folder`**: name of the folder where all experiment results will be stored.
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
