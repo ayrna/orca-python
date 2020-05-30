@@ -99,6 +99,7 @@ For a better understanding of the way this files works, it's better to follow an
     "datasets": ["tae", "balance-scale", "contact-lenses"],
     "hyperparam_cv_folds": 3,
     "jobs": 10,
+    "input_preprocessing": "std",
     "output_folder": "my_runs/",
     "metrics": ["ccr", "mae", "amae", "mze"],
     "cv_metric": "mae"
@@ -110,6 +111,7 @@ For a better understanding of the way this files works, it's better to follow an
 - **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist inside `basedir`.
 - **`hyperparam_cv_folds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
+- **`input_preprocessing`**: type of preprocessing to apply to the data, **`std`** for standardization and **`norm`** for normalization. Can be ommited and no preprocessing will be applied.
 - **`output_folder`**: name of the folder where all experiment results will be stored.
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
@@ -164,7 +166,34 @@ this dictionary will contain, at the same time, one dictionary for each configur
             }
 
         }
-    }
+    },
+    
+    "REDSVM": {
+
+			"classifier": "REDSVM",
+			"parameters": {
+			    "t": 2,
+				"c": [0.1, 1, 10],
+				"g": [0.1, 1, 10],
+				"r": 0,
+				"m": 100,
+				"e": 0.001,
+				"h": 1
+			}
+
+		},
+		
+		"SVOREX": {
+
+			"classifier": "SVOREX",
+			"parameters": {
+				"kernel_type": 0,
+				"c": [0.1, 1, 10],
+				"k": [0.1, 1, 10],
+				"t": 0.001
+			}
+
+		}
 }
 ```
 
