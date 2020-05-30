@@ -1,12 +1,12 @@
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:1 -->
 
-1. [What is ORCA-python](#what-is-orca)
-2. [Installing ORCA-python](#installing-orca)
+1. [What is ORCA-python?](#what-is-orca-python)
+2. [Installing ORCA-python](#installing-orca-python)
     1. [Installation Requirements](#installation-requirements)
     2. [Download ORCA-Python](#download-orca-python)
     3. [Algorithms Compilation](#algorithms-compilation)
     4. [Installation Testing](#installation-testing)
-3. [How to use ORCA-python](#how-to-use-orca)
+3. [How to use ORCA-python](#how-to-use-orca-python)
     1. [Configuration Files](#configuration-files)
         1. [general-conf](#general-conf)
         2. [configurations](#configurations)
@@ -88,7 +88,7 @@ sections:
 Each one of this sections will be inside a dictionary, having the said section names as keys.
 
 
-For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/i22bomui/orca-python/blob/master/configurations/full_functionality_test.json).
+For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/anthares101/orca-python/blob/master/configurations/full_functionality_test.json).
 
 ### general-conf
 
@@ -114,7 +114,7 @@ For a better understanding of the way this files works, it's better to follow an
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
-Most of this variables do have default values (specified in [config.py](https://github.com/i22bomui/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
+Most of this variables do have default values (specified in [config.py](https://github.com/anthares101/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
 
 
 ### configurations
