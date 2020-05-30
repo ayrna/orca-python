@@ -170,30 +170,30 @@ this dictionary will contain, at the same time, one dictionary for each configur
     
     "REDSVM": {
 
-			"classifier": "REDSVM",
-			"parameters": {
-			    "t": 2,
-				"c": [0.1, 1, 10],
-				"g": [0.1, 1, 10],
-				"r": 0,
-				"m": 100,
-				"e": 0.001,
-				"h": 1
-			}
+	"classifier": "REDSVM",
+	"parameters": {
+	    "t": 2,
+	    "c": [0.1, 1, 10],
+	    "g": [0.1, 1, 10],
+	    "r": 0,
+	    "m": 100,
+	    "e": 0.001,
+	    "h": 1
+	}
 
-		},
-		
-		"SVOREX": {
+    },
+    
+    "SVOREX": {
 
-			"classifier": "SVOREX",
-			"parameters": {
-				"kernel_type": 0,
-				"c": [0.1, 1, 10],
-				"k": [0.1, 1, 10],
-				"t": 0.001
-			}
+	"classifier": "SVOREX",
+	"parameters": {
+	    "kernel_type": 0,
+	    "c": [0.1, 1, 10],
+	    "k": [0.1, 1, 10],
+	    "t": 0.001
+	}
 
-		}
+    }
 }
 ```
 
