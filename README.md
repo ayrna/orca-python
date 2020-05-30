@@ -6,7 +6,7 @@
     2. [Download ORCA-Python](#download-orca-python)
     3. [Algorithms Compilation](#algorithms-compilation)
     4. [Installation Testing](#installation-testing)
-3. [How to use ORCA-python](#how-to-use-orca)
+3. [How to use ORCA-python](#how-to-use-orca-python)
     1. [Configuration Files](#configuration-files)
         1. [general-conf](#general-conf)
         2. [configurations](#configurations)
