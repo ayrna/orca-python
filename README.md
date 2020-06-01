@@ -22,7 +22,7 @@ that seeks to automatize the run of machine learning experiments through simple-
 ORCA-python has been initially created to test ordinal classification, but it can handle regular classification algorithms,
 as long as they are implemented in scikit-learn, or self-implemented following compatibility guidelines form scikit-learn.
 
-In this README, we will explain how to use ORCA-python, and what you need to install in order to run it.
+In this README, we will explain how to use ORCA-python, and what you need to install in order to run it. A Jupyter notebook is also avaible in [spanish](https://github.com/anthares101/orca-python/blob/master/doc/spanish_user_manual.md).
 
 
 # Installing ORCA-python
