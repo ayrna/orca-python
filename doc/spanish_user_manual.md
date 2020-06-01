@@ -17,14 +17,17 @@ if(os.path.exists("spanish_user_manual.ipynb")):
     4. [Probando la Instalación](#Probando-la-Instalación)
 3. [Desinstalación](#Desinstalación)
 4. [¿Cómo utilizar ORCA-Python?](#¿Cómo-utilizar-ORCA-Python?)
-    1. [Archivos de configuración](#Archivos-de-configuración)
+    1. [Archivos de Configuración](#Archivos-de-Configuración)
         1. [general-conf](#general-conf)
         2. [configurations](#configurations)
     2. [Parámetros de los Nuevos Algoritmos](#Parámetros-de-los-Nuevos-Algoritmos)
     3. [Formato de las Bases de Datos](#Formato-de-las-Bases-de-Datos)
     4. [Ejecutando un Experimento](#Ejecutando-un-Experimento)
     5. [Formato de los Resultados](#Formato-de-los-Resultados)
-5. [Referencias](#Referencias)
+5. [Utilizando REDSVM y SVOREX](#Utilizando-REDSVM-y-SVOREX)
+    1. [REDSVM](#REDSVM)
+    2. [SVOREX](#SVOREX)
+6. [Referencias](#Referencias)
 
 # ¿Qué es ORCA-Python?
 
@@ -56,33 +59,30 @@ Al utilizar el siguiente comando se instalarán todas las dependencias. Si se qu
     Collecting numpy
       Using cached numpy-1.18.4-cp37-cp37m-manylinux1_x86_64.whl (20.2 MB)
     Collecting pandas
-      Downloading pandas-1.0.4-cp37-cp37m-manylinux1_x86_64.whl (10.1 MB)
-    [K     |████████████████████████████████| 10.1 MB 1.7 MB/s eta 0:00:01    |██████████████████▋             | 5.9 MB 1.7 MB/s eta 0:00:03     |█████████████████████████▍      | 8.0 MB 1.7 MB/s eta 0:00:02
-    [?25hProcessing /home/anthares101/.cache/pip/wheels/3c/ac/e1/2f746c47edc95a1cf43119706c787efd9c307a8b3d4a649308/sacred-0.8.1-py2.py3-none-any.whl
+      Using cached pandas-1.0.4-cp37-cp37m-manylinux1_x86_64.whl (10.1 MB)
+    Processing /home/anthares101/.cache/pip/wheels/3c/ac/e1/2f746c47edc95a1cf43119706c787efd9c307a8b3d4a649308/sacred-0.8.1-py2.py3-none-any.whl
     Collecting scikit-learn
-      Downloading scikit_learn-0.23.1-cp37-cp37m-manylinux1_x86_64.whl (6.8 MB)
-    [K     |████████████████████████████████| 6.8 MB 14.9 MB/s eta 0:00:01
-    [?25hCollecting scipy
+      Using cached scikit_learn-0.23.1-cp37-cp37m-manylinux1_x86_64.whl (6.8 MB)
+    Collecting scipy
       Using cached scipy-1.4.1-cp37-cp37m-manylinux1_x86_64.whl (26.1 MB)
     Requirement already satisfied: pytz>=2017.2 in ./env/lib/python3.7/site-packages (from pandas->-r requirements.txt (line 2)) (2019.3)
     Requirement already satisfied: python-dateutil>=2.6.1 in ./env/lib/python3.7/site-packages (from pandas->-r requirements.txt (line 2)) (2.8.1)
+    Requirement already satisfied: packaging>=18.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (20.3)
     Requirement already satisfied: wrapt<2.0,>=1.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (1.11.2)
     Requirement already satisfied: py-cpuinfo>=4.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (5.0.0)
     Requirement already satisfied: munch<3.0,>=2.0.2 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (2.5.0)
-    Requirement already satisfied: jsonpickle<2.0,>=1.2 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (1.3)
     Requirement already satisfied: GitPython in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (3.1.0)
-    Requirement already satisfied: colorama>=0.4 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (0.4.3)
-    Requirement already satisfied: packaging>=18.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (20.3)
     Requirement already satisfied: docopt<1.0,>=0.3 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (0.6.2)
+    Requirement already satisfied: jsonpickle<2.0,>=1.2 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (1.3)
+    Requirement already satisfied: colorama>=0.4 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (0.4.3)
     Requirement already satisfied: joblib>=0.11 in ./env/lib/python3.7/site-packages (from scikit-learn->-r requirements.txt (line 4)) (0.15.1)
-    Collecting threadpoolctl>=2.0.0
-      Downloading threadpoolctl-2.1.0-py3-none-any.whl (12 kB)
+    Requirement already satisfied: threadpoolctl>=2.0.0 in ./env/lib/python3.7/site-packages (from scikit-learn->-r requirements.txt (line 4)) (2.1.0)
     Requirement already satisfied: six>=1.5 in ./env/lib/python3.7/site-packages (from python-dateutil>=2.6.1->pandas->-r requirements.txt (line 2)) (1.14.0)
-    Requirement already satisfied: gitdb<5,>=4.0.1 in ./env/lib/python3.7/site-packages (from GitPython->sacred->-r requirements.txt (line 3)) (4.0.2)
     Requirement already satisfied: pyparsing>=2.0.2 in ./env/lib/python3.7/site-packages (from packaging>=18.0->sacred->-r requirements.txt (line 3)) (2.4.6)
+    Requirement already satisfied: gitdb<5,>=4.0.1 in ./env/lib/python3.7/site-packages (from GitPython->sacred->-r requirements.txt (line 3)) (4.0.2)
     Requirement already satisfied: smmap<4,>=3.0.1 in ./env/lib/python3.7/site-packages (from gitdb<5,>=4.0.1->GitPython->sacred->-r requirements.txt (line 3)) (3.0.1)
-    Installing collected packages: numpy, pandas, sacred, scipy, threadpoolctl, scikit-learn
-    Successfully installed numpy-1.18.4 pandas-1.0.4 sacred-0.8.1 scikit-learn-0.23.1 scipy-1.4.1 threadpoolctl-2.1.0
+    Installing collected packages: numpy, pandas, sacred, scipy, scikit-learn
+    Successfully installed numpy-1.18.4 pandas-1.0.4 sacred-0.8.1 scikit-learn-0.23.1 scipy-1.4.1
 
 
 ## Compilación de Algoritmos
@@ -712,15 +712,15 @@ En el caso de que la instalación de las dependencias se haya realizado sobre la
     Found existing installation: numpy 1.18.4
     Uninstalling numpy-1.18.4:
       Successfully uninstalled numpy-1.18.4
-    Found existing installation: pandas 1.0.1
-    Uninstalling pandas-1.0.1:
-      Successfully uninstalled pandas-1.0.1
+    Found existing installation: pandas 1.0.4
+    Uninstalling pandas-1.0.4:
+      Successfully uninstalled pandas-1.0.4
     Found existing installation: sacred 0.8.1
     Uninstalling sacred-0.8.1:
       Successfully uninstalled sacred-0.8.1
-    Found existing installation: scikit-learn 0.22.2.post1
-    Uninstalling scikit-learn-0.22.2.post1:
-      Successfully uninstalled scikit-learn-0.22.2.post1
+    Found existing installation: scikit-learn 0.23.1
+    Uninstalling scikit-learn-0.23.1:
+      Successfully uninstalled scikit-learn-0.23.1
     Found existing installation: scipy 1.4.1
     Uninstalling scipy-1.4.1:
       Successfully uninstalled scipy-1.4.1
@@ -732,7 +732,7 @@ Tras ejecutar este comando todas las dependencias instaladas quedarán eliminada
 
 Este manual hace uso de tres bases de datos (`balance-scale`, `contact-lenses` y `tae`) que se encuentran en la carpeta *datasets*. Estas bases de datos se han particionado utilizando un *30-holdout*, teniendo cada partición una parte de entrenamiento y otra de *test*.
 
-## Archivos de configuración
+## Archivos de Configuración
 
 Los experimentos se lanzan y configuran a través de ficheros de configuración en formato JSON. Estos archivos cuentan con dos secciones:
 
@@ -1190,18 +1190,163 @@ Para ilustrar esta sección, a continuación se muestran algunas imágenes del f
 
 <figure>
   <img src="images/predictions_format.png">
-  <figcaption>Formato del fichero de predicciones</figcaption>
+  <figcaption>Fragmento de un fichero de predicciones</figcaption>
 </figure>
 
 <figure>
   <img src="images/file_data_classifier_format.png">
-  <figcaption>Formato de los ficheros de métricas generados para cada combinación de base de datos y clasificador</figcaption>
+  <figcaption>Fragmento de un fichero de métricas de una base de datos y clasificador</figcaption>
 </figure>
 
 <figure>
   <img src="images/file_summary_format.png">
-  <figcaption>Formato de los ficheros resumen</figcaption>
+  <figcaption>Fragmento de un fichero resumen</figcaption>
 </figure>
+
+# Utilizando REDSVM y SVOREX
+
+Se expone a continuación la forma de utilizar los clasificadores REDSVM [10, 11, 12] y SVOREX [12, 13, 14] añadidos a ORCA-Python tras el desarrollo del presente Trabajo. Como se observará en las siguientes secciones, utilizar estos clasificadores es igual a utilizar cualquier clasificador de `scikit-learn` [3, 5].
+
+## REDSVM
+
+El método de reducción de regresión ordinal [12] a clasificadores SVM binarios puede ser categorizado como método de umbral o como método de descomposición.
+
+A continuación se probará el clasificador REDSVM implementado en ORCA-Python [1] utilizando un *kernel* radial (por defecto), una importancia del error (c) igual a 10 y el valor de gamma (g) igual a 0.01.
+
+
+```python
+import pandas as pd
+from sys import path
+import metrics
+
+path.append('classifiers')
+redsvmModule = __import__("REDSVM")
+REDSVM = redsvmModule.REDSVM
+
+#Carga los datos de entrenamiento
+taeTrain = pd.read_csv("datasets/tae/train_tae.0", header=None, engine='python', sep=None)
+X_train = taeTrain.values[:,0:(-1)]
+y_train = taeTrain.values[:,(-1)]
+
+#Carga los datos de test
+taeTest = pd.read_csv("datasets/tae/test_tae.0", header=None, engine='python', sep=None)
+X_test = taeTest.values[:,0:(-1)]
+y_test = taeTest.values[:,(-1)]
+
+#Se selecciona los parámetros del modelo REDSVM
+redsvmModel = REDSVM(c=10, g=0.01)
+
+#Se entrena el modelo REDSVM con los datos de entrenamiento
+redsvmModel = redsvmModel.fit(X_train, y_train)
+
+#Se predicen las etiquetas de test
+redsvmPredictions = redsvmModel.predict(X_test)
+
+#Resultados
+mae = metrics.mae(y_test, redsvmPredictions)
+ccr = metrics.ccr(y_test, redsvmPredictions)
+print("Resultados obtenidos")
+print("MAE = {}".format(mae))
+print("CCR = {}".format(ccr))
+```
+
+    Resultados obtenidos
+    MAE = 0.6578947368421053
+    CCR = 0.42105263157894735
+
+
+El ajuste de los parámetros es determinante en la obtención de buenos resultados. A continuación se muestra como realizando una selección de parámetros utilizando un *4-fold* los resultados del clasificador REDSVM sobre la base de datos tae mejoran.
+
+
+```python
+from sklearn.model_selection import GridSearchCV
+import numpy as np
+
+#Posibles valores a tomar por los parámetros
+values = np.logspace(-3, 3, 7).tolist()
+
+#Se prepara la selección de parámetros
+redsvmModel = GridSearchCV(estimator=REDSVM(), param_grid={'c': values, 'g': values}, cv=4, n_jobs=-1)
+
+#Se entrena el modelo REDSVM con los datos de entrenamiento
+redsvmModel = redsvmModel.fit(X_train, y_train)
+
+#Se predicen las etiquetas de test
+redsvmPredictions = redsvmModel.predict(X_test)
+
+#Resultados
+mae = metrics.mae(y_test, redsvmPredictions)
+ccr = metrics.ccr(y_test, redsvmPredictions)
+print("Resultados obtenidos")
+print("MAE = {}".format(mae))
+print("CCR = {}".format(ccr))
+```
+
+    Resultados obtenidos
+    MAE = 0.47368421052631576
+    CCR = 0.5789473684210527
+
+
+## SVOREX
+
+Es una formulación ordinal del paradigma de las máquinas de vectores soporte. Calcula hiperplanos paralelos discriminantes para los datos y selecciona determinados umbrales imponiendo restricciones explicitas.
+
+Se probará el algoritmo SVOREX implementado en ORCA-Python con un *kernel* gaussiano (por defecto), una importancia del error (c) igual a 10 y el valor de kappa (k) igual a 0.01. Como base de datos se usará una de las particiones de la base de datos tae.
+
+
+```python
+#Import the SVOREX classifier without the need of a __init__.py
+path.append('classifiers')
+svorexModule = __import__("SVOREX")
+SVOREX = svorexModule.SVOREX
+
+#Se selecciona los parámetros del modelo SVOREX
+svorexModel = SVOREX(c=10, k=0.01)
+
+#Se entrena el modelo SVOREX con los datos de entrenamiento
+svorexModel = svorexModel.fit(X_train, y_train)
+
+#Se predicen las etiquetas de test
+svorexPredictions = svorexModel.predict(X_test)
+
+#Resultados
+mae = metrics.mae(y_test, svorexPredictions)
+ccr = metrics.ccr(y_test, svorexPredictions)
+print("Resultados obtenidos")
+print("MAE = {}".format(mae))
+print("CCR = {}".format(ccr))
+```
+
+    Resultados obtenidos
+    MAE = 0.7105263157894737
+    CCR = 0.5
+
+
+Ajustando los valores de los parámetros utilizando un *4-fold* los resultados del clasificador SVOREX sobre la base de datos tae mejoran.
+
+
+```python
+#Se prepara la selección de parámetros
+svorexModel = GridSearchCV(estimator=SVOREX(), param_grid={'c': values, 'k': values}, cv=4, n_jobs=-1)
+
+#Se entrena el modelo SVOREX con los datos de entrenamiento
+svorexModel = svorexModel.fit(X_train, y_train)
+
+#Se predicen las etiquetas de test
+svorexPredictions = svorexModel.predict(X_test)
+
+#Resultados
+mae = metrics.mae(y_test, svorexPredictions)
+ccr = metrics.ccr(y_test, svorexPredictions)
+print("Resultados obtenidos")
+print("MAE = {}".format(mae))
+print("CCR = {}".format(ccr))
+```
+
+    Resultados obtenidos
+    MAE = 0.47368421052631576
+    CCR = 0.5789473684210527
+
 
 # Referencias
 
