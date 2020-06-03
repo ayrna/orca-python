@@ -1,11 +1,11 @@
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:1 -->
 
-1. [What is ORCA-python](#what-is-orca)
-2. [Installing ORCA-python](#installing-orca)
+1. [What is ORCA-python](#what-is-orca-python)
+2. [Installing ORCA-python](#installing-orca-python)
     1. [Installation Requirements](#installation-requirements)
-    2. [Download ORCA-python](#download-orca)
+    2. [Download ORCA-python](#download-orca-python)
     3. [Installation Testing](#installation-testing)
-3. [How to use ORCA-python](#how-to-use-orca)
+3. [How to use ORCA-python](#how-to-use-orca-python)
     1. [Configuration Files](#configuration-files)
         1. [general-conf](#general-conf)
         2. [configurations](#configurations)
