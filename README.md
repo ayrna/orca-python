@@ -22,7 +22,7 @@ that seeks to automatize the run of machine learning experiments through simple-
 ORCA-python has been initially created to test ordinal classification, but it can handle regular classification algorithms,
 as long as they are implemented in scikit-learn, or self-implemented following compatibility guidelines form scikit-learn.
 
-In this README, we will explain how to use ORCA-python, and what you need to install in order to run it. A Jupyter notebook is also avaible in [spanish](https://github.com/anthares101/orca-python/blob/master/doc/spanish_user_manual.md).
+In this README, we will explain how to use ORCA-python, and what you need to install in order to run it. A Jupyter notebook is also avaible in [spanish](https://github.com/ayrna/orca-python/blob/master/doc/spanish_user_manual.md).
 
 
 # Installing ORCA-python
@@ -49,7 +49,7 @@ A `requirements.txt` file has been added to ease the installation of the differe
 
 To download ORCA-python you can simply clone this GitHub repository by using the following commands:
 
-  `$ git clone https://github.com/anthares101/orca-python`
+  `$ git clone https://github.com/ayrna/orca-python`
   
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
 
@@ -87,12 +87,7 @@ sections:
 
 Each one of this sections will be inside a dictionary, having the said section names as keys.
 
-
-<<<<<<< HEAD
-For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/anthares101/orca-python/blob/master/configurations/full_functionality_test.json).
-=======
 For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/ayrna/orca-python/blob/master/configurations/full_functionality_test.json).
->>>>>>> 7d2ad6963d6410f4f8c7029b049c015144db7c09
 
 ### general-conf
 
@@ -120,11 +115,7 @@ For a better understanding of the way this files works, it's better to follow an
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
-<<<<<<< HEAD
-Most of this variables do have default values (specified in [config.py](https://github.com/anthares101/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
-=======
 Most of this variables do have default values (specified in [config.py](https://github.com/ayrna/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
->>>>>>> 7d2ad6963d6410f4f8c7029b049c015144db7c09
 
 
 ### configurations
