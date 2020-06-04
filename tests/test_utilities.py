@@ -89,6 +89,44 @@ class TestAuxiliarMethods(unittest.TestCase):
 		npt.assert_raises(RuntimeError, self.util._load_dataset, dataset_path)
 
 
+	def test_normalize_data(self):
+		#Test preparation
+		dataset_path = os.path.dirname(os.path.abspath(__file__))
+		dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "partitionless")
+
+		train_file = np.loadtxt(ospath.join(dataset_path,"train_partitionless.csv"))
+		X_train = train_file[:,0:(-1)]
+
+		test_file = np.loadtxt(ospath.join(dataset_path,"test_partitionless.csv"))
+		X_test = test_file[:,0:(-1)]
+
+		#Test execution
+		norm_X_train, _= self.util._normalize_data(X_train, X_test)
+
+		#Test verification
+		result = (norm_X_train >= 0).all() and (norm_X_train <= 1).all()
+		npt.assert_equal(result, True)
+
+
+	def test_standardize_data(self):
+		#Test preparation
+		dataset_path = os.path.dirname(os.path.abspath(__file__))
+		dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "partitionless")
+
+		train_file = np.loadtxt(ospath.join(dataset_path,"train_partitionless.csv"))
+		X_train = train_file[:,0:(-1)]
+
+		test_file = np.loadtxt(ospath.join(dataset_path,"test_partitionless.csv"))
+		X_test = test_file[:,0:(-1)]
+
+		#Test execution
+		std_X_train, _= self.util._standardize_data(X_train, X_test)
+
+		#Test verification
+		npt.assert_almost_equal(np.mean(std_X_train), 0)
+		npt.assert_almost_equal(np.std(std_X_train), 1)
+
+
 	def test_load_algorithm(self):
 
 		# Loading a method from within this framework
@@ -198,6 +236,7 @@ class TestMainMethod(unittest.TestCase):
 	# Declaring a simple configuration
 	general_conf = {"basedir": dataset_folder,
 					"datasets": ["tae", "contact-lenses"],
+					"input_preprocessing": "std",
 					"hyperparam_cv_nfolds": 3,
 					"jobs": 10,
 					"output_folder": "my_runs/",

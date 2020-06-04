@@ -1,10 +1,11 @@
 <!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:1 -->
 
-1. [What is ORCA-python](#what-is-orca-python)
+1. [What is ORCA-python?](#what-is-orca-python)
 2. [Installing ORCA-python](#installing-orca-python)
     1. [Installation Requirements](#installation-requirements)
-    2. [Download ORCA-python](#download-orca-python)
-    3. [Installation Testing](#installation-testing)
+    2. [Download ORCA-Python](#download-orca-python)
+    3. [Algorithms Compilation](#algorithms-compilation)
+    4. [Installation Testing](#installation-testing)
 3. [How to use ORCA-python](#how-to-use-orca-python)
     1. [Configuration Files](#configuration-files)
         1. [general-conf](#general-conf)
@@ -21,7 +22,7 @@ that seeks to automatize the run of machine learning experiments through simple-
 ORCA-python has been initially created to test ordinal classification, but it can handle regular classification algorithms,
 as long as they are implemented in scikit-learn, or self-implemented following compatibility guidelines form scikit-learn.
 
-In this README, we will explain how to use ORCA-python, and what you need to install in order to run it.
+In this README, we will explain how to use ORCA-python, and what you need to install in order to run it. A Jupyter notebook is also avaible in [spanish](https://github.com/anthares101/orca-python/blob/master/doc/spanish_user_manual.md).
 
 
 # Installing ORCA-python
@@ -44,13 +45,20 @@ For the installation of the modules, you may follow this [Python's Official Guid
 
 A `requirements.txt` file has been added to ease the installation of the different dependencies through `pip`.
 
-## Download ORCA-python
+## Download ORCA-Python
 
 To download ORCA-python you can simply clone this GitHub repository by using the following commands:
 
-  `$ git clone https://github.com/ayrna/orca-python.git`
+  `$ git clone https://github.com/anthares101/orca-python`
   
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
+
+## Algorithms Compilation
+Even if ORCA-Python is written in Python, some algorithms like REDSVM or SVOREX are implemented in C++ and C. Before using the framework is necesary to compile these algorithms using the `make` command in the repository root.
+
+The algorithms will be compiled for the system or virtual environment default Python interpreter. If the framework is executed with another interpreter different from the one used for compiling, the algorithms wont work.
+
+If executing the framework with a different Python interpreter is necesary, execute the `make clean` command in the repository root to clean the old compilation and use the `make` command again.
 
 ## Installation Testing
 
@@ -59,7 +67,7 @@ The way to run this test (and all experiments) is the following:
 
   ```
   # Go to framework main folder
-  $ python config.py with configurations/single_test.json -l ERROR
+  $ python config.py with configurations/full_functionality_test.json -l ERROR
   ```
 
 
@@ -80,7 +88,11 @@ sections:
 Each one of this sections will be inside a dictionary, having the said section names as keys.
 
 
+<<<<<<< HEAD
+For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/anthares101/orca-python/blob/master/configurations/full_functionality_test.json).
+=======
 For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/ayrna/orca-python/blob/master/configurations/full_functionality_test.json).
+>>>>>>> 7d2ad6963d6410f4f8c7029b049c015144db7c09
 
 ### general-conf
 
@@ -91,6 +103,7 @@ For a better understanding of the way this files works, it's better to follow an
     "datasets": ["tae", "balance-scale", "contact-lenses"],
     "hyperparam_cv_folds": 3,
     "jobs": 10,
+    "input_preprocessing": "std",
     "output_folder": "my_runs/",
     "metrics": ["ccr", "mae", "amae", "mze"],
     "cv_metric": "mae"
@@ -102,11 +115,16 @@ For a better understanding of the way this files works, it's better to follow an
 - **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist inside `basedir`.
 - **`hyperparam_cv_folds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
+- **`input_preprocessing`**: type of preprocessing to apply to the data, **`std`** for standardization and **`norm`** for normalization. Assigning an empty srtring will omit the preprocessing process.
 - **`output_folder`**: name of the folder where all experiment results will be stored.
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
+<<<<<<< HEAD
+Most of this variables do have default values (specified in [config.py](https://github.com/anthares101/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
+=======
 Most of this variables do have default values (specified in [config.py](https://github.com/ayrna/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
+>>>>>>> 7d2ad6963d6410f4f8c7029b049c015144db7c09
 
 
 ### configurations
@@ -156,6 +174,33 @@ this dictionary will contain, at the same time, one dictionary for each configur
             }
 
         }
+    },
+    
+    "REDSVM": {
+
+	"classifier": "REDSVM",
+	"parameters": {
+	    "t": 2,
+	    "c": [0.1, 1, 10],
+	    "g": [0.1, 1, 10],
+	    "r": 0,
+	    "m": 100,
+	    "e": 0.001,
+	    "h": 1
+	}
+
+    },
+    
+    "SVOREX": {
+
+	"classifier": "SVOREX",
+	"parameters": {
+	    "kernel_type": 0,
+	    "c": [0.1, 1, 10],
+	    "k": [0.1, 1, 10],
+	    "t": 0.001
+	}
+
     }
 }
 ```

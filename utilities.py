@@ -15,6 +15,7 @@ import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import make_scorer
+from sklearn import preprocessing
 
 from results import Results
 
@@ -129,6 +130,14 @@ class Utilities:
 					if self.verbose:
 						print("  Running Partition", part_idx)
 
+
+					#Normalization or Standardization of the partition if requested
+					if self.general_conf['input_preprocessing'].strip().lower() == 'norm':
+						partition["train_inputs"], partition["test_inputs"] = self._normalize_data(partition["train_inputs"], partition["test_inputs"])
+					elif self.general_conf['input_preprocessing'].strip().lower() == 'std':
+						partition["train_inputs"], partition["test_inputs"] = self._standardize_data(partition["train_inputs"], partition["test_inputs"])
+					elif self.general_conf['input_preprocessing'].strip().lower() != '':
+						raise AttributeError("Input preprocessing named '%s' unknown" % self.general_conf['input_preprocessing'].strip().lower())
 
 					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"],
 																	partition["train_outputs"],
@@ -330,6 +339,46 @@ class Utilities:
 
 		self.general_conf['basedir'] = base_path
 		self.general_conf['datasets'] = dataset_list
+
+
+
+	def _normalize_data(self, train_data, test_data):
+
+		"""
+		Normalize the data. Test data normalization will be based on train data
+
+		Parameters
+		----------
+		train_data: 2d array
+			contain the train data features
+		test_data: 2d array
+			contain the test data features
+		"""
+
+
+		mm_scaler = preprocessing.MinMaxScaler().fit(train_data)
+
+		return mm_scaler.transform(train_data), mm_scaler.transform(test_data)
+
+
+
+	def _standardize_data(self, train_data, test_data):
+
+		"""
+		Standardize the data. Test data standardization will be based on train data
+
+		Parameters
+		----------
+		train_data: 2d array
+			contain the train data features
+		test_data: 2d array
+			contain the test data features
+		"""
+
+
+		std_scaler = preprocessing.StandardScaler().fit(train_data)
+
+		return std_scaler.transform(train_data), std_scaler.transform(test_data)
 
 
 
@@ -660,8 +709,3 @@ def get_key(key):
 		return int(key)
 	except ValueError:
 		return key
-
-
-
-
-

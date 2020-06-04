@@ -9,7 +9,8 @@ def default_config():
 
 	# Giving default values
 	general_conf = {"basedir": "",
-					"datasets": "",
+					"dataset": "",
+					"input_preprocessing": "",
 					"hyperparam_cv_nfolds": 3,
 					"jobs": 1,
 					"metrics": "ccr",
@@ -36,6 +37,3 @@ def main(general_conf, configurations):
 	interface = Utilities(general_conf, configurations)
 	interface.run_experiment()
 	interface.write_report()
-
-
-

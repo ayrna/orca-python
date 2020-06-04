@@ -442,9 +442,3 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		predicted_proba_y[:,-1] = predictions[:,-1]
 
 		return predicted_proba_y
-
-
-
-
-
-

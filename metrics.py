@@ -188,5 +188,3 @@ def spearman(y, ypred):
 			return 0
 		else:
 			return num / div
-
-
