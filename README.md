@@ -49,7 +49,7 @@ A `requirements.txt` file has been added to ease the installation of the differe
 
 To download ORCA-python you can simply clone this GitHub repository by using the following commands:
 
-  `$ git clone https://github.com/ayrna/orca-python`
+  `$ git clone https://github.com/anthares101/orca-python`
   
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
 
