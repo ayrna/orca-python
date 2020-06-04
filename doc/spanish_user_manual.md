@@ -40,11 +40,11 @@ ORCA-Python [1] se ha desarrollado y probado en GNU/Linux utilizando Python 2 y 
 ## Requisitos para la Instalación
 La correcta ejecución de *framework* requiere de la instalación de las siguientes dependencias de Python:
 
-- `numpy` [6] (probado con la versión 1.18.1)
-- `pandas` [7] (probado con la versión 1.0.1)
-- `sacred` [4] (probado con la versión 0.8.1)
-- `scikit-learn` [3] (probado con la versión 0.22.1)
-- `scipy` [8] (probado con la versión 1.4.1)
+- `numpy` [6] (probado con la versión 1.18.1).
+- `pandas` [7] (probado con la versión 1.0.1).
+- `sacred` [4] (probado con la versión 0.8.1).
+- `scikit-learn` [3] (probado con la versión 0.22.1).
+- `scipy` [8] (probado con la versión 1.4.1).
 
 Para la instalación de todas las dependencias se incluye el archivo `requirements.txt`, que facilitará el proceso utilizando el gestor de paquetes `pip` [9]. 
 
@@ -56,7 +56,7 @@ Al utilizar el siguiente comando se instalarán todas las dependencias. Si se qu
 ```
 
     Collecting numpy
-      Using cached numpy-1.18.4-cp37-cp37m-manylinux1_x86_64.whl (20.2 MB)
+      Using cached numpy-1.18.5-cp37-cp37m-manylinux1_x86_64.whl (20.1 MB)
     Collecting pandas
       Using cached pandas-1.0.4-cp37-cp37m-manylinux1_x86_64.whl (10.1 MB)
     Processing /home/anthares101/.cache/pip/wheels/3c/ac/e1/2f746c47edc95a1cf43119706c787efd9c307a8b3d4a649308/sacred-0.8.1-py2.py3-none-any.whl
@@ -66,26 +66,26 @@ Al utilizar el siguiente comando se instalarán todas las dependencias. Si se qu
       Using cached scipy-1.4.1-cp37-cp37m-manylinux1_x86_64.whl (26.1 MB)
     Requirement already satisfied: pytz>=2017.2 in ./env/lib/python3.7/site-packages (from pandas->-r requirements.txt (line 2)) (2019.3)
     Requirement already satisfied: python-dateutil>=2.6.1 in ./env/lib/python3.7/site-packages (from pandas->-r requirements.txt (line 2)) (2.8.1)
+    Requirement already satisfied: colorama>=0.4 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (0.4.3)
     Requirement already satisfied: packaging>=18.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (20.3)
-    Requirement already satisfied: wrapt<2.0,>=1.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (1.11.2)
-    Requirement already satisfied: py-cpuinfo>=4.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (5.0.0)
     Requirement already satisfied: munch<3.0,>=2.0.2 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (2.5.0)
+    Requirement already satisfied: wrapt<2.0,>=1.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (1.11.2)
+    Requirement already satisfied: jsonpickle<2.0,>=1.2 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (1.3)
+    Requirement already satisfied: py-cpuinfo>=4.0 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (5.0.0)
     Requirement already satisfied: GitPython in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (3.1.0)
     Requirement already satisfied: docopt<1.0,>=0.3 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (0.6.2)
-    Requirement already satisfied: jsonpickle<2.0,>=1.2 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (1.3)
-    Requirement already satisfied: colorama>=0.4 in ./env/lib/python3.7/site-packages (from sacred->-r requirements.txt (line 3)) (0.4.3)
-    Requirement already satisfied: joblib>=0.11 in ./env/lib/python3.7/site-packages (from scikit-learn->-r requirements.txt (line 4)) (0.15.1)
     Requirement already satisfied: threadpoolctl>=2.0.0 in ./env/lib/python3.7/site-packages (from scikit-learn->-r requirements.txt (line 4)) (2.1.0)
+    Requirement already satisfied: joblib>=0.11 in ./env/lib/python3.7/site-packages (from scikit-learn->-r requirements.txt (line 4)) (0.15.1)
     Requirement already satisfied: six>=1.5 in ./env/lib/python3.7/site-packages (from python-dateutil>=2.6.1->pandas->-r requirements.txt (line 2)) (1.14.0)
     Requirement already satisfied: pyparsing>=2.0.2 in ./env/lib/python3.7/site-packages (from packaging>=18.0->sacred->-r requirements.txt (line 3)) (2.4.6)
     Requirement already satisfied: gitdb<5,>=4.0.1 in ./env/lib/python3.7/site-packages (from GitPython->sacred->-r requirements.txt (line 3)) (4.0.2)
     Requirement already satisfied: smmap<4,>=3.0.1 in ./env/lib/python3.7/site-packages (from gitdb<5,>=4.0.1->GitPython->sacred->-r requirements.txt (line 3)) (3.0.1)
     Installing collected packages: numpy, pandas, sacred, scipy, scikit-learn
-    Successfully installed numpy-1.18.4 pandas-1.0.4 sacred-0.8.1 scikit-learn-0.23.1 scipy-1.4.1
+    Successfully installed numpy-1.18.5 pandas-1.0.4 sacred-0.8.1 scikit-learn-0.23.1 scipy-1.4.1
 
 
 ## Compilación de Algoritmos
-Aunque es cierto que ORCA-Python está escrito en Python y no necesita ninguna compilación, algunos algoritmos como REDSVM [10, 11, 12] y SVOREX [12, 13, 14] se encuentran escritos en C++ [15] y C [16] respectivamente. Por ello, antes de empezar a utilizar el *framework*, se debe ejecutar el comando `$ make` en la raíz del repositorio descargado para que se compilen todos los algoritmos que lo necesiten. Al ser un cuarderno de Jupyter a los comandos de consola como `make` se le añade la exclamación.
+Aunque es cierto que ORCA-Python está escrito en Python y no necesita ninguna compilación, algunos algoritmos como REDSVM [10, 11, 12] y SVOREX [12, 13, 14] se encuentran escritos en C++ [15] y C [16], respectivamente. Por ello, antes de empezar a utilizar el *framework*, se debe ejecutar el comando `$ make` en la raíz del repositorio descargado para que se compilen todos los algoritmos que lo necesiten. Al ser un cuarderno de Jupyter a los comandos de consola como `make` se le añade la exclamación.
 
 
 ```python
@@ -135,7 +135,7 @@ Aunque es cierto que ORCA-Python está escrito en Python y no necesita ninguna c
     make[1]: se sale del directorio '/home/anthares101/Proyectos/orca-python/classifiers/svorex'
 
 
-Hay que tener en cuenta que la compilación de los algoritmos se realiza con el intérprete de Python por defecto en el sistema o entorno virtual. Si en algún momento se ejecuta el *framework* con un intérprete distinto al que se utilizó al compilar los algoritmos se producirá un error al tratar de ejecutar alguno de ellos.
+Hay que tener en cuenta que la compilación de los algoritmos se realiza con el intérprete de Python por defecto en el sistema o entorno virtual. Si en algún momento se ejecuta el *framework* con un intérprete distinto al que se utilizó al compilar los algoritmos, se producirá un error al tratar de ejecutar alguno de ellos.
 
 Si se quiere utilizar un intérprete distinto, se debe ejecutar `$ make clean` en la raíz del repositorio para limpiar la compilación anterior y volver a ejecutar `$ make` con el nuevo intérprete.
 
@@ -694,7 +694,7 @@ Hay que recordar que se debe usar el comando `python` sin el signo de exclamaci�
 Para explicar la información que proporciona el \textit{framework} sobre el avance del experimento, se analizará la salida generada al entrenar los diferentes modelos con el primer conjunto de datos que carga:
 
 - `Running tae dataset` indica que el conjunto de datos \texttt{tae} ha sido cargado y se va a proceder a ejecutar los diferentes algoritmos sobre sus particiones.
-- `Running LR ...` indica que se va a empezar a aplicar el algoritmo llamado LR en la configuración sobre las diferentes particiones del conjunto de datos actual.
+- `Running REDSVM ...` indica que se va a empezar a aplicar el algoritmo llamado REDSVM en la configuración sobre las diferentes particiones del conjunto de datos actual.
 - `Running Partition X` indica la partición sobre la que se está aplicando un determinado algoritmo.
 - Por último, tras completar toda la experimentación, aparece el mensaje \texttt{Saving Results{\ldots}}. Esto indica que se están generando los archivos de resumen con las medias y desviaciones típicas a lo largo de todas las particiones para cada conjunto de datos y algoritmo.
 
@@ -708,9 +708,9 @@ En el caso de que la instalación de las dependencias se haya realizado sobre la
 !pip uninstall --yes -r requirements.txt
 ```
 
-    Found existing installation: numpy 1.18.4
-    Uninstalling numpy-1.18.4:
-      Successfully uninstalled numpy-1.18.4
+    Found existing installation: numpy 1.18.5
+    Uninstalling numpy-1.18.5:
+      Successfully uninstalled numpy-1.18.5
     Found existing installation: pandas 1.0.4
     Uninstalling pandas-1.0.4:
       Successfully uninstalled pandas-1.0.4
@@ -729,7 +729,7 @@ Tras ejecutar este comando todas las dependencias instaladas quedarán eliminada
 
 # ¿Cómo utilizar ORCA-Python?
 
-Este manual hace uso de tres bases de datos (`balance-scale`, `contact-lenses` y `tae`) que se encuentran en la carpeta *datasets*. Estas bases de datos se han particionado utilizando un *30-holdout*, teniendo cada partición una parte de entrenamiento y otra de *test*.
+Este manual hace uso de tres bases de datos (`balance-scale`, `contact-lenses` y `tae`) que se encuentran en la carpeta *datasets*. Estas bases de datos se han particionado utilizando un *30-holdout* (es decir, 30 particiones de tipo holdout), teniendo cada partición una parte de entrenamiento y otra de *test*.
 
 ## Archivos de Configuración
 
@@ -761,15 +761,15 @@ Se muestra a continuación la sección `general-conf` del archivo `full_function
 ```
 
 - **`basedir`:** Es la ruta a la carpeta que contiene los conjuntos de datos, solo se permite una única ruta. Admite tanto una ruta relativa como una absoluta.
-- **`datasets`:** Es el nombre de las bases de datos que se utilizarán en el experimento. El nombre de los conjuntos de datos que se especifiquen aquí deberán tener una carpeta dentro de `basedir` con ese mismo nombre en el que se encuentren sus diferentes particiones.
+- **`datasets`:** Es el nombre de las bases de datos que se utilizarán en el experimento. El nombre de los conjuntos de datos que se especifiquen aquí deberá corresponderse con una carpeta dentro de `basedir` en el que se encuentren sus diferentes particiones.
 - **`hyperparam_cv_folds`:** Número de *folds* que se utilizarán en la validación cruzada cuando se optimicen los hiperparámetros.
-- **`jobs`:** Número de procesos que se lanzarán durante la validación cruzada. Si se utilizar -1 se usarán todos los núcleos del procesador por defecto.
-- **`input_preprocessing`:** Tipo de preprocesamiento que aplicar a los datos, siendo `std` para estandarización, `norm` para normalización y `''` para omitir el preprocesado de los datos.
+- **`jobs`:** Número de procesos que se lanzarán durante la validación cruzada. Si se utiliza -1 se usarán todos los núcleos del procesador por defecto.
+- **`input_preprocessing`:** Tipo de preprocesamiento que aplicar a los datos, siendo `std` para estandarización y `norm` para normalización. Si se especifica una cadena vacía (`''`) o se omite la opción, el preprocesado de los datos no se realiza.
 - **`output_folder`:** Ruta de la carpeta donde almacenar los resultados de los experimentos.
 - **`metrics`:** Nombre de las métricas de rendimiento que se utilizarán durante el experimento. Se pueden indicar varias como se observa en el ejemplo.
 - **`cv_metric`:** Es la métrica que utilizará `GridSearchCV` para determinar los mejores parámetros para cada clasificador.
 
-Aunque la mayoría de estas variables cuentan con valores por defecto especificados en el archivo `config.py`, las variables `basedir` y `datasets` deben ser especificadas. Se debe tener en cuenta, que no se debe cambiar el nombre de las carpetas proporcionadas al archivo de configuración o el procedimiento fallará.
+Aunque la mayoría de estas variables cuentan con valores por defecto ya contenidos en el archivo `config.py`, las variables `basedir` y `datasets` deben ser especificadas. Se debe tener en cuenta, que no se debe cambiar el nombre de las carpetas proporcionadas al archivo de configuración o el procedimiento fallará.
 
 ### `configurations`
 
@@ -858,8 +858,6 @@ El nombre de cada configuración será el que quiera el usuario. Se describen a 
     - Nombre de la clase del algoritmo en la carpeta *Classifiers* de la raíz del *framework*.
 - **`parameters`:** Hiperparámetros a optimizar durante la validación cruzada. No es necesario especificar una lista, se puede especificar un único valor a utilizar.
 
-En los métodos de tipo *ensemble*, como *OrdinalDecomposition*, se debe anidar otro clasificador (Será el clasificador base sin especificar ninguna configuración) y a continuación sus respectivos parámetros a optimizar.
-
 ## Parámetros de los Nuevos Algoritmos
 
 Los nuevos algoritmos introducidos han sido REDSVM [10, 11, 12] y SVOREX [12, 13, 14], cada uno con una serie de parámetros que se pueden modificar y que se detallarán a continuación.
@@ -897,7 +895,7 @@ Los nuevos algoritmos introducidos han sido REDSVM [10, 11, 12] y SVOREX [12, 13
 
 ## Formato de las Bases de Datos
 
-Como se vio en la sección [Archivos de configuración](#Archivos-de-configuración) el usuario habrá especificado una determinada carpeta donde se encuentran los conjuntos de datos llamada por ejemplo `folder`. De esa forma el conjunto de datos `dataset` se encontrará en la ruta: `ruta/a/datasets/folder/dataset/`.
+Como se vio en la sección [Archivos de configuración](#Archivos-de-configuración) el usuario habrá especificado una determinada carpeta donde se encuentran los conjuntos de datos, llamada por ejemplo `folder`. De esa forma el conjunto de datos `dataset` se encontrará en la ruta: `folder/dataset/`.
 
 En el interior de dicha carpeta se encontrarán los ficheros que contienen la base datos. En caso de no ser una base de datos particionada el nombre de los ficheros será: `train_dataset.csv` en caso de ser el fichero que contiene los datos de entrenamiento y `test_dataset.csv` en caso de ser el fichero que contiene los datos de *test*. En el caso de ser una base de datos particionada, la extensión del `.csv` de los ficheros cambia por el número de la partición.
 
