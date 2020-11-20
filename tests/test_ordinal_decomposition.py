@@ -194,7 +194,7 @@ class TestOrdinalDecomposition(unittest.TestCase):
 		npt.assert_allclose(actual_elosses, expected_elosses, rtol=1e-04, atol=0)
 
 
-	def test_logaritmic_loss_method(self):
+	def test_logarithmic_loss_method(self):
 		"""
 		Check that exponential loss method returns expected values
 		for one toy problem (starting off predicted probabilities
@@ -221,7 +221,7 @@ class TestOrdinalDecomposition(unittest.TestCase):
 		predictions = (2*predictions) - 1
 
 
-		actual_llosses = od._logaritmic_loss(predictions)
+		actual_llosses = od._logarithmic_loss(predictions)
 		expected_llosses = array(	[[0.58553, 2.28573, 4.28561, 6.01117, 8.01097],
 									 [0.52385, 2.52317, 4.52317, 6.39621, 8.39577],
 									 [2.52807, 0.55867, 2.38727, 4.19327, 6.19311],
