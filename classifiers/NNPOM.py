@@ -86,7 +86,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		self: object
+		self: object class
 		"""
 	
         pass
@@ -183,8 +183,63 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         self.__lambdaValue=lambdaValue
     
     
-    
-    
+    #--------------Private Access functions------------------
+
+    def __unpackParameters(self,nn_params,input_layer_size,hidden_layer_size,num_labels)
+        """
+        UNPACKPARAMETERS obtains Theta1, Theta2 and thresholds_param
+        back from the whole array nn_params
+        """
+            nTheta1 = hidden_layer_size * (input_layer_size + 1);
+            Theta1 = reshape(nn_params(1:nTheta1), ...
+                hidden_layer_size, (input_layer_size + 1));
+            nTheta2 = hidden_layer_size;
+            Theta2 = reshape(nn_params((1+nTheta1):(nTheta1+nTheta2)), ...
+                1, (hidden_layer_size));
+            thresholds_param = reshape(nn_params((nTheta1+nTheta2+1):end), ...
+                (num_labels-1), 1);
+        
+        return Theta1, Theta2, thresholds_param
+
+
+    #Calculate the thresholds
+    def __convertThresholds(self, thresholds_param, num_labels)
+            
+        """
+        This method transforms thresholds to perform unconstrained optimization.
+
+        thresholds(1) = thresholds_param(1)
+        thresholds(2) = thresholds_param(1) + thresholds_param(2)^2
+        thresholds(3) = thresholds_param(1) + thresholds_param(2)^2
+                        + thresholds_param(3)^2
+
+        Parameters
+		----------
+
+		thresholds_param: {array-like, column vector}, shape (num_labels-1, 1)
+			Tiene el valor primigenio de los umbrales que dividen entre clases.
+
+		num_labels: integer
+			Number of classes. 
+
+		Returns
+		-------
+
+		thresholds: thresholds of the line
+        """
+            
+        #Threshold ^2 element by element
+        thresholds_pquad=thresholds_param**2
+
+        # Gets row-array containing the thresholds
+        thresholds = np.reshape(np.multiply(np.tile(np.concatenate((thresholds_param[0:1],
+         thresholds_pquad[1:]), axis=0), (1, num_labels-1)).T, np.tril(np.ones((num_labels-1,
+         num_labels-1)))).sum(axis=1), (num_labels-1,1)).T
+        
+        return thresholds
+
+
+
         
 
     
