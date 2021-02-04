@@ -185,6 +185,9 @@ class NNPOM(BaseEstimator, ClassifierMixin):
     
     #--------------Private Access functions------------------
 
+
+    #Download and save the values ​​of Theta1, Theta2 and thresholds_param
+    #  from the nn_params array to their corresponding array
     def __unpackParameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels)
         
         """
@@ -237,6 +240,34 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         return Theta1, Theta2, thresholds_param
     
 
+    #Randomly initialize the weights of the neural network layer
+    #  by entering the number of input and output nodes of that layer
+    def __randInitializeWeights(self, L_in, L_out)
+
+        """
+        This method randomly initializes the weights of a layer
+         with L_in incoming connections and L_out outgoing connections
+
+         Parameters
+		----------
+
+		    L_in: integer
+			    Number of inputs of the layer.
+
+		    L_out: integer
+		    	Number of outputs of the layer.
+        
+         Returns
+		-------
+
+		    W: Array with the weights of each synaptic relationship between nodes.
+
+        """
+        W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit - self.getEpsilonInit
+
+        return W
+    
+
 
     #Calculate the thresholds
     def __convertThresholds(self, thresholds_param, num_labels)
@@ -256,7 +287,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			    Tiene el valor primigenio de los umbrales que dividen entre clases.
 
 		    num_labels: integer
-		    	Number of classes. 
+		    	Number of classes.
 
 		Returns
 		-------
@@ -274,7 +305,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
          num_labels-1)))).sum(axis=1), (num_labels-1,1)).T
         
         return thresholds
-
 
 
         
