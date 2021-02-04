@@ -185,21 +185,57 @@ class NNPOM(BaseEstimator, ClassifierMixin):
     
     #--------------Private Access functions------------------
 
-    def __unpackParameters(self,nn_params,input_layer_size,hidden_layer_size,num_labels)
+    def __unpackParameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels)
+        
         """
-        UNPACKPARAMETERS obtains Theta1, Theta2 and thresholds_param
-        back from the whole array nn_params
+        This method gets Theta1, Theta2 and thresholds_param back
+        from the whole array nn_params.
+
+        Parameters
+		----------
+
+		    nn_params: column array, shape ((imput_layer_size+1)*hidden_layer_size
+            + hidden_layer_size + (num_labels-1))
+		
+                Array that is a column vector. It stores the values ​​of Theta1,
+                Theta2 and thresholds_param, all of them together in an array in this order.
+
+		    input_layer_size: integer
+		    	Number of nodes in the input layer of the neural network model.
+        
+            hidden_layer_size: integer
+                Number of nodes in the hidden layer of the neural network model.
+            
+            num_labels: integer
+                Number of classes.
+
+
+   		Returns
+		-------
+
+            Theta1: The weights between the input layer 
+            and the hidden layer (with biases included).
+
+            Theta2: The weights between the hidden layer
+            and the output layer (biases are not included as they are the thresholds).
+
+            thresholds_param: classification thresholds.
+        
         """
-            nTheta1 = hidden_layer_size * (input_layer_size + 1);
-            Theta1 = reshape(nn_params(1:nTheta1), ...
-                hidden_layer_size, (input_layer_size + 1));
-            nTheta2 = hidden_layer_size;
-            Theta2 = reshape(nn_params((1+nTheta1):(nTheta1+nTheta2)), ...
-                1, (hidden_layer_size));
-            thresholds_param = reshape(nn_params((nTheta1+nTheta2+1):end), ...
-                (num_labels-1), 1);
+
+        nTheta1 = hidden_layer_size * (input_layer_size + 1)
+        Theta1 = np.reshape(nn_params[0:nTheta1],(hidden_layer_size,
+         (input_layer_size + 1)))
+        
+        nTheta2 = hidden_layer_size
+        Theta2 = np.reshape(nn_params[nTheta1:(nTheta1+nTheta2)], 
+         (1, hidden_layer_size))
+        
+        thresholds_param = np.reshape(nn_params[(nTheta1+nTheta2):],
+         ((num_labels-1), 1))
         
         return Theta1, Theta2, thresholds_param
+    
 
 
     #Calculate the thresholds
@@ -216,16 +252,17 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         Parameters
 		----------
 
-		thresholds_param: {array-like, column vector}, shape (num_labels-1, 1)
-			Tiene el valor primigenio de los umbrales que dividen entre clases.
+		    thresholds_param: {array-like, column vector}, shape (num_labels-1, 1)
+			    Tiene el valor primigenio de los umbrales que dividen entre clases.
 
-		num_labels: integer
-			Number of classes. 
+		    num_labels: integer
+		    	Number of classes. 
 
 		Returns
 		-------
 
-		thresholds: thresholds of the line
+		    thresholds: thresholds of the line
+
         """
             
         #Threshold ^2 element by element
