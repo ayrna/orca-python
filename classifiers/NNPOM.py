@@ -419,14 +419,13 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		ThreshGradMatrix = np.multiply(np.concatenate((np.triu(np.ones((num_labels-1, num_labels-1))),
 		 np.ones((num_labels-1, 1))), axis=1), np.tile(gGradients.sum(axis=0), (num_labels-1, 1)))
 		
-		#SOLO QUEDA ESTA SENTENCIA
 		originalShape = ThreshGradMatrix.shape
 		ThreshGradMatrix = ThreshGradMatrix.flatten(order='F')
 		
-		ThreshGradMatrix[(num_labels)::num_labels] = ThreshGradMatrix.flatten(order='F')[(num_labels)::num_labels] + 
-		np.multiply(errorDer[:,1:(num_labels-1)], fGradients[:,0:(num_labels-2)]).sum(axis=0)
+		ThreshGradMatrix[(num_labels)::num_labels] = ThreshGradMatrix.flatten(order='F')[(num_labels)::num_labels] + np.multiply(errorDer[:,1:(num_labels-1)],
+		 fGradients[:,0:(num_labels-2)]).sum(axis=0)
 		
-		ThreshGradMatrix = np.reshape(ThreshGradMatrix[:,np.newaxis],originalshape, order ='F')
+		ThreshGradMatrix = np.reshape(ThreshGradMatrix[:,np.newaxis],originalShape, order ='F')
 		
 		Threshold_grad = ThreshGradMatrix.sum(axis=1)[:,np.newaxis]
 		Threshold_grad[1:] = 2 * np.multiply(Threshold_grad[1:], thresholds_param[1:])
