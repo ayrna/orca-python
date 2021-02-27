@@ -1,5 +1,6 @@
 # encoding: utf-8
 import numpy as np
+import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
@@ -351,75 +352,89 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		"""
 
 		#-----------CODE IN OCTAVE-------
-		"""
-			#Unroll all the parameters
-			Theta1,Theta2,thresholds_param = self.__unpackParameters(nn_params,
-			input_layer_size, hidden_layer_size, num_labels)
-			
-			
-			#Convert threhsolds
-			thresholds = self.__convertthresholds(thresholds_param, num_labels)
-			
-			#Setup some useful variables
-			m = size(X, 1)
-			
-			#Neural Network model
-			a1 = [ones(m, 1) X]
-			z2 = a1*Theta1'
-			a2 =  1.0 ./ (1.0 + exp(-z2))
-			z3=repmat(thresholds,m,1)-repmat(a2*Theta2',1,num_labels-1)
-			a3T =  1.0 ./ (1.0 + exp(-z3))
-			a3 = [a3T ones(m,1)]
-			h = [a3(:,1) (a3(:,2:end) - a3(:,1:(end-1)))]
-			
-			#Final output
-			out = h;
-			
-			#calculte penalty (regularización L2)
-			p = sum(sum(Theta1(:, 2:end).^2, 2))+sum(sum(Theta2(:, 1:end).^2, 2));
-			
-			#MSE
-			#J = sum(sum((out-Y).^2, 2))/(2*m) + lambda*p/(2*m);
-			
-			#Cross entropy
-			J = sum(-log(out(Y==1)), 1)/m + lambda*p/(2*m)
-			
-			if nargout > 1
-				#Cross entropy
-				#out(out<0.00001)=0.00001;
-				errorDer = zeros(size(Y));
-				errorDer(Y~=0) = (-Y(Y~=0)./out(Y~=0));
-				
-				#MSE
-				#errorDer=(out-Y);
-				
-				#Calculate sigmas
-				fGradients = a3T.*(1-a3T);
-				gGradients = errorDer.*[fGradients(:,1) (fGradients(:,2:end)-fGradients(:,1:(end-1))) -fGradients(:,end)];
-				sigma3 = -sum(gGradients,2);
-				sigma2 = (sigma3*Theta2).*a2.*(1-a2);
-				
-				#Accumulate gradients
-				delta_1 = (sigma2'*a1);
-				delta_2 = (sigma3'*a2);
-				
-				#calculate regularized gradient
-				p1 = (lambda/m)*[zeros(size(Theta1, 1), 1) Theta1(:, 2:end)];
-				p2 = (lambda/m)*Theta2(:, 1:end);
-				Theta1_grad = delta_1./m + p1;
-				Theta2_grad = delta_2./m + p2;
-				
-				#Treshold gradients
-				ThreshGradMatrix=[triu(ones(num_labels-1)) ones(num_labels-1,1)].*repmat(sum(gGradients,1),num_labels-1,1);
-				ThreshGradMatrix((num_labels+1):num_labels:end) = ThreshGradMatrix((num_labels+1):num_labels:end) + sum(errorDer(:,2:(num_labels-1)).*fGradients(:,1:(num_labels-2)));
-				Threshold_grad=sum(ThreshGradMatrix,2)/m;
-				Threshold_grad(2:end) = 2 * (Threshold_grad(2:end) .* thresholds_param(2:end));
-				
-				#Unroll gradients
-				grad = [Theta1_grad(:) ; Theta2_grad(:); Threshold_grad(:)];
-				
-		"""		
-			
 		
+		#Unroll all the parameters
+		Theta1,Theta2,thresholds_param = self.__unpackParameters(nn_params,
+		input_layer_size, hidden_layer_size, num_labels)
+						
+		#Convert threhsolds
+		thresholds = self.__convertThresholds(thresholds_param, num_labels)
+			
+		#Setup some useful variables
+		m = np.size(X, 0)
+			
+		#Neural Network model
+		a1 = np.append(np.ones((m, 1)), X, axis=1)
+		z2 = np.matmul(a1,Theta1.T)
+		a2 =  1.0 / (1.0 + np.exp(-z2))
 
+		z3 = np.tile(thresholds,(m,1)) - np.tile(np.matmul(a2,Theta2.T),(1, num_labels-1))
+		a3T =  1.0 / (1.0 + np.exp(-z3))
+		a3 = np.append(a3T, np.ones((m,1)), axis=1)
+		h = np.concatenate((a3[:,0].reshape((a3.shape[0],1)),a3[:,1:] - a3[:,0:-1]), axis = 1)
+		
+		#Final output
+		out = h
+		
+		
+		#calculte penalty (regularización L2)
+		p = np.sum((Theta1[:,1:]**2).sum() + (Theta2[:,0:]**2).sum())
+		
+		#MSE
+		#J = np.sum((out-Y)**2).sum()/(2*m) + lambdaValue*p/(2*m)
+		
+		#Cross entropy
+		J = np.sum(-math.log(out[np.where(Y==1)]), axis=0)/m + lambdaValue*p/(2*m)
+		
+		
+		#if nargout > 1
+		
+		#Cross entropy
+		#out[np.where(out<0.00001)] = 0.00001
+		errorDer = zeros(size(Y))
+		errorDer[np.where(Y!=0)] = np.divide(-Y[np.where(Y!=0)],out[np.where(Y!=0)])
+	
+		#MSE
+		#errorDer = (out-Y)
+
+		#Calculate sigmas
+		fGradients = np.multiply(a3T,(1-a3T))
+		gGradients = np.multiply(errorDer, np.concatenate((a[:,0].reshape(-1,1),
+		 (a[:,1:] - a[:,:-1]), -a[:,-1].reshape(-1,1)), axis=1))
+		sigma3 = -np.sum(gGradients,axis=1)
+		sigma2 = np.multiply(np.multiply(np.matmul(sigma3, Theta2), a2), (1-a2))
+		
+		#Accumulate gradients
+		delta_1 = np.matmul(sigma2.T, a1)
+		delta_2 = np.matmul(sigma3.T, a2)
+		
+		#calculate regularized gradient
+		p1 = (lambdaValue/m) * np.concatenate((np.zeros((np.size(Theta1, axis=0), 1)), Theta1[:,1:]), axis=1)
+		p2 = (lambdaValue/m) * Theta2[:,0:]
+		Theta1_grad = delta_1 / m + p1
+		Theta2_grad = delta_2 / m + p2
+		
+		
+		#Treshold gradients
+		ThreshGradMatrix = np.multiply(np.concatenate((np.triu(np.ones((num_labels-1, num_labels-1))),
+		 np.ones((num_labels-1, 1))), axis=1), np.tile(gGradients.sum(axis=0), (num_labels-1, 1)))
+		
+		#SOLO QUEDA ESTA SENTENCIA
+		originalShape = ThreshGradMatrix.shape
+		ThreshGradMatrix = ThreshGradMatrix.flatten(order='F')
+		
+		ThreshGradMatrix[(num_labels)::num_labels] = ThreshGradMatrix.flatten(order='F')[(num_labels)::num_labels] + 
+		np.multiply(errorDer[:,1:(num_labels-1)], fGradients[:,0:(num_labels-2)]).sum(axis=0)
+		
+		ThreshGradMatrix = np.reshape(ThreshGradMatrix[:,np.newaxis],originalshape, order ='F')
+		
+		Threshold_grad = ThreshGradMatrix.sum(axis=1)[:,np.newaxis]
+		Threshold_grad[1:] = 2 * np.multiply(Threshold_grad[1:], thresholds_param[1:])
+		
+		#Unroll gradients
+		grad = np.concatenate((Theta1_grad.flatten(order='F'),
+		 Theta2_grad.flatten(order='F'), thresholds_param.flatten(order='F')),
+		 axis=0)[:,np.newaxis]
+		
+		return J,grad
 	
