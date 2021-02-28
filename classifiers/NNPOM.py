@@ -71,7 +71,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def fit(self,X,y):
 
 		"""
-		Trains the model with TRAIN data and vector of parameters PARAMETERS.
+		Trains the model for the model NNPOM method with TRAIN data.
 		Returns the projection of patterns (only valid for threshold models) and the predicted labels.
 		
 		Parameters
@@ -391,7 +391,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		#Cross entropy
 		#out[np.where(out<0.00001)] = 0.00001
-		errorDer = zeros(size(Y))
+		errorDer = np.zeros(Y.shape)
 		errorDer[np.where(Y!=0)] = np.divide(-Y[np.where(Y!=0)],out[np.where(Y!=0)])
 	
 		#MSE
@@ -399,8 +399,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		#Calculate sigmas
 		fGradients = np.multiply(a3T,(1-a3T))
-		gGradients = np.multiply(errorDer, np.concatenate((a[:,0].reshape(-1,1),
-		 (a[:,1:] - a[:,:-1]), -a[:,-1].reshape(-1,1)), axis=1))
+		gGradients = np.multiply(errorDer, np.concatenate((fGradients[:,0].reshape(-1,1),
+		 (fGradients[:,1:] - fGradients[:,:-1]), -fGradients[:,-1].reshape(-1,1)), axis=1))
 		sigma3 = -np.sum(gGradients,axis=1)
 		sigma2 = np.multiply(np.multiply(np.matmul(sigma3, Theta2), a2), (1-a2))
 		
