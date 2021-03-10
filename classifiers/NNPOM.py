@@ -87,8 +87,13 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		self: object class
+		projectedTrain: {array-like, sparse matrix}, shape (n_samples,)
+			Vector array with projected values for each pattern of train patterns.
+
+		predictedTrain: {array-like, sparse matrix}, shape (n_samples,)
+			Vector array with predicted values for each pattern of train patterns.
 		"""
+
 		#Aux variables
 		input_layer_size = X.shape(1)
 		num_labels = np.size(np.unique(y))
@@ -112,7 +117,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		 axis=0)[:,np.newaxis]
 		
 		#-----¡¡¡¡¡¡ESTO NO SE MUY BIEN CÓMO HACERLO!!!!!!-----
-		'''
+		"""
 		#Create "short hand" for the cost function to be minimized
 		[J,grad] = obj.nnPOMCostFunction(initial_nn_params, ...
 				input_layer_size, ...
@@ -132,8 +137,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		#options = optimoptions('fminunc','Algorithm','quasi-newton','SpecifyObjectiveGradient',true,'Diagnostics','on','Display','iter-detailed','UseParallel',true,'MaxIter', 1000,'CheckGradients',true);
 		#[nn_params, cost, exitflag, output] = fminunc(costFunction, initial_nn_params, options);
 
-		'''
-		
+		"""
+
 		Theta1, Theta2, thresholds_param = self.__unpackParameters(nn_params, input_layer_size, self.getHiddenN(), num_labels)
 		self.Theta1 = Theta1
 		self.Theta2 = Theta2
@@ -143,22 +148,60 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		projectedTrain, predictedTrain = self.predict(X)
 		
+		return projectedTrain, predictedTrain
 	
-	def predict (self):
-		pass
+	
+	def predict (self, test):
+		
+		"""
+		Predicts labels of TEST patterns labels. The object needs to be fitted to the data first.
+				
+		Parameters
+		----------
 
-	def fitpredict(self):
-		pass
+		test: {array-like, sparse matrix}, shape (n_samples, n_features)
+			test patterns array, where n_samples is the number of samples
+			and n_features is the number of features
 
+		Returns
+		-------
 
+		projected: {array-like, sparse matrix}, shape (n_samples,)
+			Vector array with projected values for each pattern of test patterns.
 
+		predicted: {array-like, sparse matrix}, shape (n_samples,)
+			Vector array with predicted values for each pattern of test patterns.
 
+		"""
+		m = test.shape(0)
 
+		a1 = np.append(np.ones((m, 1)), test, axis=1)
+		z2 = np.matmul(a1,self.Theta1.T)
+		a2 =  1.0 / (1.0 + np.exp(-z2))
+		projected= np.matmul(a2,self.Theta2.T)
+
+		z3 = np.tile(self.thresholds, (m,1)) - np.tile(projected, (1, self.num_labels-1))
+		a3T =  1.0 / (1.0 + np.exp(-z3))
+		a3 = np.append(a3T, np.ones((m,1)), axis=1)
+		a3[:,1:] = a3[:,1:] - a3[:,0:-1]
+		M,predicted = a3.max(axis=1)[:,np.newaxis],a3.argmax(0)[:,np.newaxis]
+
+		return projected,predicted
+	
+
+	def fitpredict(self,X,y,test):
+		"""
+		"""
+		projectedTrain,predictedTrain = self.fit(X,y)
+		projected,predicted = self.predict(test)
+
+	
 	#--------Getters & Setters (Public Access)--------
 	
 
 	# Getter & Setter of "epsilonInit"
 	def getEpsilonInit (self):
+		
 		"""
 		This method returns the value of the variable self.__epsilonInit.
 		self.__epsilonInit contains the value of epsilon, which is the initialization range of the weights.
