@@ -89,9 +89,61 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		self: object class
 		"""
-	
-		pass
+		#Aux variables
+		input_layer_size = X.shape(1)
+		num_labels = np.size(np.unique(y))
+		m = X.shape(0)
+		
+		
+		#Recode y to Y using nominal coding
+		Y = 1 * (np.tile(y, (1,num_labels)) == np.tile(np.arange(1,num_labels+1)[np.newaxis,:], (m,1)))
+		
+		#Hidden layer weigths (with bias)
+		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
+		# Output layer weigths (without bias, the biases will be the
+		#						thresholds)
+		initial_Theta2 = self.__randInitializeWeights(self.getHiddenN(), 1)
+		# Class thresholds parameters
+		initial_thresholds = self.__randInitializeWeights((num_labels-1),1)
+		
+		#Pack parameters
+		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
+		initial_Theta2.flatten(order='F'), initial_thresholds.flatten(order='F')),
+		 axis=0)[:,np.newaxis]
+		
+		#-----¡¡¡¡¡¡ESTO NO SE MUY BIEN CÓMO HACERLO!!!!!!-----
+		'''
+		#Create "short hand" for the cost function to be minimized
+		[J,grad] = obj.nnPOMCostFunction(initial_nn_params, ...
+				input_layer_size, ...
+				hidden_layer_size, ...
+				num_labels, X, Y, lambda);
+			
+		#RProp options
+		p.verbosity = 0;					#Increase indent
+		p.MaxIter   = parameters.iter;		#Maximum number of iterations
+		p.d_Obj     = -1;					#Objective cost
+		p.method    = 'IRprop+';			#Use IRprop- algorithm
+		p.display   = 0;
 
+		#Running RProp
+		[nn_params,cost,exitflag,stats1] = rprop(grad,initial_nn_params,p);
+
+		#options = optimoptions('fminunc','Algorithm','quasi-newton','SpecifyObjectiveGradient',true,'Diagnostics','on','Display','iter-detailed','UseParallel',true,'MaxIter', 1000,'CheckGradients',true);
+		#[nn_params, cost, exitflag, output] = fminunc(costFunction, initial_nn_params, options);
+
+		'''
+		
+		Theta1, Theta2, thresholds_param = self.__unpackParameters(nn_params, input_layer_size, self.getHiddenN(), num_labels)
+		self.Theta1 = Theta1
+		self.Theta2 = Theta2
+		self.thresholds = self.__convertThresholds(thresholds_param, num_labels)
+		self.num_labels = num_labels
+		self.m = m
+		
+		projectedTrain, predictedTrain = self.predict(X)
+		
+	
 	def predict (self):
 		pass
 
@@ -350,8 +402,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			grad: array con el gradiente de error de cada peso de cada capa
 
 		"""
-
-		#-----------CODE IN OCTAVE-------
 		
 		#Unroll all the parameters
 		Theta1,Theta2,thresholds_param = self.__unpackParameters(nn_params,
