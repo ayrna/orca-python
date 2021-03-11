@@ -8,6 +8,7 @@ from sklearn.utils.multiclass import unique_labels
 class NNPOM(BaseEstimator, ClassifierMixin):
 	
 	"""
+
 	NNPOM Neural Network based on Proportional Odd Model (NNPOM). This
 		class implements a neural network model for ordinal regression. The
 		model has one hidden layer with hiddenN neurons and one outputlayer
@@ -21,12 +22,11 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		parameter "lambda" is included based on L2, and the number of
 		iterations is specified by the "iter" parameter.
 
-		NNPOM methods:
+		NNPOM public methods:
 			fitpredict				- runs the corresponding algorithm,
 									fitting the model and testing it
 									in a dataset. (No es necesario, creo)
 			fit						- Fits a model from training data
-			predict					- Performs label prediction
 	
 		References:
 			[1] P. McCullagh, Regression models for ordinal data,  Journal of
@@ -52,11 +52,16 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		NNPOM properties:
 			epsilonInit					- Range for initializing the weights.
-			parameters.hiddenN			- Number of hidden neurons of the
+			hiddenN						- Number of hidden neurons of the
 										model.
-			parameters.iter				- Number of iterations for iRProp+
+			iter						- Number of iterations for iRProp+
 										algorithm.
-			parameters.lambda			- Regularization parameter.
+			lambda						- Regularization parameter.
+			theta1						- Hidden layer weigths (with bias)
+			theta2						- Output layer weigths (without bias, the biases will be the thresholds)
+			thresholds					- Class thresholds parameters
+			num_labels					- Number of labels in the problem
+			m							- Number of samples of X (train patterns array).
 		
 	"""
 
@@ -71,6 +76,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def fit(self,X,y):
 
 		"""
+
 		Trains the model for the model NNPOM method with TRAIN data.
 		Returns the projection of patterns (only valid for threshold models) and the predicted labels.
 		
@@ -92,6 +98,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		predictedTrain: {array-like, sparse matrix}, shape (n_samples,)
 			Vector array with predicted values for each pattern of train patterns.
+
 		"""
 
 		#Aux variables
@@ -154,6 +161,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def predict (self, test):
 		
 		"""
+
 		Predicts labels of TEST patterns labels. The object needs to be fitted to the data first.
 				
 		Parameters
@@ -188,13 +196,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		return projected,predicted
 	
-
-	def fitpredict(self,X,y,test):
-		"""
-		"""
-		projectedTrain,predictedTrain = self.fit(X,y)
-		projected,predicted = self.predict(test)
-
 	
 	#--------Getters & Setters (Public Access)--------
 	
@@ -203,8 +204,10 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def getEpsilonInit (self):
 		
 		"""
+
 		This method returns the value of the variable self.__epsilonInit.
 		self.__epsilonInit contains the value of epsilon, which is the initialization range of the weights.
+
 		"""
 
 		return self.__epsilonInit
@@ -212,19 +215,23 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def setEpsilonInit (self, epsilonInit):
 	   
 		"""
+
 		This method modify the value of the variable self.__epsilonInit.
 		This is replaced by the value contained in the epsilonInit variable passed as an argument.
+
 		"""
 
-		self.__epsilonInit=epsilonInit
+		self.__epsilonInit = epsilonInit
 	
 
 	# Getter & Setter of "hiddenN"
 	def getHiddenN (self):
 	   
 		"""
+
 		This method returns the value of the variable self.__hiddenN.
 		self.__hiddenN contains the number of nodes/neurons in the hidden layer.
+
 		"""
 
 		return self.__hiddenN
@@ -232,39 +239,47 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def setHiddenN (self, hiddenN):
 	  
 		"""
+
 		This method modify the value of the variable self.__hiddenN.
 		This is replaced by the value contained in the hiddenN variable passed as an argument.
+
 		"""
 
-		self.__hiddenN=hiddenN
+		self.__hiddenN = hiddenN
 	
 
 	# Getter & Setter of "iter"
 	def getIter (self):
 		
 		"""
+
 		This method returns the value of the variable self.__iter.
 		self.__iter contains the number of iterations.
+
 		"""
 
 		return self.__iter
 	
-	def setIter (self, iter):
+	def setIter (self, iterations):
 	  
 		"""
+
 		This method modify the value of the variable self.__iter.
 		This is replaced by the value contained in the iter variable passed as an argument.
+
 		"""
 
-		self.__iter=iter
+		self.__iter = iterations
 	
 
 	# Getter & Setter of "lambdaValue"
 	def getLambdaValue (self):
 	   
 		"""
+
 		This method returns the value of the variable self.__lambdaValue.
 		self.__lambdaValue contains the Lambda parameter used in regularization.
+
 		"""
 
 		return self.__lambdaValue
@@ -272,13 +287,135 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def setLambdaValue (self, lambdaValue):
 	  
 		"""
+
 		This method modify the value of the variable self.__lambdaValue.
 		This is replaced by the value contained in the lambdaValue variable passed as an argument.
+
 		"""
 
-		self.__lambdaValue=lambdaValue
+		self.__lambdaValue = lambdaValue
+
+
+	# Getter & Setter of "theta1"
+	def getTheta1 (self):
+		
+		"""
+
+		This method returns the value of the variable self.__theta1.
+		self.__theta1 contains an array with the weights of the hidden layer (with biases included).
+
+		"""
+
+		return self.__theta1
+
+	def setTheta1 (self, theta1):
+	   
+		"""
+
+		This method modify the value of the variable self.__theta1.
+		This is replaced by the value contained in the theta1 variable passed as an argument.
+
+		"""
+
+		self.__theta1 = theta1
 	
+
+	# Getter & Setter of "theta2"
+	def getTheta2 (self):
+	   
+		"""
+
+		This method returns the value of the variable self.__theta2.
+		self.__theta2 contains an array with output layer weigths (without bias, the biases will be the thresholds)
+
+		"""
+
+		return self.__theta2
 	
+	def setTheta2 (self, theta2):
+	  
+		"""
+
+		This method modify the value of the variable self.__theta2.
+		This is replaced by the value contained in the theta2 variable passed as an argument.
+		
+		"""
+
+		self.__theta2 = theta2
+
+
+	# Getter & Setter of "thresholds"
+	def getThresholds (self):
+	   
+		"""
+
+		This method returns the value of the variable self.__thresholds.
+		self.__thresholds contains an array with the class thresholds parameters.
+		
+		"""
+
+		return self.__thresholds
+	
+	def setThresholds (self, thresholds):
+	  
+		"""
+
+		This method modify the value of the variable self.__thresholds.
+		This is replaced by the value contained in the thresholds variable passed as an argument.
+		
+		"""
+
+		self.__thresholds = thresholds
+
+
+	# Getter & Setter of "num_labels"
+	def getNum_labels (self):
+	   
+		"""
+
+		This method returns the value of the variable self.__num_labels.
+		self.__num_labels contains the number of labels in the problem.
+		
+		"""
+
+		return self.__num_labels
+	
+	def setNum_labels (self, num_labels):
+	  
+		"""
+
+		This method modify the value of the variable self.__num_labels.
+		This is replaced by the value contained in the num_labels variable passed as an argument.
+		
+		"""
+
+		self.__num_labels = num_labels
+
+
+	# Getter & Setter of "m"
+	def getM (self):
+	   
+		"""
+
+		This method returns the value of the variable self.__m.
+		self.__m contains the number of samples of X (train patterns array).
+		
+		"""
+
+		return self.__thresholds
+	
+	def setM (self, m):
+	  
+		"""
+
+		This method modify the value of the variable self.__m.
+		This is replaced by the value contained in the m variable passed as an argument.
+		
+		"""
+
+		self.__m = m
+
+
 	#--------------Private Access functions------------------
 
 
