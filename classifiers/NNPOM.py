@@ -66,11 +66,11 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	"""
 
 	#Set parameters values
-	def __init__(self, epsilonInit=0.5, hiddenN=50, iter=500, lambdaValue=0.01):
+	def __init__(self, epsilonInit=0.5, hiddenN=50, iterations=500, lambdaValue=0.01):
 		
 		self.__epsilonInit = epsilonInit
 		self.__hiddenN = hiddenN
-		self.__iter = iter
+		self.__iter = iterations
 		self.__lambdaValue = lambdaValue
 
 	def fit(self,X,y):
@@ -124,6 +124,10 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		 axis=0)[:,np.newaxis]
 		
 		#-----¡¡¡¡¡¡ESTO NO SE MUY BIEN CÓMO HACERLO!!!!!!-----
+
+		nn_params = fmin_lbfgs(self.__nnPOMCostFunction, 100., line_search='armijo')
+		
+
 		"""
 		#Create "short hand" for the cost function to be minimized
 		[J,grad] = obj.nnPOMCostFunction(initial_nn_params, ...
@@ -181,6 +185,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			Vector array with predicted values for each pattern of test patterns.
 
 		"""
+
 		m = test.shape(0)
 
 		a1 = np.append(np.ones((m, 1)), test, axis=1)
@@ -402,7 +407,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		"""
 
-		return self.__thresholds
+		return self.__m
 	
 	def setM (self, m):
 	  
@@ -540,7 +545,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 
 	# Implements the cost function and obtains the corresponding derivatives.
-	def __nnPOMCostFunction(self, nn_params, input_layer_size, hidden_layer_size,
+	def __nnPOMCostFunction(self, nn_params, grad, input_layer_size, hidden_layer_size,
 	num_labels, X, Y, lambdaValue):
 			
 		"""
@@ -665,5 +670,5 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		 Theta2_grad.flatten(order='F'), thresholds_param.flatten(order='F')),
 		 axis=0)[:,np.newaxis]
 		
-		return J,grad
+		return J
 	
