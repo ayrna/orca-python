@@ -22,7 +22,7 @@
 			"parameters": {
                 "epsilonInit": 0.5,
                 "hiddenN": 10,
-                "iter": 1000,
+                "iterations": 1000,
 				"lambdaValue": 0.01
 
             }
