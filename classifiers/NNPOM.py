@@ -4,6 +4,7 @@ import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
+from lbfgs import fmin_lbfgs
 
 class NNPOM(BaseEstimator, ClassifierMixin):
 	
@@ -20,13 +21,11 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		http://www.ias.informatik.tu-darmstadt.de/Research/RpropToolbox
 		The model is adjusted by minimizing cross entropy. A regularization
 		parameter "lambda" is included based on L2, and the number of
-		iterations is specified by the "iter" parameter.
+		iterations is specified by the "iterations" parameter.
 
 		NNPOM public methods:
-			fitpredict				- runs the corresponding algorithm,
-									fitting the model and testing it
-									in a dataset. (No es necesario, creo)
 			fit						- Fits a model from training data
+			predict					- Performs label prediction
 	
 		References:
 			[1] P. McCullagh, Regression models for ordinal data,  Journal of
@@ -102,13 +101,14 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		"""
 
 		#Aux variables
-		input_layer_size = X.shape(1)
+		input_layer_size = X.shape[1]
 		num_labels = np.size(np.unique(y))
-		m = X.shape(0)
+		m = X.shape[0]
 		
 		
 		#Recode y to Y using nominal coding
 		Y = 1 * (np.tile(y, (1,num_labels)) == np.tile(np.arange(1,num_labels+1)[np.newaxis,:], (m,1)))
+		# TODO: esta línea devuelve Y=0
 		
 		#Hidden layer weigths (with bias)
 		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
@@ -125,7 +125,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		#-----¡¡¡¡¡¡ESTO NO SE MUY BIEN CÓMO HACERLO!!!!!!-----
 
-		nn_params = fmin_lbfgs(self.__nnPOMCostFunction, 100., line_search='armijo')
+		nn_params = fmin_lbfgs(f=self.__nnPOMCostFunction, x0=initial_nn_params,args=(input_layer_size, self.__hiddenN, num_labels, X, Y, self.__lambdaValue),max_iterations=self.__iter, line_search='default')
 		
 
 		"""
@@ -253,7 +253,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		self.__hiddenN = hiddenN
 	
 
-	# Getter & Setter of "iter"
+	# Getter & Setter of "iterations"
 	def getIter (self):
 		
 		"""
@@ -270,7 +270,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		"""
 
 		This method modify the value of the variable self.__iter.
-		This is replaced by the value contained in the iter variable passed as an argument.
+		This is replaced by the value contained in the iterations variable passed as an argument.
 
 		"""
 
@@ -501,7 +501,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			W: Array with the weights of each synaptic relationship between nodes.
 
 		"""
-		W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit - self.getEpsilonInit
+		W = np.ones((L_out,L_in))
+		#W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
 
 		return W
 	
