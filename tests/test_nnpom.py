@@ -34,7 +34,7 @@ class TestRedsvm(unittest.TestCase):
 
 		expected_predictions = [ospath.join(self.dataset_path,"expectedPredictions.0")]
 
-		classifiers = [NNPOM(kernel_type=0, t=0.002, c=0.5, k=0.1)]
+		classifiers = [NNPOM(epsilonInit=0.5, hiddenN=10, iterations=1000, lambdaValue=0.01)]
 
 		#Test execution and verification
 		for expected_prediction, classifier in zip(expected_predictions, classifiers):
@@ -49,8 +49,9 @@ class TestRedsvm(unittest.TestCase):
 		X_train = self.train_file[:,0:(-1)]
 		y_train = self.train_file[:,(-1)]
 
-		classifiers = [NNPOM(kernel_type=0, c=0.1, k=-1)]
+		classifiers = [NNPOM(epsilonInit=0.5, hiddenN=10, iterations=1000, lambdaValue=0.01)]
 		
+		#Esto lo tendría que borrar?
 		error_msgs = ["- T is invalid",
 					"- C is invalid",
 					"- K is invalid",
@@ -71,7 +72,7 @@ class TestRedsvm(unittest.TestCase):
 		y_train_broken = self.train_file[0:(-1),(-1)]
 
 		#Test execution and verification
-		classifier = NNPOM(k=0.1, c=1)
+		classifier = NNPOM(epsilonInit=0.5, hiddenN=10, iterations=1000, lambdaValue=0.01)
 		with self.assertRaises(ValueError):
 				model = classifier.fit(X_train, y_train_broken)
 				self.assertIsNone(model, "The NNPOM fit method doesnt return Null on error")
