@@ -64,13 +64,17 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 	"""
 
-	#Set parameters values
+	#Constructor of class NNPOM (set parameters values).
 	def __init__(self, epsilonInit=0.5, hiddenN=50, iterations=500, lambdaValue=0.01):
 		
 		self.__epsilonInit = epsilonInit
 		self.__hiddenN = hiddenN
 		self.__iter = iterations
 		self.__lambdaValue = lambdaValue
+
+
+	#--------Main functions (Public Access)--------
+
 
 	def fit(self,X,y):
 
@@ -109,6 +113,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		#Recode y to Y using nominal coding
 		Y = 1 * (np.tile(y, (1,num_labels)) == np.tile(np.arange(1,num_labels+1)[np.newaxis,:], (m,1)))
 		# TODO: esta línea devuelve Y=0
+		#He probado esta línea y no da cero da la matriz correctamente
 		
 		#Hidden layer weigths (with bias)
 		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
@@ -253,7 +258,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		self.__hiddenN = hiddenN
 	
 
-	# Getter & Setter of "iterations"
+	# Getter & Setter of "iter"
 	def getIter (self):
 		
 		"""
