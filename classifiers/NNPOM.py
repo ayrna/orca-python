@@ -64,7 +64,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 	"""
 
-	#Constructor of class NNPOM (set parameters values).
+	# Constructor of class NNPOM (set parameters values).
 	def __init__(self, epsilonInit=0.5, hiddenN=50, iterations=500, lambdaValue=0.01):
 		
 		self.__epsilonInit = epsilonInit
@@ -104,33 +104,32 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		"""
 
-		#Aux variables
+		# Aux variables
 		input_layer_size = X.shape[1]
 		num_labels = np.size(np.unique(y))
 		m = X.shape[0]
 		
 		
-		#Recode y to Y using nominal coding
+		# Recode y to Y using nominal coding
 		Y = 1 * (np.tile(y, (1,num_labels)) == np.tile(np.arange(1,num_labels+1)[np.newaxis,:], (m,1)))
 		# TODO: esta línea devuelve Y=0
-		#He probado esta línea y no da cero da la matriz correctamente
+		# He probado esta línea y no da cero da la matriz correctamente
 		
-		#Hidden layer weigths (with bias)
+		# Hidden layer weigths (with bias)
 		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
-		# Output layer weigths (without bias, the biases will be the
-		#						thresholds)
+		# Output layer weigths (without bias, the biases will be the thresholds)
 		initial_Theta2 = self.__randInitializeWeights(self.getHiddenN(), 1)
 		# Class thresholds parameters
 		initial_thresholds = self.__randInitializeWeights((num_labels-1),1)
 		
-		#Pack parameters
+		# Pack parameters
 		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
-		initial_Theta2.flatten(order='F'), initial_thresholds.flatten(order='F')),
+		 initial_Theta2.flatten(order='F'), initial_thresholds.flatten(order='F')),
 		 axis=0)[:,np.newaxis]
 		
-		#-----¡¡¡¡¡¡ESTO NO SE MUY BIEN CÓMO HACERLO!!!!!!-----
-
-		nn_params = fmin_lbfgs(f=self.__nnPOMCostFunction, x0=initial_nn_params,args=(input_layer_size, self.__hiddenN, num_labels, X, Y, self.__lambdaValue),max_iterations=self.__iter, line_search='default')
+		# ---- ARGUMENTOS PENDIENTES DE PRUEBA ----
+		nn_params = fmin_lbfgs(f=self.__nnPOMCostFunction, x0=initial_nn_params,args=(input_layer_size, self.__hiddenN,
+		 num_labels, X, Y, self.__lambdaValue), max_iterations=self.__iter, line_search='default')
 		
 
 		"""
@@ -154,13 +153,14 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		#[nn_params, cost, exitflag, output] = fminunc(costFunction, initial_nn_params, options);
 
 		"""
-
-		Theta1, Theta2, thresholds_param = self.__unpackParameters(nn_params, input_layer_size, self.getHiddenN(), num_labels)
-		self.Theta1 = Theta1
-		self.Theta2 = Theta2
-		self.thresholds = self.__convertThresholds(thresholds_param, num_labels)
-		self.num_labels = num_labels
-		self.m = m
+		# Unpack the parameters
+		Theta1, Theta2, thresholds_param = self.__unpackParameters(nn_params, input_layer_size,
+		 self.getHiddenN(), num_labels)
+		self.__theta1 = Theta1
+		self.__theta2 = Theta2
+		self.__thresholds = self.__convertThresholds(thresholds_param, num_labels)
+		self.__num_labels = num_labels
+		self.__m = m
 		
 		projectedTrain, predictedTrain = self.predict(X)
 		
@@ -194,11 +194,11 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		m = test.shape(0)
 
 		a1 = np.append(np.ones((m, 1)), test, axis=1)
-		z2 = np.matmul(a1,self.Theta1.T)
+		z2 = np.matmul(a1,self.__theta1.T)
 		a2 =  1.0 / (1.0 + np.exp(-z2))
-		projected= np.matmul(a2,self.Theta2.T)
+		projected= np.matmul(a2,self.__theta2.T)
 
-		z3 = np.tile(self.thresholds, (m,1)) - np.tile(projected, (1, self.num_labels-1))
+		z3 = np.tile(self.__thresholds, (m,1)) - np.tile(projected, (1, self.__num_labels-1))
 		a3T =  1.0 / (1.0 + np.exp(-z3))
 		a3 = np.append(a3T, np.ones((m,1)), axis=1)
 		a3[:,1:] = a3[:,1:] - a3[:,0:-1]
@@ -429,20 +429,18 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	#--------------Private Access functions------------------
 
 
-	#Download and save the values ​​of Theta1, Theta2 and thresholds_param
-	#  from the nn_params array to their corresponding array
+	# Download and save the values ​​of Theta1, Theta2 and thresholds_param
+	# from the nn_params array to their corresponding array
 	def __unpackParameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels):
 		
 		"""
-		This method gets Theta1, Theta2 and thresholds_param back
-		from the whole array nn_params.
+		This method gets Theta1, Theta2 and thresholds_param back from the whole array nn_params.
 
 		Parameters
 		----------
 
 			nn_params: column array, shape ((imput_layer_size+1)*hidden_layer_size
 			+ hidden_layer_size + (num_labels-1))
-		
 				Array that is a column vector. It stores the values ​​of Theta1,
 				Theta2 and thresholds_param, all of them together in an array in this order.
 
@@ -459,11 +457,10 @@ class NNPOM(BaseEstimator, ClassifierMixin):
    		Returns
 		-------
 
-			Theta1: The weights between the input layer 
-			and the hidden layer (with biases included).
+			Theta1: The weights between the input layer and the hidden layer (with biases included).
 
-			Theta2: The weights between the hidden layer
-			and the output layer (biases are not included as they are the thresholds).
+			Theta2: The weights between the hidden layer and the output layer
+			 (biases are not included as they are the thresholds).
 
 			thresholds_param: classification thresholds.
 		
@@ -483,8 +480,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		return Theta1, Theta2, thresholds_param
 	
 
-	#Randomly initialize the weights of the neural network layer
-	#  by entering the number of input and output nodes of that layer
+	# Randomly initialize the weights of the neural network layer
+	# by entering the number of input and output nodes of that layer
 	def __randInitializeWeights(self, L_in, L_out):
 
 		"""
@@ -507,12 +504,12 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		"""
 		W = np.ones((L_out,L_in))
-		#W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
+		# W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
 
 		return W
 	
 
-	#Calculate the thresholds
+	# Calculate the thresholds
 	def __convertThresholds(self, thresholds_param, num_labels):
 			
 		"""
@@ -539,7 +536,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		"""
 			
-		#Threshold ^2 element by element
+		# Threshold ^2 element by element
 		thresholds_pquad=thresholds_param**2
 
 		# Gets row-array containing the thresholds
@@ -589,22 +586,22 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-			J: array con funcion de coste (array pesos actualizados)
-			grad: array con el gradiente de error de cada peso de cada capa
+			J: Matrix with cost function (updated weight matrix).
+			grad: Array with the error gradient of each weight of each layer.
 
 		"""
 		
-		#Unroll all the parameters
+		# Unroll all the parameters
 		Theta1,Theta2,thresholds_param = self.__unpackParameters(nn_params,
 		input_layer_size, hidden_layer_size, num_labels)
 						
-		#Convert threhsolds
+		# Convert thresholds
 		thresholds = self.__convertThresholds(thresholds_param, num_labels)
 			
-		#Setup some useful variables
+		# Setup some useful variables
 		m = np.size(X, 0)
 			
-		#Neural Network model
+		# Neural Network model
 		a1 = np.append(np.ones((m, 1)), X, axis=1)
 		z2 = np.matmul(a1,Theta1.T)
 		a2 =  1.0 / (1.0 + np.exp(-z2))
@@ -614,49 +611,49 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		a3 = np.append(a3T, np.ones((m,1)), axis=1)
 		h = np.concatenate((a3[:,0].reshape((a3.shape[0],1)),a3[:,1:] - a3[:,0:-1]), axis = 1)
 		
-		#Final output
+		# Final output
 		out = h
 		
 		
-		#calculte penalty (regularización L2)
+		# Calculate penalty (regularización L2)
 		p = np.sum((Theta1[:,1:]**2).sum() + (Theta2[:,0:]**2).sum())
 		
-		#MSE
+		# MSE
 		#J = np.sum((out-Y)**2).sum()/(2*m) + lambdaValue*p/(2*m)
 		
-		#Cross entropy
+		# Cross entropy
 		J = np.sum(-math.log(out[np.where(Y==1)]), axis=0)/m + lambdaValue*p/(2*m)
 		
 		
-		#if nargout > 1
+		# if nargout > 1
 		
-		#Cross entropy
-		#out[np.where(out<0.00001)] = 0.00001
+		# Cross entropy
+		# out[np.where(out<0.00001)] = 0.00001
 		errorDer = np.zeros(Y.shape)
 		errorDer[np.where(Y!=0)] = np.divide(-Y[np.where(Y!=0)],out[np.where(Y!=0)])
 	
-		#MSE
-		#errorDer = (out-Y)
+		# MSE
+		# errorDer = (out-Y)
 
-		#Calculate sigmas
+		# Calculate sigmas
 		fGradients = np.multiply(a3T,(1-a3T))
 		gGradients = np.multiply(errorDer, np.concatenate((fGradients[:,0].reshape(-1,1),
 		 (fGradients[:,1:] - fGradients[:,:-1]), -fGradients[:,-1].reshape(-1,1)), axis=1))
 		sigma3 = -np.sum(gGradients,axis=1)
 		sigma2 = np.multiply(np.multiply(np.matmul(sigma3, Theta2), a2), (1-a2))
 		
-		#Accumulate gradients
+		# Accumulate gradients
 		delta_1 = np.matmul(sigma2.T, a1)
 		delta_2 = np.matmul(sigma3.T, a2)
 		
-		#calculate regularized gradient
+		# Calculate regularized gradient
 		p1 = (lambdaValue/m) * np.concatenate((np.zeros((np.size(Theta1, axis=0), 1)), Theta1[:,1:]), axis=1)
 		p2 = (lambdaValue/m) * Theta2[:,0:]
 		Theta1_grad = delta_1 / m + p1
 		Theta2_grad = delta_2 / m + p2
 		
 		
-		#Treshold gradients
+		# Treshold gradients
 		ThreshGradMatrix = np.multiply(np.concatenate((np.triu(np.ones((num_labels-1, num_labels-1))),
 		 np.ones((num_labels-1, 1))), axis=1), np.tile(gGradients.sum(axis=0), (num_labels-1, 1)))
 		
@@ -671,7 +668,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Threshold_grad = ThreshGradMatrix.sum(axis=1)[:,np.newaxis]
 		Threshold_grad[1:] = 2 * np.multiply(Threshold_grad[1:], thresholds_param[1:])
 		
-		#Unroll gradients
+		# Unroll gradients
 		grad = np.concatenate((Theta1_grad.flatten(order='F'),
 		 Theta2_grad.flatten(order='F'), thresholds_param.flatten(order='F')),
 		 axis=0)[:,np.newaxis]
