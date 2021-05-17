@@ -2,8 +2,8 @@
 
     "general_conf": {
 
-		"basedir": "datasets/",
-		"datasets": ["tae", "balance-scale", "contact-lenses"],
+		"basedir": "tests/test_datasets/test_nnpom_nnop_load_dataset",
+		"datasets": ["toy"],
 		"input_preprocessing": "std",
 		"hyperparam_cv_nfolds": 3,
 		"jobs": 10,
