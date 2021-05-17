@@ -96,7 +96,7 @@ class TestRedsvm(unittest.TestCase):
 
 		X_test = self.test_file[:,0:(-1)]
 
-		classifier = NNPÔM(k=0.1, c=1)
+		classifier = NNOP(k=0.1, c=1)
 		classifier.fit(X_train, y_train)
 
 		#Test execution and verification

@@ -134,10 +134,12 @@ class Utilities:
 					#Normalization or Standardization of the partition if requested
 					if self.general_conf['input_preprocessing'].strip().lower() == 'norm':
 						partition["train_inputs"], partition["test_inputs"] = self._normalize_data(partition["train_inputs"], partition["test_inputs"])
-					elif self.general_conf['input_preprocessing'].strip().lower() == 'std':
-						partition["train_inputs"], partition["test_inputs"] = self._standardize_data(partition["train_inputs"], partition["test_inputs"])
-					elif self.general_conf['input_preprocessing'].strip().lower() != '':
-						raise AttributeError("Input preprocessing named '%s' unknown" % self.general_conf['input_preprocessing'].strip().lower())
+					#Se comenta la línea para evitar la estandarización y comprobar que converge respecto a ORCA
+					#elif self.general_conf['input_preprocessing'].strip().lower() == 'std':
+					#	partition["train_inputs"], partition["test_inputs"] = self._standardize_data(partition["train_inputs"], partition["test_inputs"])
+
+					#elif self.general_conf['input_preprocessing'].strip().lower() != '':
+					#	raise AttributeError("Input preprocessing named '%s' unknown" % self.general_conf['input_preprocessing'].strip().lower())
 
 					optimal_estimator = self._get_optimal_estimator(partition["train_inputs"],
 																	partition["train_outputs"],

@@ -105,6 +105,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		"""
 
 		# Aux variables
+		y = y[:,np.newaxis]
 		input_layer_size = X.shape[1]
 		num_labels = np.size(np.unique(y))
 		m = X.shape[0]
