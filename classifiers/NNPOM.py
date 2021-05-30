@@ -132,28 +132,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		nn_params = fmin_lbfgs(f=self.__nnPOMCostFunction, x0=initial_nn_params,args=(input_layer_size, self.__hiddenN,
 		 num_labels, X, Y, self.__lambdaValue), max_iterations=self.__iter, line_search='default')
 		
-
-		"""
-		#Create "short hand" for the cost function to be minimized
-		[J,grad] = obj.nnPOMCostFunction(initial_nn_params, ...
-				input_layer_size, ...
-				hidden_layer_size, ...
-				num_labels, X, Y, lambda);
-			
-		#RProp options
-		p.verbosity = 0;					#Increase indent
-		p.MaxIter   = parameters.iter;		#Maximum number of iterations
-		p.d_Obj     = -1;					#Objective cost
-		p.method    = 'IRprop+';			#Use IRprop- algorithm
-		p.display   = 0;
-
-		#Running RProp
-		[nn_params,cost,exitflag,stats1] = rprop(grad,initial_nn_params,p);
-
-		#options = optimoptions('fminunc','Algorithm','quasi-newton','SpecifyObjectiveGradient',true,'Diagnostics','on','Display','iter-detailed','UseParallel',true,'MaxIter', 1000,'CheckGradients',true);
-		#[nn_params, cost, exitflag, output] = fminunc(costFunction, initial_nn_params, options);
-
-		"""
 		# Unpack the parameters
 		Theta1, Theta2, thresholds_param = self.__unpackParameters(nn_params, input_layer_size,
 		 self.getHiddenN(), num_labels)
@@ -192,7 +170,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		"""
 
-		m = test.shape(0)
+		m = test.shape[0]
 
 		a1 = np.append(np.ones((m, 1)), test, axis=1)
 		z2 = np.matmul(a1,self.__theta1.T)
@@ -203,7 +181,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		a3T =  1.0 / (1.0 + np.exp(-z3))
 		a3 = np.append(a3T, np.ones((m,1)), axis=1)
 		a3[:,1:] = a3[:,1:] - a3[:,0:-1]
-		M,predicted = a3.max(axis=1)[:,np.newaxis],a3.argmax(0)[:,np.newaxis]
+		M,predicted = a3.max(1)[:,np.newaxis],(a3.argmax(1)[:,np.newaxis] + 1)
 
 		return projected,predicted
 	
@@ -623,7 +601,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		#J = np.sum((out-Y)**2).sum()/(2*m) + lambdaValue*p/(2*m)
 		
 		# Cross entropy
-		J = np.sum(-math.log(out[np.where(Y==1)]), axis=0)/m + lambdaValue*p/(2*m)
+		J = np.sum(-np.log(out[np.where(Y==1)]), axis=0)/m + lambdaValue*p/(2*m)
 		
 		
 		# if nargout > 1
@@ -640,7 +618,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		fGradients = np.multiply(a3T,(1-a3T))
 		gGradients = np.multiply(errorDer, np.concatenate((fGradients[:,0].reshape(-1,1),
 		 (fGradients[:,1:] - fGradients[:,:-1]), -fGradients[:,-1].reshape(-1,1)), axis=1))
-		sigma3 = -np.sum(gGradients,axis=1)
+		sigma3 = -np.sum(gGradients,axis=1)[:,np.newaxis]
 		sigma2 = np.multiply(np.multiply(np.matmul(sigma3, Theta2), a2), (1-a2))
 		
 		# Accumulate gradients
@@ -666,12 +644,12 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		ThreshGradMatrix = np.reshape(ThreshGradMatrix[:,np.newaxis],originalShape, order ='F')
 		
-		Threshold_grad = ThreshGradMatrix.sum(axis=1)[:,np.newaxis]
+		Threshold_grad = ThreshGradMatrix.sum(axis=1)[:,np.newaxis]/m
 		Threshold_grad[1:] = 2 * np.multiply(Threshold_grad[1:], thresholds_param[1:])
 		
 		# Unroll gradients
 		grad = np.concatenate((Theta1_grad.flatten(order='F'),
-		 Theta2_grad.flatten(order='F'), thresholds_param.flatten(order='F')),
+		 Theta2_grad.flatten(order='F'), Threshold_grad.flatten(order='F')),
 		 axis=0)[:,np.newaxis]
 		
 		return J
