@@ -129,11 +129,14 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		 axis=0)[:,np.newaxis]
 		
 		# ---- ARGUMENTOS PENDIENTES DE PRUEBA ----
-		nn_params = fmin_lbfgs(f=self.__nnPOMCostFunction, x0=initial_nn_params,args=(input_layer_size, self.__hiddenN,
-		 num_labels, X, Y, self.__lambdaValue), max_iterations=self.__iter, line_search='default')
-		
+		try:
+			self.__nn_params = fmin_lbfgs(f=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.__hiddenN,
+		 	 num_labels, X, Y, self.__lambdaValue), max_iterations=self.__iter, line_search='armijo', progress=self.__progress, ftol=1e-15, gtol=0.1)
+		except:
+			print('Not obtaining convergence')
+
 		# Unpack the parameters
-		Theta1, Theta2, thresholds_param = self.__unpackParameters(nn_params, input_layer_size,
+		Theta1, Theta2, thresholds_param = self.__unpackParameters(self.__nn_params, input_layer_size,
 		 self.getHiddenN(), num_labels)
 		self.__theta1 = Theta1
 		self.__theta2 = Theta2
@@ -141,11 +144,16 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		self.__num_labels = num_labels
 		self.__m = m
 		
-		projectedTrain, predictedTrain = self.predict(X)
+		#projectedTrain, predictedTrain = self.predict(X)
 		
-		return projectedTrain, predictedTrain
+		#return projectedTrain, predictedTrain
+		return self
 	
-	
+	def __progress(self, x, g, fx, xnorm, gnorm, step, k, ls, *args):
+		print("Iteration %d, Error %f" %(ls,fx))
+		self.__nn_params = x
+		return 0
+
 	def predict (self, test):
 		
 		"""
@@ -175,15 +183,16 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		a1 = np.append(np.ones((m, 1)), test, axis=1)
 		z2 = np.matmul(a1,self.__theta1.T)
 		a2 =  1.0 / (1.0 + np.exp(-z2))
-		projected= np.matmul(a2,self.__theta2.T)
+		projected = np.matmul(a2,self.__theta2.T)
 
 		z3 = np.tile(self.__thresholds, (m,1)) - np.tile(projected, (1, self.__num_labels-1))
 		a3T =  1.0 / (1.0 + np.exp(-z3))
 		a3 = np.append(a3T, np.ones((m,1)), axis=1)
 		a3[:,1:] = a3[:,1:] - a3[:,0:-1]
-		M,predicted = a3.max(1)[:,np.newaxis],(a3.argmax(1)[:,np.newaxis] + 1)
+		predicted = a3.argmax(1) + 1
 
-		return projected,predicted
+		#return projected,predicted
+		return predicted
 	
 	
 	#--------Getters & Setters (Public Access)--------
@@ -571,6 +580,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		"""
 		
 		# Unroll all the parameters
+		nn_params = nn_params.reshape((nn_params.shape[0],1))
+
 		Theta1,Theta2,thresholds_param = self.__unpackParameters(nn_params,
 		input_layer_size, hidden_layer_size, num_labels)
 						
@@ -648,9 +659,9 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Threshold_grad[1:] = 2 * np.multiply(Threshold_grad[1:], thresholds_param[1:])
 		
 		# Unroll gradients
-		grad = np.concatenate((Theta1_grad.flatten(order='F'),
+		grad2 = np.concatenate((Theta1_grad.flatten(order='F'),
 		 Theta2_grad.flatten(order='F'), Threshold_grad.flatten(order='F')),
-		 axis=0)[:,np.newaxis]
-		
+		 axis=0)
+		np.copyto(grad,grad2)
 		return J
 	
