@@ -4,7 +4,7 @@ import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
-from lbfgs import fmin_lbfgs
+import scipy
 
 class NNOP(BaseEstimator, ClassifierMixin):
 	
@@ -102,6 +102,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		"""
 
 		# Aux variables
+		y = y[:,np.newaxis]
 		input_layer_size = X.shape[1]
 		num_labels = np.size(np.unique(y))
 		m = X.shape[0]
@@ -121,24 +122,28 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
 		initial_Theta2.flatten(order='F')), axis=0)[:,np.newaxis]
 
-
 		# ---- ARGUMENTOS PENDIENTES DE PRUEBA ----
-		nn_params = fmin_lbfgs(f=self.__nnOPCostFunction, x0=initial_nn_params, args=(input_layer_size, self.__hiddenN,
-		 num_labels, X, Y, self.__lambdaValue), max_iterations=self.__iter, line_search='default')
-
+		# Hay que quitar el iprint para que se muestren menos salidas
+		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.__hiddenN,
+			num_labels, X, Y, self.__lambdaValue), fprime=None, factr=1e2, maxiter=self.__iter,iprint=1)
+		self.__nn_params = results_optimization[0]
 		# Unpack the parameters
 		Theta1, Theta2 = self.__unpackParameters(nn_params, input_layer_size, self.getHiddenN(), num_labels)
 		self.__theta1 = Theta1
 		self.__theta2 = Theta2
 		self.__num_labels = num_labels
 		self.__m = m
-		projectedTrain, predictedTrain = self.predict(X)
+		#projectedTrain, predictedTrain = self.predict(X)
 		
 		return projectedTrain, predictedTrain
 
+	def __progress(self, x, g, fx, xnorm, gnorm, step, k, ls, *args):
+		print("Iteration %d, Error %f" %(ls,fx))
+		self.__nn_params = x
+		return 0
 
 	def predict (self, test):
-				
+		
 		"""
 
 		Predicts labels of TEST patterns labels. The object needs to be fitted to the data first.
@@ -161,9 +166,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		"""
 
-		m = test.shape(0)
-		a1 = np.append(np.ones((m, 1)), test, axis=1)
+		m = test.shape[0]
 
+		a1 = np.append(np.ones((m, 1)), test, axis=1)
 		z2 = np.append(np.ones((m,1)), np.matmul(a1, self.__theta1.T), axis=1)
 
 		a2 =  1.0 / (1.0 + np.exp(-z2))
@@ -399,7 +404,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 	#--------------Private Access functions------------------
 
-	
+
 	# Download and save the values ​​of Theta1, Theta2 and thresholds_param
 	# from the nn_params array to their corresponding array
 	def __unpackParameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels):
@@ -412,7 +417,6 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 			nn_params: column array, shape ((imput_layer_size+1)*hidden_layer_size
 			+ hidden_layer_size + (num_labels-1))
-		
 				Array that is a column vector. It stores the values ​​of Theta1,
 				Theta2 and thresholds_param, all of them together in an array in this order.
 
@@ -441,7 +445,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		Theta1 = np.reshape(nn_params[0:nTheta1],(hidden_layer_size, (input_layer_size + 1)))
 		
 		Theta2 = np.reshape(nn_params[nTheta1:], (num_labels-1, hidden_layer_size+1))
-				
+		
 		return Theta1, Theta2
 	
 
