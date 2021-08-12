@@ -4,7 +4,7 @@ import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
-import scipy
+from lbfgs import fmin_lbfgs
 
 class NNPOM(BaseEstimator, ClassifierMixin):
 	
@@ -120,11 +120,21 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
 		 initial_Theta2.flatten(order='F'), initial_thresholds.flatten(order='F')),
 		 axis=0)[:,np.newaxis]
+<<<<<<< HEAD
 				
 		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.__hiddenN,
 			num_labels, X, Y, self.__lambdaValue), fprime=None, factr=1e3, maxiter=self.__iter,iprint=1)
 		
 		self.__nn_params = results_optimization[0]
+=======
+		
+		# ---- ARGUMENTOS PENDIENTES DE PRUEBA ----
+		try:
+			self.__nn_params = fmin_lbfgs(f=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.__hiddenN,
+		 	 num_labels, X, Y, self.__lambdaValue), max_iterations=self.__iter, line_search='armijo', progress=self.__progress, ftol=1e-15, gtol=0.1)
+		except:
+			print('Not obtaining convergence')
+>>>>>>> parent of ce6c502... Algorithm mostly finished
 
 		# Unpack the parameters
 		Theta1, Theta2, thresholds_param = self.__unpackParameters(self.__nn_params, input_layer_size,
@@ -471,8 +481,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			W: Array with the weights of each synaptic relationship between nodes.
 
 		"""
-		#W = np.ones((L_out,L_in))
-		W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
+		W = np.ones((L_out,L_in))
+		# W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
 
 		return W
 	
@@ -517,7 +527,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 
 	# Implements the cost function and obtains the corresponding derivatives.
-	def __nnPOMCostFunction(self, nn_params, input_layer_size, hidden_layer_size,
+	def __nnPOMCostFunction(self, nn_params, grad, input_layer_size, hidden_layer_size,
 	num_labels, X, Y, lambdaValue):
 			
 		"""
@@ -584,9 +594,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		# Final output
 		out = h
-		out[np.where(out<0.00001)] = 0.00001
-
-
+		
+		
 		# Calculate penalty (regularización L2)
 		p = np.sum((Theta1[:,1:]**2).sum() + (Theta2[:,0:]**2).sum())
 		
@@ -639,6 +648,11 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		grad2 = np.concatenate((Theta1_grad.flatten(order='F'),
 		 Theta2_grad.flatten(order='F'), Threshold_grad.flatten(order='F')),
 		 axis=0)
+<<<<<<< HEAD
 
 		return J,grad2
+=======
+		np.copyto(grad,grad2)
+		return J
+>>>>>>> parent of ce6c502... Algorithm mostly finished
 	
