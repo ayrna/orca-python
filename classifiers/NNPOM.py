@@ -4,7 +4,7 @@ import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
-from lbfgs import fmin_lbfgs
+import scipy
 
 class NNPOM(BaseEstimator, ClassifierMixin):
 	
@@ -55,7 +55,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 										model.
 			iter						- Number of iterations for iRProp+
 										algorithm.
-			lambda						- Regularization parameter.
+			lambdaValue					- Regularization parameter.
 			theta1						- Hidden layer weigths (with bias)
 			theta2						- Output layer weigths (without bias, the biases will be the thresholds)
 			thresholds					- Class thresholds parameters
@@ -96,11 +96,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		projectedTrain: {array-like, sparse matrix}, shape (n_samples,)
-			Vector array with projected values for each pattern of train patterns.
-
-		predictedTrain: {array-like, sparse matrix}, shape (n_samples,)
-			Vector array with predicted values for each pattern of train patterns.
+		self: The object NNPOM.
 
 		"""
 
@@ -110,12 +106,9 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		num_labels = np.size(np.unique(y))
 		m = X.shape[0]
 		
-		
 		# Recode y to Y using nominal coding
 		Y = 1 * (np.tile(y, (1,num_labels)) == np.tile(np.arange(1,num_labels+1)[np.newaxis,:], (m,1)))
-		# TODO: esta línea devuelve Y=0
-		# He probado esta línea y no da cero da la matriz correctamente
-		
+
 		# Hidden layer weigths (with bias)
 		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
 		# Output layer weigths (without bias, the biases will be the thresholds)
@@ -127,33 +120,24 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
 		 initial_Theta2.flatten(order='F'), initial_thresholds.flatten(order='F')),
 		 axis=0)[:,np.newaxis]
+				
+		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.__hiddenN,
+			num_labels, X, Y, self.__lambdaValue), fprime=None, factr=1e3, maxiter=self.__iter,iprint=1)
 		
-		# ---- ARGUMENTOS PENDIENTES DE PRUEBA ----
-		try:
-			self.__nn_params = fmin_lbfgs(f=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.__hiddenN,
-		 	 num_labels, X, Y, self.__lambdaValue), max_iterations=self.__iter, line_search='armijo', progress=self.__progress, ftol=1e-15, gtol=0.1)
-		except:
-			print('Not obtaining convergence')
+		self.__nn_params = results_optimization[0]
 
 		# Unpack the parameters
 		Theta1, Theta2, thresholds_param = self.__unpackParameters(self.__nn_params, input_layer_size,
 		 self.getHiddenN(), num_labels)
+		
 		self.__theta1 = Theta1
 		self.__theta2 = Theta2
 		self.__thresholds = self.__convertThresholds(thresholds_param, num_labels)
 		self.__num_labels = num_labels
 		self.__m = m
 		
-		#projectedTrain, predictedTrain = self.predict(X)
-		
-		#return projectedTrain, predictedTrain
 		return self
 	
-	def __progress(self, x, g, fx, xnorm, gnorm, step, k, ls, *args):
-		print("Iteration %d, Error %f" %(ls,fx))
-		self.__nn_params = x
-		return 0
-
 	def predict (self, test):
 		
 		"""
@@ -169,9 +153,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		Returns
 		-------
-
-		projected: {array-like, sparse matrix}, shape (n_samples,)
-			Vector array with projected values for each pattern of test patterns.
 
 		predicted: {array-like, sparse matrix}, shape (n_samples,)
 			Vector array with predicted values for each pattern of test patterns.
@@ -191,9 +172,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		a3[:,1:] = a3[:,1:] - a3[:,0:-1]
 		predicted = a3.argmax(1) + 1
 
-		#return projected,predicted
-		return predicted
-	
+		return predicted	
 	
 	#--------Getters & Setters (Public Access)--------
 	
@@ -413,7 +392,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		self.__m = m
 
-
 	#--------------Private Access functions------------------
 
 
@@ -422,6 +400,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def __unpackParameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels):
 		
 		"""
+
 		This method gets Theta1, Theta2 and thresholds_param back from the whole array nn_params.
 
 		Parameters
@@ -456,14 +435,14 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		nTheta1 = hidden_layer_size * (input_layer_size + 1)
 		Theta1 = np.reshape(nn_params[0:nTheta1],(hidden_layer_size,
-		 (input_layer_size + 1)))
+		 (input_layer_size + 1)),order='F')
 		
 		nTheta2 = hidden_layer_size
 		Theta2 = np.reshape(nn_params[nTheta1:(nTheta1+nTheta2)], 
-		 (1, hidden_layer_size))
+		 (1, hidden_layer_size),order='F')
 		
 		thresholds_param = np.reshape(nn_params[(nTheta1+nTheta2):],
-		 ((num_labels-1), 1))
+		 ((num_labels-1), 1),order = 'F')
 		
 		return Theta1, Theta2, thresholds_param
 	
@@ -473,6 +452,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def __randInitializeWeights(self, L_in, L_out):
 
 		"""
+
 		This method randomly initializes the weights of a layer
 		 with L_in incoming connections and L_out outgoing connections
 
@@ -491,8 +471,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			W: Array with the weights of each synaptic relationship between nodes.
 
 		"""
-		W = np.ones((L_out,L_in))
-		# W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
+		#W = np.ones((L_out,L_in))
+		W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
 
 		return W
 	
@@ -501,6 +481,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	def __convertThresholds(self, thresholds_param, num_labels):
 			
 		"""
+
 		This method transforms thresholds to perform unconstrained optimization.
 
 		thresholds(1) = thresholds_param(1)
@@ -536,46 +517,46 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 
 	# Implements the cost function and obtains the corresponding derivatives.
-	def __nnPOMCostFunction(self, nn_params, grad, input_layer_size, hidden_layer_size,
+	def __nnPOMCostFunction(self, nn_params, input_layer_size, hidden_layer_size,
 	num_labels, X, Y, lambdaValue):
 			
 		"""
-			This method implements the cost function and obtains
-			the corresponding derivatives.
+		This method implements the cost function and obtains
+		the corresponding derivatives.
 			
-			Parameters
+		Parameters
 		----------
 
-			nn_params: column array, shape ((imput_layer_size+1)*hidden_layer_size
-			+ hidden_layer_size + (num_labels-1))
+		nn_params: column array, shape ((imput_layer_size+1)*hidden_layer_size
+		+ hidden_layer_size + (num_labels-1))
 		
-				Array that is a column vector. It stores the values ​​of Theta1,
-				Theta2 and thresholds_param, all of them together in an array in this order.
+		Array that is a column vector. It stores the values ​​of Theta1,
+		Theta2 and thresholds_param, all of them together in an array in this order.
 			
-			input_layer_size: integer
-				Number of nodes in the input layer of the neural network model.
+		input_layer_size: integer
+			Number of nodes in the input layer of the neural network model.
 		
-			hidden_layer_size: integer
-				Number of nodes in the hidden layer of the neural network model.
+		hidden_layer_size: integer
+			Number of nodes in the hidden layer of the neural network model.
 			
-			num_labels: integer
-				Number of classes.
+		num_labels: integer
+			Number of classes.
 
-			X: {array-like, sparse matrix}, shape (n_samples, n_features)
-				Training patterns array, where n_samples is the number of samples
-				and n_features is the number of features
+		X: {array-like, sparse matrix}, shape (n_samples, n_features)
+			Training patterns array, where n_samples is the number of samples
+			and n_features is the number of features
 
-			Y: array-like, shape (n_samples)
-				Target vector relative to X
+		Y: array-like, shape (n_samples)
+			Target vector relative to X
 
-			lambdaValue:
-				Regularization parameter.
+		lambdaValue:
+			Regularization parameter.
 
 		Returns
 		-------
 
-			J: Matrix with cost function (updated weight matrix).
-			grad: Array with the error gradient of each weight of each layer.
+		J: Matrix with cost function (updated weight matrix).
+		grad: Array with the error gradient of each weight of each layer.
 
 		"""
 		
@@ -603,8 +584,9 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		# Final output
 		out = h
-		
-		
+		out[np.where(out<0.00001)] = 0.00001
+
+
 		# Calculate penalty (regularización L2)
 		p = np.sum((Theta1[:,1:]**2).sum() + (Theta2[:,0:]**2).sum())
 		
@@ -613,17 +595,13 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		# Cross entropy
 		J = np.sum(-np.log(out[np.where(Y==1)]), axis=0)/m + lambdaValue*p/(2*m)
-		
-		
-		# if nargout > 1
-		
-		# Cross entropy
-		# out[np.where(out<0.00001)] = 0.00001
-		errorDer = np.zeros(Y.shape)
-		errorDer[np.where(Y!=0)] = np.divide(-Y[np.where(Y!=0)],out[np.where(Y!=0)])
-	
+			
 		# MSE
 		# errorDer = (out-Y)
+
+		# Cross entropy
+		errorDer = np.zeros(Y.shape)
+		errorDer[np.where(Y!=0)] = np.divide(-Y[np.where(Y!=0)],out[np.where(Y!=0)])
 
 		# Calculate sigmas
 		fGradients = np.multiply(a3T,(1-a3T))
@@ -641,7 +619,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		p2 = (lambdaValue/m) * Theta2[:,0:]
 		Theta1_grad = delta_1 / m + p1
 		Theta2_grad = delta_2 / m + p2
-		
 		
 		# Treshold gradients
 		ThreshGradMatrix = np.multiply(np.concatenate((np.triu(np.ones((num_labels-1, num_labels-1))),
@@ -662,6 +639,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		grad2 = np.concatenate((Theta1_grad.flatten(order='F'),
 		 Theta2_grad.flatten(order='F'), Threshold_grad.flatten(order='F')),
 		 axis=0)
-		np.copyto(grad,grad2)
-		return J
+
+		return J,grad2
 	
