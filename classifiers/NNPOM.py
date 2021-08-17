@@ -26,7 +26,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		NNPOM public methods:
 			fit						- Fits a model from training data
 			predict					- Performs label prediction
-	
+
 		References:
 			[1] P. McCullagh, Regression models for ordinal data,  Journal of
 				the Royal Statistical Society. Series B (Methodological), vol. 42,
@@ -53,7 +53,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			epsilonInit					- Range for initializing the weights.
 			hiddenN						- Number of hidden neurons of the
 										model.
-			iter						- Number of iterations for iRProp+
+			iterations						- Number of iterations for fmin_l_bfgs_b
 										algorithm.
 			lambdaValue					- Regularization parameter.
 			theta1						- Hidden layer weigths (with bias)
@@ -61,16 +61,16 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			thresholds					- Class thresholds parameters
 			num_labels					- Number of labels in the problem
 			m							- Number of samples of X (train patterns array).
-		
+
 	"""
 
 	# Constructor of class NNPOM (set parameters values).
 	def __init__(self, epsilonInit=0.5, hiddenN=50, iterations=500, lambdaValue=0.01):
 		
-		self.__epsilonInit = epsilonInit
-		self.__hiddenN = hiddenN
-		self.__iter = iterations
-		self.__lambdaValue = lambdaValue
+		self.epsilonInit = epsilonInit
+		self.hiddenN = hiddenN
+		self.iterations = iterations
+		self.lambdaValue = lambdaValue
 
 
 	#--------Main functions (Public Access)--------
@@ -120,9 +120,9 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
 		 initial_Theta2.flatten(order='F'), initial_thresholds.flatten(order='F')),
 		 axis=0)[:,np.newaxis]
-				
-		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.__hiddenN,
-			num_labels, X, Y, self.__lambdaValue), fprime=None, factr=1e3, maxiter=self.__iter,iprint=1)
+		
+		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.hiddenN,
+			num_labels, X, Y, self.lambdaValue), fprime=None, factr=1e3, maxiter=self.iterations,iprint=-1)
 		
 		self.__nn_params = results_optimization[0]
 
@@ -135,7 +135,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		self.__thresholds = self.__convertThresholds(thresholds_param, num_labels)
 		self.__num_labels = num_labels
 		self.__m = m
-		
+
 		return self
 	
 	def predict (self, test):
@@ -143,7 +143,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		"""
 
 		Predicts labels of TEST patterns labels. The object needs to be fitted to the data first.
-				
+
 		Parameters
 		----------
 
@@ -179,98 +179,98 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 	# Getter & Setter of "epsilonInit"
 	def getEpsilonInit (self):
-		
+	
 		"""
 
-		This method returns the value of the variable self.__epsilonInit.
-		self.__epsilonInit contains the value of epsilon, which is the initialization range of the weights.
+		This method returns the value of the variable self.epsilonInit.
+		self.epsilonInit contains the value of epsilon, which is the initialization range of the weights.
 
 		"""
 
-		return self.__epsilonInit
+		return self.epsilonInit
 
 	def setEpsilonInit (self, epsilonInit):
-	   
+
 		"""
 
-		This method modify the value of the variable self.__epsilonInit.
+		This method modify the value of the variable self.epsilonInit.
 		This is replaced by the value contained in the epsilonInit variable passed as an argument.
 
 		"""
 
-		self.__epsilonInit = epsilonInit
+		self.epsilonInit = epsilonInit
 	
 
 	# Getter & Setter of "hiddenN"
 	def getHiddenN (self):
-	   
+		
 		"""
 
-		This method returns the value of the variable self.__hiddenN.
-		self.__hiddenN contains the number of nodes/neurons in the hidden layer.
+		This method returns the value of the variable self.hiddenN.
+		self.hiddenN contains the number of nodes/neurons in the hidden layer.
 
 		"""
 
-		return self.__hiddenN
+		return self.hiddenN
 
 	def setHiddenN (self, hiddenN):
-	  
+		
 		"""
 
-		This method modify the value of the variable self.__hiddenN.
+		This method modify the value of the variable self.hiddenN.
 		This is replaced by the value contained in the hiddenN variable passed as an argument.
 
 		"""
 
-		self.__hiddenN = hiddenN
+		self.hiddenN = hiddenN
 	
 
-	# Getter & Setter of "iter"
+	# Getter & Setter of "iterations"
 	def getIter (self):
 		
 		"""
 
-		This method returns the value of the variable self.__iter.
-		self.__iter contains the number of iterations.
+		This method returns the value of the variable self.iterations.
+		self.iterations contains the number of iterations.
 
 		"""
 
-		return self.__iter
+		return self.iterations
 	
 	def setIter (self, iterations):
-	  
+
 		"""
 
-		This method modify the value of the variable self.__iter.
+		This method modify the value of the variable self.iterations.
 		This is replaced by the value contained in the iterations variable passed as an argument.
 
 		"""
 
-		self.__iter = iterations
+		self.iterations = iterations
 	
 
 	# Getter & Setter of "lambdaValue"
 	def getLambdaValue (self):
-	   
+		
 		"""
 
-		This method returns the value of the variable self.__lambdaValue.
-		self.__lambdaValue contains the Lambda parameter used in regularization.
+		This method returns the value of the variable self.lambdaValue.
+		self.lambdaValue contains the Lambda parameter used in regularization.
 
 		"""
 
-		return self.__lambdaValue
+		return self.lambdaValue
 	
 	def setLambdaValue (self, lambdaValue):
-	  
+		
 		"""
 
-		This method modify the value of the variable self.__lambdaValue.
+		This method modify the value of the variable self.lambdaValue.
 		This is replaced by the value contained in the lambdaValue variable passed as an argument.
 
 		"""
 
-		self.__lambdaValue = lambdaValue
+		self.lambdaValue = lambdaValue
 
 
 	# Getter & Setter of "theta1"
@@ -286,7 +286,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		return self.__theta1
 
 	def setTheta1 (self, theta1):
-	   
+		
 		"""
 
 		This method modify the value of the variable self.__theta1.
@@ -299,7 +299,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 	# Getter & Setter of "theta2"
 	def getTheta2 (self):
-	   
+		
 		"""
 
 		This method returns the value of the variable self.__theta2.
@@ -310,7 +310,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		return self.__theta2
 	
 	def setTheta2 (self, theta2):
-	  
+		
 		"""
 
 		This method modify the value of the variable self.__theta2.
@@ -323,7 +323,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 	# Getter & Setter of "thresholds"
 	def getThresholds (self):
-	   
+		
 		"""
 
 		This method returns the value of the variable self.__thresholds.
@@ -334,7 +334,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		return self.__thresholds
 	
 	def setThresholds (self, thresholds):
-	  
+		
 		"""
 
 		This method modify the value of the variable self.__thresholds.
@@ -347,7 +347,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 	# Getter & Setter of "num_labels"
 	def getNum_labels (self):
-	   
+		
 		"""
 
 		This method returns the value of the variable self.__num_labels.
@@ -358,7 +358,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		return self.__num_labels
 	
 	def setNum_labels (self, num_labels):
-	  
+		
 		"""
 
 		This method modify the value of the variable self.__num_labels.
@@ -371,7 +371,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 	# Getter & Setter of "m"
 	def getM (self):
-	   
+		
 		"""
 
 		This method returns the value of the variable self.__m.
@@ -382,7 +382,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		return self.__m
 	
 	def setM (self, m):
-	  
+		
 		"""
 
 		This method modify the value of the variable self.__m.
@@ -421,7 +421,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			Number of classes.
 
 
-   		Returns
+		Returns
 		-------
 
 		Theta1: The weights between the input layer and the hidden layer (with biases included).
@@ -519,7 +519,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	# Implements the cost function and obtains the corresponding derivatives.
 	def __nnPOMCostFunction(self, nn_params, input_layer_size, hidden_layer_size,
 	num_labels, X, Y, lambdaValue):
-			
+		
 		"""
 		This method implements the cost function and obtains
 		the corresponding derivatives.
@@ -559,7 +559,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		grad: Array with the error gradient of each weight of each layer.
 
 		"""
-		
+
 		# Unroll all the parameters
 		nn_params = nn_params.reshape((nn_params.shape[0],1))
 
@@ -571,7 +571,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 			
 		# Setup some useful variables
 		m = np.size(X, 0)
-			
+		
 		# Neural Network model
 		a1 = np.append(np.ones((m, 1)), X, axis=1)
 		z2 = np.matmul(a1,Theta1.T)
@@ -584,7 +584,9 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		
 		# Final output
 		out = h
-		out[np.where(out<0.00001)] = 0.00001
+		
+		#Esta línea habría que borrarla
+		#out[np.where(out<0.00001)] = 0.00001
 
 
 		# Calculate penalty (regularización L2)
@@ -636,9 +638,9 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Threshold_grad[1:] = 2 * np.multiply(Threshold_grad[1:], thresholds_param[1:])
 		
 		# Unroll gradients
-		grad2 = np.concatenate((Theta1_grad.flatten(order='F'),
+		grad = np.concatenate((Theta1_grad.flatten(order='F'),
 		 Theta2_grad.flatten(order='F'), Threshold_grad.flatten(order='F')),
 		 axis=0)
 
-		return J,grad2
+		return J,grad
 	
