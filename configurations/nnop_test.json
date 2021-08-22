@@ -8,7 +8,7 @@
 		"jobs": 10,
 		"output_folder": "my_runs/",
 		"metrics": ["ccr", "mae", "mze"],
-		"cv_metric": "mae"
+		"cv_metric": ["mae", "mze"]
 
 	},
 
