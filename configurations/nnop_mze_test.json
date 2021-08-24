@@ -16,9 +16,9 @@
 
 	"configurations": {
 
-		"nnop-mze": {
+		"nnpom-mze": {
 
-			"classifier": "NNOP",
+			"classifier": "NNPOM",
 			"parameters": {
                 "epsilonInit": 0.5,
                 "hiddenN": [5,10,20,30,40,50],

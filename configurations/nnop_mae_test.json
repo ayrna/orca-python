@@ -9,14 +9,14 @@
 		"input_preprocessing": "std",
 		"output_folder": "my_runs/",
 		"metrics": ["ccr", "mae", "mze"],
-		"cv_metric": "mze"
+		"cv_metric": "mae"
 
 	},
 
 
 	"configurations": {
 
-		"nnop-mze": {
+		"nnop-mae": {
 
 			"classifier": "NNOP",
 			"parameters": {

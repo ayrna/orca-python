@@ -107,18 +107,18 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		Y = 1 * (np.tile(y, (1,num_labels)) <= np.tile(np.arange(1,num_labels+1)[np.newaxis,:], (m,1)))
 
 		# Hidden layer weigths (with bias)
-		#initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
+		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
 		# Output layer weigths (without bias, the biases will be the thresholds)
-		#initial_Theta2 = self.__randInitializeWeights(self.getHiddenN()+1, num_labels-1)
+		initial_Theta2 = self.__randInitializeWeights(self.getHiddenN()+1, num_labels-1)
 		
-		initial_Theta1 = np.loadtxt("/home/adrian/Documentos/tfg/orca-python/theta1.txt",delimiter=",")
-		initial_Theta2 = np.loadtxt("/home/adrian/Documentos/tfg/orca-python/theta2.txt",delimiter=",")
+		#initial_Theta1 = np.loadtxt("/home/adrian/Documentos/tfg/orca-python/theta1.txt",delimiter=",")
+		#initial_Theta2 = np.loadtxt("/home/adrian/Documentos/tfg/orca-python/theta2.txt",delimiter=",")
 		# Pack parameters
 		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
 		 initial_Theta2.flatten(order='F')), axis=0)[:,np.newaxis]
 		
 		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnOPCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.hiddenN,
-			num_labels, X, Y, self.lambdaValue), fprime=None, factr=1e3, maxiter=self.iterations,iprint=1)
+			num_labels, X, Y, self.lambdaValue), fprime=None, factr=1e3, maxiter=self.iterations,iprint=-1)
 		
 		self.nn_params = results_optimization[0]
 		# Unpack the parameters
