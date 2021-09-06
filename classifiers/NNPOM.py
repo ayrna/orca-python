@@ -100,6 +100,11 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		"""
 
+		# Check that X and y have correct shape
+		X, y = check_X_y(X, y)
+		# Store the classes seen during fit
+		self.classes_ = unique_labels(y)
+
 		# Aux variables
 		y = y[:,np.newaxis]
 		input_layer_size = X.shape[1]
@@ -159,6 +164,12 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		"""
 
+		# Check is fit had been called
+		check_is_fitted(self)
+		
+		# Input validation
+		test = check_array(test)
+		
 		m = test.shape[0]
 
 		a1 = np.append(np.ones((m, 1)), test, axis=1)
@@ -471,7 +482,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		W: Array with the weights of each synaptic relationship between nodes.
 
 		"""
-		#W = np.ones((L_out,L_in))
+		
 		W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
 
 		return W
@@ -585,21 +596,11 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		# Final output
 		out = h
 
-		#Esta línea habría que borrarla
-		#out[np.where(out<0.00001)] = 0.00001
-
-
 		# Calculate penalty (regularización L2)
 		p = np.sum((Theta1[:,1:]**2).sum() + (Theta2[:,0:]**2).sum())
 
-		# MSE
-		#J = np.sum((out-Y)**2).sum()/(2*m) + lambdaValue*p/(2*m)
-
 		# Cross entropy
 		J = np.sum(-np.log(out[np.where(Y==1)]), axis=0)/m + lambdaValue*p/(2*m)
-
-		# MSE
-		# errorDer = (out-Y)
 
 		# Cross entropy
 		errorDer = np.zeros(Y.shape)

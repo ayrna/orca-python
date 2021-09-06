@@ -53,10 +53,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
 			iterations					- Number of iterations for fmin_l_bfgs_b
 										algorithm.
 			lambdaValue					- Regularization parameter.
-			theta1						- Hidden layer weigths (with bias)
-			theta2						- Output layer weigths (without bias, the biases will be the thresholds)
-			thresholds					- Class thresholds parameters
-			num_labels					- Number of labels in the problem
+			theta1						- Hidden layer weigths (with bias).
+			theta2						- Output layer weigths.
+			num_labels					- Number of labels in the problem.
 			m							- Number of samples of X (train patterns array).
 
 	"""
@@ -77,7 +76,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		"""
 
-		Trains the model for the model NNPOM method with TRAIN data.
+		Trains the model for the model NNOP method with TRAIN data.
 		Returns the projection of patterns (only valid for threshold models) and the predicted labels.
 		
 		Parameters
@@ -108,11 +107,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		# Hidden layer weigths (with bias)
 		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
-		# Output layer weigths (without bias, the biases will be the thresholds)
+		# Output layer weigths
 		initial_Theta2 = self.__randInitializeWeights(self.getHiddenN()+1, num_labels-1)
 		
-		#initial_Theta1 = np.loadtxt("/home/adrian/Documentos/tfg/orca-python/theta1.txt",delimiter=",")
-		#initial_Theta2 = np.loadtxt("/home/adrian/Documentos/tfg/orca-python/theta2.txt",delimiter=",")
 		# Pack parameters
 		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
 		 initial_Theta2.flatten(order='F')), axis=0)[:,np.newaxis]
@@ -296,7 +293,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		"""
 
 		This method returns the value of the variable self.theta2.
-		self.theta2 contains an array with output layer weigths (without bias, the biases will be the thresholds)
+		self.theta2 contains an array with output layer weigths.
 
 		"""
 
@@ -394,8 +391,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		Theta1: The weights between the input layer and the hidden layer (with biases included).
 
-		Theta2: The weights between the hidden layer and the output layer
-			(biases are not included as they are the thresholds).
+		Theta2: The weights between the hidden layer and the output layer.
 
 		"""
 
@@ -433,7 +429,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		W: Array with the weights of each synaptic relationship between nodes.
 
 		"""
-		# W = np.ones((L_out,L_in))
+
 		W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
 
 		return W
@@ -504,15 +500,6 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		# MSE
 		J = np.sum((out-Y)**2).sum()/(2*m) + lambdaValue*p/(2*m)
-
-		# Cross entropy
-		# J = np.sum(-math.log(out[np.where(Y==1)]), axis=0)/m + lambdaValue*p/(2*m)
-
-		# if nargout > 1
-		# Cross entropy
-		# out[np.where(out<0.00001)] = 0.00001
-		# errorDer = np.zeros(Y.shape)
-		# errorDer[np.where(Y!=0)] = np.divide(-Y[np.where(Y!=0)],out[np.where(Y!=0)])
 
 		# MSE
 		errorDer = (out-Y)

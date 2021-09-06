@@ -16,7 +16,7 @@
 
 	"configurations": {
 
-		"nnpom-mze": {
+		"nnop-mze": {
 
 			"classifier": "NNPOM",
 			"parameters": {

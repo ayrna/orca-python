@@ -2,28 +2,27 @@
 
     "general_conf": {
 
-		"basedir": "datasets",
-		"datasets": ["balance-scale", "contact-lenses", "tae", "car", "winequality-red", "ERA"],
+		"basedir": "tests/test_datasets/test_nnpom_nnop_load_dataset",
+		"datasets": ["toy"],
 		"hyperparam_cv_nfolds": 5,
 		"jobs": 10,
-		"input_preprocessing": "std",
 		"output_folder": "my_runs/",
 		"metrics": ["ccr", "mae", "mze"],
-		"cv_metric": "mae"
+		"cv_metric": "ccr"
 
 	},
 
 
 	"configurations": {
 
-		"nnpom-mae": {
+		"expectedPredictions0": {
 
 			"classifier": "NNPOM",
 			"parameters": {
                 "epsilonInit": 0.5,
-                "hiddenN": [5,10,20,30,40,50],
-                "iterations": [250, 500],
-				"lambdaValue": [0, 0.01, 1]
+                "hiddenN": 10,
+                "iterations": 500,
+				"lambdaValue": 0.01
 
             }
 
