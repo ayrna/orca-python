@@ -18,30 +18,39 @@ class TestRedsvm(unittest.TestCase):
 	This classifier is built in classifiers/NNOP.py.
 	"""
 
-	dataset_path = ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_nnop_dataset")
+	dataset_path = ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_nnpom_nnop_load_dataset", "toy")
 
-	train_file = np.loadtxt(ospath.join(dataset_path,"train.0"))
-	test_file = np.loadtxt(ospath.join(dataset_path,"test.0"))
+	train_file = np.loadtxt(ospath.join(dataset_path,"train_toy.0"))
+	test_file = np.loadtxt(ospath.join(dataset_path,"test_toy.0"))
 
-	def test_nnop_fit_correct(self):
-		#Check if this algorithm can correctly classify a toy problem.
+	#	-----	NOT APPLIED	-----
+	# It doesn't apply to the because can't set seed to randomize model weights.
+	# def test_nnop_fit_correct(self):
+	# 	#Check if this algorithm can correctly classify a toy problem.
 		
-		#Test preparation
-		X_train = self.train_file[:,0:(-1)]
-		y_train = self.train_file[:,(-1)]
+	# 	#Test preparation
+	# 	X_train = self.train_file[:,0:(-1)]
+	# 	y_train = self.train_file[:,(-1)]
 
-		X_test = self.test_file[:,0:(-1)]
+	# 	X_test = self.test_file[:,0:(-1)]
+		
+		# expected_predictions = [ospath.join(self.dataset_path,"expectedPredictions.0")]
+								# ospath.join(self.dataset_path,"expectedPredictions.1"),
+								# ospath.join(self.dataset_path,"expectedPredictions.2"),
+								# ospath.join(self.dataset_path,"expectedPredictions.3")]
 
-		expected_predictions = [ospath.join(self.dataset_path,"expectedPredictions.0")]
+	# 	classifiers = [NNOP(epsilonInit = 0.5, hiddenN = 10, iterations = 500, lambdaValue = 0.01)]
+		#			   NNOP(epsilonInit = 0.5, hiddenN = 20, iterations = 500, lambdaValue = 0.01),
+		#			   NNOP(epsilonInit = 0.5, hiddenN = 10, iterations = 250, lambdaValue = 0.01),
+		#			   NNOP(epsilonInit = 0.5, hiddenN = 20, iterations = 500, lambdaValue = 0.01)]
 
-		classifiers = [NNOP(epsilonInit=0.5, hiddenN=10, iterations=1000, lambdaValue=0.01)]
 
-		#Test execution and verification
-		for expected_prediction, classifier in zip(expected_predictions, classifiers):
-			classifier.fit(X_train, y_train)
-			predictions = classifier.predict(X_test)
-			expected_prediction = np.loadtxt(expected_prediction)
-			npt.assert_equal(predictions, expected_prediction, "The prediction doesnt match with the desired values")
+	# 	#Test execution and verification
+	# 	for expected_prediction, classifier in zip(expected_predictions, classifiers):
+	# 		classifier.fit(X_train, y_train)
+	# 		predictions = classifier.predict(X_test)
+	# 		expected_prediction = np.loadtxt(expected_prediction)
+	# 		npt.assert_equal(predictions, expected_prediction, "The prediction doesnt match with the desired values")
 
 	def test_nnop_fit_not_valid_parameter(self):
 
@@ -49,18 +58,11 @@ class TestRedsvm(unittest.TestCase):
 		X_train = self.train_file[:,0:(-1)]
 		y_train = self.train_file[:,(-1)]
 
-		classifiers = [NNOP(epsilonInit=0.5, hiddenN=10, iterations=1000, lambdaValue=0.01)]
-		
-		#Esto lo tendría que borrar?
-		error_msgs = ["- T is invalid",
-					"- C is invalid",
-					"- K is invalid",
-					"- P is invalid",
-					"-1 is invalid"]
+		classifiers = [NNOP(epsilonInit=0.5, hiddenN=-1, iterations=1000, lambdaValue=0.01),
+						NNOP(epsilonInit=0.5, hiddenN=10, iterations=-1, lambdaValue=0.01)]
 
 		#Test execution and verification
-		for classifier, error_msg in zip(classifiers, error_msgs):
-			with self.assertRaisesRegex(ValueError, error_msg):
+		for classifier in classifiers:
 				model = classifier.fit(X_train, y_train)
 				self.assertIsNone(model, "The NNOP fit method doesnt return Null on error")
 
@@ -89,27 +91,32 @@ class TestRedsvm(unittest.TestCase):
 				model = classifier.fit(X_train_broken, y_train)
 				self.assertIsNone(model, "The NNOP fit method doesnt return Null on error")
 
-	def test_nnop_model_is_not_a_dict(self):
-		#Test preparation
-		X_train = self.train_file[:,0:(-1)]
-		y_train = self.train_file[:,(-1)]
 
-		X_test = self.test_file[:,0:(-1)]
+	#	-----	NOT APPLIED	-----
+	# It doesn't apply to the because it has no internal model
+	# like in other classifiers like REDSVM or SVOREX. 
+	# def test_nnop_model_is_not_a_dict(self):
+	# 	#Test preparation
+	# 	X_train = self.train_file[:,0:(-1)]
+	# 	y_train = self.train_file[:,(-1)]
 
-		classifier = NNOP(k=0.1, c=1)
-		classifier.fit(X_train, y_train)
+	# 	X_test = self.test_file[:,0:(-1)]
 
-		#Test execution and verification
-		with self.assertRaisesRegex(TypeError, "Model should be a dictionary!"):
-				classifier.classifier_ = 1
-				classifier.predict(X_test)
+	# 	classifier = NNOP(epsilonInit = 0.5, hiddenN = 10, iterations = 500, lambdaValue = 0.01)
+	# 	classifier.fit(X_train, y_train)
+
+	# 	#Test execution and verification
+	# 	with self.assertRaisesRegex(TypeError, "Model should be a dictionary!"):
+	# 			classifier.classifier_ = 1
+	# 			classifier.predict(X_test)
+
 
 	def test_nnop_predict_not_valid_data(self):
 		#Test preparation
 		X_train = self.train_file[:,0:(-1)]
 		y_train = self.train_file[:,(-1)]
 
-		classifier = NNOP(k=0.1, c=1)
+		classifier = NNOP(epsilonInit = 0.5, hiddenN = 10, iterations = 500, lambdaValue = 0.01)
 		classifier.fit(X_train, y_train)
 
 		#Test execution and verification

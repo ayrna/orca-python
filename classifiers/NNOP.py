@@ -95,6 +95,14 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		self: The object NNOP.
 
 		"""
+		if self.epsilonInit < 0 or self.hiddenN < 1 or self.iterations < 1 or self.lambdaValue < 0:
+			return None
+		
+		
+		# Check that X and y have correct shape
+		X, y = check_X_y(X, y)
+		# Store the classes seen during fit
+		self.classes_ = unique_labels(y)
 
 		# Aux variables
 		y = y[:,np.newaxis]
@@ -147,7 +155,11 @@ class NNOP(BaseEstimator, ClassifierMixin):
 			Vector array with predicted values for each pattern of test patterns.
 
 		"""
-
+		# Check is fit had been called
+		check_is_fitted(self)
+		
+		# Input validation
+		test = check_array(test)
 		m = test.shape[0]
 
 		a1 = np.append(np.ones((m, 1)), test, axis=1)

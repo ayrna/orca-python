@@ -99,7 +99,10 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		self: The object NNPOM.
 
 		"""
-
+		if self.epsilonInit < 0 or self.hiddenN < 1 or self.iterations < 1 or self.lambdaValue < 0:
+			return None
+		
+		
 		# Check that X and y have correct shape
 		X, y = check_X_y(X, y)
 		# Store the classes seen during fit
@@ -214,7 +217,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 	# Getter & Setter of "hiddenN"
 	def getHiddenN (self):
-		
+
 		"""
 
 		This method returns the value of the variable self.hiddenN.
@@ -482,7 +485,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		W: Array with the weights of each synaptic relationship between nodes.
 
 		"""
-		
+
 		W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
 
 		return W
@@ -579,7 +582,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 						
 		# Convert thresholds
 		thresholds = self.__convertThresholds(thresholds_param, num_labels)
-			
+
 		# Setup some useful variables
 		m = np.size(X, 0)
 
@@ -592,7 +595,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		a3T =  1.0 / (1.0 + np.exp(-z3))
 		a3 = np.append(a3T, np.ones((m,1)), axis=1)
 		h = np.concatenate((a3[:,0].reshape((a3.shape[0],1)),a3[:,1:] - a3[:,0:-1]), axis = 1)
-		
+
 		# Final output
 		out = h
 
