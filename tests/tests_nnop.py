@@ -11,7 +11,7 @@ syspath.append(ospath.join('..', 'classifiers'))
 from NNOP import NNOP
 
 
-class TestRedsvm(unittest.TestCase):
+class TestNNOP(unittest.TestCase):
 	"""
 	Class testing NNOP's functionality.
 
