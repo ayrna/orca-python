@@ -1,0 +1,34 @@
+{
+
+    "general_conf": {
+
+		"basedir": "datasets",
+		"datasets": ["balance-scale", "contact-lenses", "tae", "car", "winequality-red", "ERA"],
+		"hyperparam_cv_nfolds": 5,
+		"jobs": 10,
+		"input_preprocessing": "std",
+		"output_folder": "my_runs/",
+		"metrics": ["ccr", "mae", "mze"],
+		"cv_metric": "mae"
+
+	},
+
+
+	"configurations": {
+
+		"nnop-mae": {
+
+			"classifier": "NNOP",
+			"parameters": {
+                "epsilonInit": 0.5,
+                "hiddenN": [5,10,20,30,40,50],
+                "iterations": [250, 500],
+				"lambdaValue": [0, 0.01, 1]
+
+            }
+
+		}
+
+	}
+
+}

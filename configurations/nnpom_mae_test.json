@@ -1,0 +1,33 @@
+{
+
+    "general_conf": {
+
+		"basedir": "tests/test_datasets/test_nnpom_nnop_load_dataset",
+		"datasets": ["toy"],
+		"hyperparam_cv_nfolds": 5,
+		"jobs": 10,
+		"output_folder": "my_runs/",
+		"metrics": ["ccr", "mae", "mze"],
+		"cv_metric": "ccr"
+
+	},
+
+
+	"configurations": {
+
+		"expectedPredictions0": {
+
+			"classifier": "NNPOM",
+			"parameters": {
+                "epsilonInit": 0.5,
+                "hiddenN": 10,
+                "iterations": 500,
+				"lambdaValue": 0.01
+
+            }
+
+		}
+
+	}
+
+}
