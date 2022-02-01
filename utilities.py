@@ -6,18 +6,18 @@ from collections import OrderedDict
 from itertools import product
 from sys import path as syspath
 from copy import deepcopy
+import pandas as pd
 
 from ast import literal_eval
 from pkg_resources import parse_version, get_distribution
 
-import pandas as pd
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import make_scorer
 from sklearn import preprocessing
 
-from results import Results
+from .results import Results
 
 
 class Utilities:
