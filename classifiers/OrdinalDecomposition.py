@@ -297,7 +297,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 									% decision_method)
 
 
-
 		return predicted_proba_y
 
 	def _coding_matrix(self, dtype, n_classes):
