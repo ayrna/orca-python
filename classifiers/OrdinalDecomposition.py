@@ -185,7 +185,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			# Transforming from binary problems to the original problem
 			losses = self._exponential_loss(predictions)
 			predicted_y = self.classes_[np.argmin(losses, axis=1)]
-			print(f"predicted_y{predicted_y}")
 
 
 		elif decision_method == "hinge_loss":
