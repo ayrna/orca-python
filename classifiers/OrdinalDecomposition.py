@@ -185,6 +185,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			# Transforming from binary problems to the original problem
 			losses = self._exponential_loss(predictions)
 			predicted_y = self.classes_[np.argmin(losses, axis=1)]
+			print(f"predicted_y{predicted_y}")
 
 
 		elif decision_method == "hinge_loss":
@@ -255,6 +256,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 			# Transforming from binary problems to the original problem
 			losses = self._exponential_loss(predictions)
+			losses = 1 / losses.astype(float)
 			predicted_proba_y = []
 			for losse in losses:
 				predicted_proba_y.append((np.exp(losse) / np.sum(np.exp(losse))))
@@ -268,6 +270,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 			# Transforming from binary problems to the original problem
 			losses = self._hinge_loss(predictions)
+			losses = 1 / losses.astype(float)
 			predicted_proba_y = []
 			for losse in losses:
 				predicted_proba_y.append((np.exp(losse) / np.sum(np.exp(losse))))
@@ -281,6 +284,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 			# Transforming from binary problems to the original problem
 			losses = self._logarithmic_loss(predictions)
+			losses = 1 / losses.astype(float)
 			predicted_proba_y = []
 			for losse in losses:
 				predicted_proba_y.append((np.exp(losse) / np.sum(np.exp(losse))))
