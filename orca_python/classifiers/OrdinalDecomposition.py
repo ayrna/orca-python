@@ -4,10 +4,10 @@ from sklearn.metrics import make_scorer
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 
-from sys import path
-path.append('..')
+# from sys import path
+# path.append('..')
 
-from ..utilities import load_classifier
+from orca_python.utilities import load_classifier
 
 
 class OrdinalDecomposition(BaseEstimator, ClassifierMixin):

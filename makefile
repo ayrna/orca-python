@@ -1,5 +1,5 @@
-LIBSVM_DIR = classifiers/libsvmRank/python
-SVOREX_DIR = classifiers/svorex
+LIBSVM_DIR = orca_python/classifiers/libsvmRank/python
+SVOREX_DIR = orca_python/classifiers/svorex
 
 .PHONY: clean subdirs
 

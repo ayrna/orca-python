@@ -161,8 +161,8 @@ class Utilities:
 
 						try:
 							# Loading metric from file
-							module = __import__("metrics")
-							metric = getattr(module, metric_name.strip().lower())
+							module = __import__("orca_python").metrics
+							metric = getattr(module, self.general_conf['cv_metric'].lower().strip())
 
 						except AttributeError:
 							raise AttributeError("No metric named '%s'" 
@@ -519,7 +519,7 @@ class Utilities:
 
 
 		try:
-			module = __import__("metrics")
+			module = __import__("orca_python").metrics
 			metric = getattr(module, self.general_conf['cv_metric'].lower().strip())
 
 		except AttributeError:
@@ -648,7 +648,6 @@ def load_classifier(classifier_path, params=None):
 
 	# Path to framework local classifier
 	if (len(classifier_path.split('.')) == 1):
-
 		classifier = __import__(classifier_path)
 		classifier = getattr(classifier, classifier_path)
 

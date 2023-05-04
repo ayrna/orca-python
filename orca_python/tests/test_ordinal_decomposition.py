@@ -8,9 +8,10 @@ from numpy import array
 import numpy.testing as npt
 import pandas.testing as pdt
 
-syspath.append(ospath.join('..', 'classifiers'))
+# syspath.append(ospath.join('..', 'classifiers'))
 
-from OrdinalDecomposition import OrdinalDecomposition
+# from OrdinalDecomposition import OrdinalDecomposition
+from orca_python.classifiers.OrdinalDecomposition import OrdinalDecomposition
 
 class TestOrdinalDecomposition(unittest.TestCase):
 	"""

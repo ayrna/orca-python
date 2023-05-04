@@ -8,19 +8,20 @@ import unittest
 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
-from  sklearn import preprocessing
+from sklearn import preprocessing
 
-syspath.append('..')
-syspath.append(ospath.join('..', 'classifiers'))
+# syspath.append('..')
+# syspath.append(ospath.join('..', 'classifiers'))
 
-from utilities import Utilities
+# from utilities import Utilities
+from orca_python.utilities import Utilities
 
 
-class TestRedsvmLoad(unittest.TestCase):
+class TestSvorexLoad(unittest.TestCase):
 	"""
-	Class testing REDSVM's functionality.
+	Class testing SVOREX's functionality.
 
-	This classifier is built in classifiers/REDSVM.py.
+	This classifier is built in classifiers/SVOREX.py.
 	"""
 
 	# Getting path to datasets folder
@@ -41,91 +42,13 @@ class TestRedsvmLoad(unittest.TestCase):
 					"cv_metric": "mae"}
 
 	configurations = {
-		"redsvm_linear": {
+		"svorex_gaussian": {
 
-			"classifier": "REDSVM",
+			"classifier": "SVOREX",
 			"parameters": {
-				"t": 0,
-				"d": 2,
+				"kernel_type": 0,
 				"c": values,
-				"g": values
-			}
-
-		},
-		"redsvm_polynomial": {
-
-			"classifier": "REDSVM",
-			"parameters": {
-				"t": 1,
-				"d": 2,
-				"c": values,
-				"g": values
-			}
-
-		},
-		"redsvm_radial": {
-
-			"classifier": "REDSVM",
-			"parameters": {
-				"t": 2,
-				"d": 2,
-				"c": values,
-				"g": values
-			}
-
-		},
-		"redsvm_sigmoid": {
-
-			"classifier": "REDSVM",
-			"parameters": {
-				"t": 3,
-				"d": 2,
-				"c": values,
-				"g": values
-			}
-
-		},
-		"redsvm_stump": {
-
-			"classifier": "REDSVM",
-			"parameters": {
-				"t": 4,
-				"d": 2,
-				"c": values,
-				"g": values
-			}
-
-		},
-		"redsvm_perceptron": {
-
-			"classifier": "REDSVM",
-			"parameters": {
-				"t": 5,
-				"d": 2,
-				"c": values,
-				"g": values
-			}
-
-		},
-		"redsvm_laplacian": {
-
-			"classifier": "REDSVM",
-			"parameters": {
-				"t": 6,
-				"d": 2,
-				"c": values,
-				"g": values
-			}
-
-		},
-		"redsvm_exponential": {
-
-			"classifier": "REDSVM",
-			"parameters": {
-				"t": 7,
-				"d": 2,
-				"c": values,
-				"g": values
+				"k": values
 			}
 
 		}
@@ -133,10 +56,10 @@ class TestRedsvmLoad(unittest.TestCase):
 		
 	def test_redsvm_load(self):
 		gc.set_debug(gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_SAVEALL)
-
+		
 		print("\n")
 		print("###############################")
-		print("REDSVM load test")
+		print("SVOREX load test")
 		print("###############################")
 
 		# Declaring Utilities object and running the experiment
