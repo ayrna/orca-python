@@ -138,7 +138,8 @@ class Results:
 		if os.path.isfile(df_path):
 
 			previous_df = pd.read_csv(df_path, index_col=[0])
-			df = previous_df.append(df)
+			# df = previous_df.append(df)
+			df = pd.concat([previous_df, df], axis = 0)
 
 
 		# Saving DataFrame to file

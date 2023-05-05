@@ -5,7 +5,8 @@
     1. [Installation Requirements](#installation-requirements)
     2. [Download ORCA-Python](#download-orca-python)
     3. [Algorithms Compilation](#algorithms-compilation)
-    4. [Installation Testing](#installation-testing)
+    4. [Installation in Python Environnement](#installation-in-python-environnement)
+    5. [Installation Testing](#installation-testing)
 3. [How to use ORCA-python](#how-to-use-orca-python)
     1. [Configuration Files](#configuration-files)
         1. [general-conf](#general-conf)
@@ -60,6 +61,9 @@ The algorithms will be compiled for the system or virtual environment default Py
 
 If executing the framework with a different Python interpreter is necesary, execute the `make clean` command in the repository root to clean the old compilation and use the `make` command again.
 
+## Installation in Python Environnement
+Inside the orca-python root execute `pip install .` Orca-python should be compiled before installing. If you want to compile it after installing add the `--editable` argument: `pip install --editable .`
+
 ## Installation Testing
 
 We provide a pre-made experiment (dataset and configuration file) to test if everything has been correctly installed.\
@@ -67,7 +71,7 @@ The way to run this test (and all experiments) is the following:
 
   ```
   # Go to framework main folder
-  $ python config.py with configurations/full_functionality_test.json -l ERROR
+  $ python config.py with orca_python/configurations/full_functionality_test.json -l ERROR
   ```
 
 
@@ -124,75 +128,69 @@ this dictionary will contain, at the same time, one dictionary for each configur
 
 ```
 "configurations": {
+	"SVM": {
+		
+		"classifier": "sklearn.svm.SVC",
+		"parameters": {
+			"C": [0.001, 0.1, 1, 10, 100],
+			"gamma": [0.1, 1, 10]
+		}
+	},
+	"SVMOP": {
 
-    "SVM": {
+		"classifier": "orca_python.classifiers.OrdinalDecomposition",
+		"parameters": {
+			"dtype": "ordered_partitions",
+			"decision_method": "frank_hall",
+			"base_classifier": "sklearn.svm.SVC",
+			"parameters": {
+				"C": [0.01, 0.1, 1, 10],
+				"gamma": [0.01, 0.1, 1, 10],
+				"probability": ["True"]
+			}
 
-        "classifier": "sklearn.svm.SVC",
-        "parameters": {
-            "C": [0.001, 0.1, 1, 10, 100],
-            "gamma": [0.1, 1, 10]
-        }
-    },
+		}
+	},
+	"LR": {
 
+		"classifier": "orca_python.classifiers.OrdinalDecomposition",
+		"parameters": {
+			"dtype": ["ordered_partitions", "one_vs_next"],
+			"decision_method": "exponential_loss",
+			"base_classifier": "sklearn.linear_model.LogisticRegression",
+			"parameters": {
+				"solver": ["liblinear"],
+				"C": [0.01, 0.1, 1, 10],
+				"penalty": ["l1","l2"]
+			}
 
-    "SVMOP": {
+		}
+	},
+	"REDSVM": {
 
-        "classifier": "OrdinalDecomposition",
-        "parameters": {
-            "dtype": "OrderedPartitions",
-            "decision_method": "frank_hall",
-            "base_classifier": "sklearn.svm.SVC",
-            "parameters": {
-                "C": [0.01, 0.1, 1, 10],
-                "gamma": [0.01, 0.1, 1, 10],
-                "probability": ["True"]
-            }
+		"classifier": "orca_python.classifiers.REDSVM",
+		"parameters": {
+		    "t": 2,
+			"c": [0.1, 1, 10],
+			"g": [0.1, 1, 10],
+			"r": 0,
+			"m": 100,
+			"e": 0.001,
+			"h": 1
+		}
 
-        }
-    },
+	},
+	"SVOREX": {
 
+		"classifier": "orca_python.classifiers.SVOREX",
+		"parameters": {
+			"kernel_type": 0,
+			"c": [0.1, 1, 10],
+			"k": [0.1, 1, 10],
+			"t": 0.001
+		}
 
-    "LR": {
-
-        "classifier": "OrdinalDecomposition",
-        "parameters": {
-            "dtype": ["OrderedPartitions", "OneVsNext"],
-            "decision_method": "exponential_loss",
-            "base_classifier": "sklearn.linear_model.LogisticRegression",
-            "parameters": {
-                "C": [0.01, 0.1, 1, 10],
-                "penalty": ["l1","l2"]
-            }
-
-        }
-    },
-    
-    "REDSVM": {
-
-	"classifier": "REDSVM",
-	"parameters": {
-	    "t": 2,
-	    "c": [0.1, 1, 10],
-	    "g": [0.1, 1, 10],
-	    "r": 0,
-	    "m": 100,
-	    "e": 0.001,
-	    "h": 1
 	}
-
-    },
-    
-    "SVOREX": {
-
-	"classifier": "SVOREX",
-	"parameters": {
-	    "kernel_type": 0,
-	    "c": [0.1, 1, 10],
-	    "k": [0.1, 1, 10],
-	    "t": 0.001
-	}
-
-    }
 }
 ```
 

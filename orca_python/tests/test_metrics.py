@@ -6,9 +6,10 @@ import unittest
 from numpy import array
 import numpy.testing as npt
 
-path.append('..')
+# path.append('..')
 
-import metrics
+# import metrics
+import orca_python.metrics as metrics
 
 class TestMetrics(unittest.TestCase):
 	"""
