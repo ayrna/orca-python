@@ -3,7 +3,7 @@
 
 	"general_conf": {
 
-		"basedir": "datasets/",
+		"basedir": "orca_python/datasets/",
 		"datasets": ["tae", "balance-scale", "contact-lenses"],
 		"hyperparam_cv_nfolds": 3,
 		"jobs": 10,
@@ -28,7 +28,7 @@
 
 		"SVMOP": {
 		
-			"classifier": "OrdinalDecomposition",
+			"classifier": "orca_python.classifiers.OrdinalDecomposition",
 			"parameters": {
 				"dtype": "ordered_partitions",
 				"decision_method": "frank_hall",
@@ -45,7 +45,7 @@
 
 		"LR": {
 		
-			"classifier": "OrdinalDecomposition",
+			"classifier": "orca_python.classifiers.OrdinalDecomposition",
 			"parameters": {
 				"dtype": ["ordered_partitions", "one_vs_next"],
 				"decision_method": "exponential_loss",
@@ -61,7 +61,7 @@
 		
 		"REDSVM": {
 
-			"classifier": "REDSVM",
+			"classifier": "orca_python.classifiers.REDSVM",
 			"parameters": {
 			    "t": 2,
 				"c": [0.1, 1, 10],
@@ -76,7 +76,7 @@
 		
 		"SVOREX": {
 
-			"classifier": "SVOREX",
+			"classifier": "orca_python.classifiers.SVOREX",
 			"parameters": {
 				"kernel_type": 0,
 				"c": [0.1, 1, 10],

@@ -14,8 +14,9 @@ import numpy.testing as npt
 import pandas.testing as pdt
 from sklearn.svm import SVC
 
-syspath.append('..')
-from results import Results
+# syspath.append('..')
+# from results import Results
+from orca_python.results import Results
 
 
 

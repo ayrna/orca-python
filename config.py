@@ -1,6 +1,6 @@
 from sacred import Experiment
 
-from utilities import Utilities
+from orca_python.utilities import Utilities
 
 ex = Experiment('Experiment Configuration')
 

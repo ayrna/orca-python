@@ -9,11 +9,12 @@ import pandas.testing as pdt
 import pandas as pd
 import numpy as np
 
-syspath.append('..')
-syspath.append(ospath.join('..', 'classifiers'))
+# syspath.append('..')
+# syspath.append(ospath.join('..', 'classifiers'))
 
-from utilities import Utilities
-from utilities import load_classifier
+# from utilities import Utilities
+# from utilities import load_classifier
+from orca_python.utilities import Utilities, load_classifier
 
 
 class TestAuxiliarMethods(unittest.TestCase):
