@@ -6,9 +6,10 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 
-syspath.append(ospath.join('..', 'classifiers'))
+# syspath.append(ospath.join('..', 'classifiers'))
 
-from NNOP import NNOP
+# from NNOP import NNOP
+from orca_python.classifiers.NNOP import NNOP
 
 
 class TestNNOP(unittest.TestCase):
