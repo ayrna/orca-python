@@ -17,7 +17,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import make_scorer
 from sklearn import preprocessing
 
-from results import Results
+from orca_python.results import Results
 
 
 class Utilities:
