@@ -111,6 +111,7 @@ class Utilities:
                 if self.verbose:
                     print("Running", conf_name, "...")
 
+                print("Load_classifier")
                 classifier = load_classifier(configuration["classifier"])
 
                 # Iterating over partitions
@@ -537,7 +538,7 @@ class Utilities:
         scoring_function = make_scorer(metric, greater_is_better=gib)
 
         # Creating object to split train data for cross-validation
-        # This will make GridSearch have a pseudo-random beheaviour
+        # This will make GridSearch have a pseudo-random behaviour
         skf = StratifiedKFold(
             n_splits=self.general_conf["hyperparam_cv_nfolds"],
             shuffle=True,

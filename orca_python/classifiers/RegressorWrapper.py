@@ -1,10 +1,9 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class RegressorWrapper(BaseEstimator, ClassifierMixin):
-
     """
      Regression algorithms wrapper
 
@@ -33,20 +32,20 @@ class RegressorWrapper(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, base_regressor=None, **params):
-        self.base_regressor = base_regressor
         self.params = params
-
         self.classifier_ = None
-        if self.base_regressor is not None:
-            classifier = __import__(
-                self.base_regressor.rsplit(".", 1)[0], fromlist="None"
-            )
-            classifier = getattr(classifier, self.base_regressor.rsplit(".", 1)[1])
-            self.classifier_ = classifier(**self.params)
+
+        self.base_regressor = base_regressor
+        if self.base_regressor is None:
+            self.base_regressor = "sklearn.svm.SVR"
+
+        classifier = __import__(self.base_regressor.rsplit(".", 1)[0], fromlist="None")
+        classifier = getattr(classifier, self.base_regressor.rsplit(".", 1)[1])
+        self.classifier_ = classifier(**self.params)
 
         self.classes_ = None
 
-    def fit(self, X, y):
+    def fit(self, X, y, **params):
         """
         Fit the model with the training data and set the kwargs for the regressor.
 
@@ -68,7 +67,7 @@ class RegressorWrapper(BaseEstimator, ClassifierMixin):
         X, y = check_X_y(X, y)
         self.classes_ = np.unique(y)
 
-        self.classifier_.fit(X, y)
+        self.classifier_.fit(X, y, **params)
         return self
 
     def predict(self, X):
@@ -96,9 +95,29 @@ class RegressorWrapper(BaseEstimator, ClassifierMixin):
         return np.asarray(predicted_y, dtype=int)
 
     def set_params(self, **kwargs):
-        self.base_regressor = kwargs["base_regressor"]
+        if not kwargs["base_regressor"]:
+            self.base_regressor = "sklearn.svm.SVR"
+        else:
+            self.base_regressor = kwargs["base_regressor"]
+            kwargs.pop("base_regressor")
+
         classifier = __import__(self.base_regressor.rsplit(".", 1)[0], fromlist="None")
         classifier = getattr(classifier, self.base_regressor.rsplit(".", 1)[1])
-        kwargs.pop("base_regressor")
         self.classifier_ = classifier(**kwargs)
+
         return self
+
+    def get_params(self, deep=True):
+        # This function is overrided to get the params of the internal regressor.
+        out = dict()
+        keys = self._get_param_names() + list(self.classifier_.get_params().keys())
+        for num, key in enumerate(keys):
+            if num < len(self._get_param_names()):
+                value = getattr(self, key)
+            else:
+                value = getattr(self.classifier_, key)
+            if deep and hasattr(value, "get_params") and not isinstance(value, type):
+                deep_items = value.get_params().items()
+                out.update((key + "__" + k, val) for k, val in deep_items)
+            out[key] = value
+        return out
