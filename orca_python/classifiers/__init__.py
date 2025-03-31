@@ -1,3 +1,10 @@
+"""Ordinal classification classifiers module."""
+
+from .NNOP import NNOP
+from .NNPOM import NNPOM
+from .OrdinalDecomposition import OrdinalDecomposition
+from .REDSVM import REDSVM
+from .SVOREX import SVOREX
 
 __all__ = [
     "NNOP",
@@ -6,10 +13,3 @@ __all__ = [
     "REDSVM",
     "SVOREX",
 ]
-
-from orca_python.classifiers.NNOP import NNOP
-from orca_python.classifiers.NNPOM import NNPOM
-from orca_python.classifiers.OrdinalDecomposition import OrdinalDecomposition
-from orca_python.classifiers.REDSVM import REDSVM
-from orca_python.classifiers.SVOREX import SVOREX
-
