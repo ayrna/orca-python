@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools >= 74.1.0", "wheel", "toml", "build"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orca-python"
+version = "0.0.1"
+description = "Framework migration project from Matlab to Python"
+readme = "README.md"
+authors = [
+    {name = "Francisco Bérchez-Moreno", email = "fberchez@uco.es"},
+    {name = "Víctor Manuel Vargas", email = "vvargas@uco.es"},
+    {name = "Javier Barbero-Gómez", email = "jbarbero@uco.es"},
+    {name = "Rafael Ayllón-Gavilán", email = "rayllong@uco.es"},
+    {name = "David Guijo-Rubio", email = "dguijo@uco.es"},
+    {name = "Ángel Sevilla Molina", email = "i42semoa@uco.es"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries"
+]
+requires-python = ">=3.8"
+dependencies = [
+    "scikit-learn>=1.0.0",
+    "numpy>=1.21",
+    "pandas>=1.0.1",
+    "scipy>=1.7",
+    "sacred>=0.8.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "pre-commit",
+]
+
+[project.urls]
+Source = "https://github.com/ayrna/orca-python"
+
+[tool.setuptools.packages.find]
+include = [
+    "orca_python",
+    "orca_python.*"
+]
+exclude = ["*.tests"]
+namespaces = false
+
+[tool.setuptools]
+ext-modules = [
+    {name = "orca_python.classifiers.libsvmRank.python.svm", language = "c++", sources = [
+            "orca_python/classifiers/libsvmRank/python/svm-module.cpp",
+            "orca_python/classifiers/libsvmRank/python/svm-train.cpp",
+            "orca_python/classifiers/libsvmRank/python/svm-predict.cpp",
+            "orca_python/classifiers/libsvmRank/python/svm-model-python.cpp",
+            "orca_python/classifiers/libsvmRank/python/svm.cpp"
+        ], extra-compile-args = ["-lefence", "-Wno-unused-result"]},
+    {name = "orca_python.classifiers.svorex.svorex", language = "c", sources = [
+            "orca_python/classifiers/svorex/svorex_module.c",
+            "orca_python/classifiers/svorex/svorex_train.c",
+            "orca_python/classifiers/svorex/svorex_predict.c",
+            "orca_python/classifiers/svorex/alphas.c",
+            "orca_python/classifiers/svorex/cachelist.c",
+            "orca_python/classifiers/svorex/datalist.c",
+            "orca_python/classifiers/svorex/def_settings.c",
+            "orca_python/classifiers/svorex/loadfile.c",
+            "orca_python/classifiers/svorex/ordinal_takestep.c",
+            "orca_python/classifiers/svorex/setandfi.c",
+            "orca_python/classifiers/svorex/smo_kernel.c",
+            "orca_python/classifiers/svorex/smo_routine.c",
+            "orca_python/classifiers/svorex/smo_settings.c",
+            "orca_python/classifiers/svorex/smo_timer.c",
+            "orca_python/classifiers/svorex/svc_predict.c",
+            "orca_python/classifiers/svorex/smo_model_python.c",
+            "orca_python/classifiers/svorex/smo_loadproblem_python.c",
+            "orca_python/classifiers/svorex/smo_routine_python.c"
+        ], extra-compile-args = ["-lefence", "-Wno-unused-result"], libraries=["m"]}
+]
+
+[tool.check-manifest]
+ignore = [
+    ".venv/**",
+    "venv/**",
+    "local/**",
+]
+
+[tool.ruff]
+fix = true
+exclude = ["orca_python/classifiers/libsvmRank/grid.py"]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+preview = true
