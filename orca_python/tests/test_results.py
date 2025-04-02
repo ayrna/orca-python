@@ -6,8 +6,7 @@ from shutil import rmtree
 from collections import OrderedDict
 from pickle import load
 
-import unittest
-
+import pytest
 import numpy as np
 import pandas as pd
 import numpy.testing as npt
@@ -18,209 +17,187 @@ from sklearn.svm import SVC
 # from results import Results
 from orca_python.results import Results
 
+@pytest.fixture
+def results():
+    return Results("my_runs/")
 
+def test_add_record(results):
+    """
+    Checking behavior of add_record method.
 
-class TestResults(unittest.TestCase):
-	"""
-	Class in charge of checking that the methods built inside Results
-	class are working as expected or not.
+    Two partitions for the same dataset and configuration will
+    be added and retreived later on to check if they are simillar.
+    """
 
-	Results class is built in results.py. File placed at the root of
-	this framework.
-	"""
+    # Saving fist partition results to DataFrame
+    partition = "0"
+    dataset = 'toy'
+    configuration = 'conf_1'
 
-	_results = Results("my_runs/")
+    estimator = SVC()
+    best_params = OrderedDict([('C', 0.1), ('gamma', 1)])
 
+    train_metrics = OrderedDict([('ccr_train', 0.7222222222), ('mae_train', 0.2777777777)])
+    test_metrics = OrderedDict([('ccr_test', 0.6666666666), ('mae_test', 0.3333333333)])
 
-	def test_add_record(self):
+    train_predicted_y = np.array([1,1,1,1,1,2,2,2,2,2,3,3,3,3])
+    test_predicted_y = np.array([1,1,2,2,2,3,3])
 
-		"""
-		Checking behavior of add_record method.
+    results.add_record(partition, best_params, estimator,
+                            {'dataset': dataset, 'config': configuration},
+                            {'train': train_metrics, 'test': test_metrics},
+                            {'train': train_predicted_y, 'test': test_predicted_y})
 
-		Two partitions for the same dataset and configuration will
-		be added and retreived later on to check if they are simillar.
-		"""
+    # Saving second partition to DataFrame
+    partition = "1"
+    dataset = 'toy'
+    configuration = 'conf_1'
 
-		# Saving fist partition results to DataFrame
-		partition = "0"
-		dataset = 'toy'
-		configuration = 'conf_1'
+    best_params = OrderedDict([('C', 1), ('gamma', 1)])
 
-		estimator = SVC()
-		best_params = OrderedDict([('C', 0.1), ('gamma', 1)])
+    train_metrics = OrderedDict([('ccr_train', 0.9333333333), ('mae_train', 0.2777777777)])
+    test_metrics = OrderedDict([('ccr_test', 1.0), ('mae_test', 0.3333333333)])
 
-		train_metrics = OrderedDict([('ccr_train', 0.7222222222), ('mae_train', 0.2777777777)])
-		test_metrics = OrderedDict([('ccr_test', 0.6666666666), ('mae_test', 0.3333333333)])
+    train_predicted_y = np.array([1,1,1,1,1,2,2,3,3,2,3,3,3,3])
+    test_predicted_y = np.array([1,1,2,1,2,3,3])
 
-		train_predicted_y = np.array([1,1,1,1,1,2,2,2,2,2,3,3,3,3])
-		test_predicted_y = np.array([1,1,2,2,2,3,3])
+    results.add_record(partition, best_params, estimator,
+                            {'dataset': dataset, 'config': configuration},
+                            {'train': train_metrics, 'test': test_metrics},
+                            {'train': train_predicted_y, 'test': test_predicted_y})
 
-		self._results.add_record(partition, best_params, estimator,
-								{'dataset': dataset, 'config': configuration},
-								{'train': train_metrics, 'test': test_metrics},
-								{'train': train_predicted_y, 'test': test_predicted_y})
+    # Saving first partition for a different configuration
+    partition = "0"
+    dataset = 'toy'
+    configuration = 'conf_2'
 
-		# Saving second partition to DataFrame
-		partition = "1"
-		dataset = 'toy'
-		configuration = 'conf_1'
+    best_params = OrderedDict([('C', 1), ('gamma', 0.1)])
 
-		best_params = OrderedDict([('C', 1), ('gamma', 1)])
+    train_metrics = OrderedDict([('ccr_train', 0.8333333333), ('mae_train', 0.2777777777)])
+    test_metrics = OrderedDict([('ccr_test', 1.0), ('mae_test', 0.3333333333)])
 
-		train_metrics = OrderedDict([('ccr_train', 0.9333333333), ('mae_train', 0.2777777777)])
-		test_metrics = OrderedDict([('ccr_test', 1.0), ('mae_test', 0.3333333333)])
+    train_predicted_y = np.array([1,1,1,1,1,2,2,3,3,2,3,3,3,3])
+    test_predicted_y = np.array([1,1,2,1,2,3,3])
 
-		train_predicted_y = np.array([1,1,1,1,1,2,2,3,3,2,3,3,3,3])
-		test_predicted_y = np.array([1,1,2,1,2,3,3])
+    results.add_record(partition, best_params, estimator,
+                            {'dataset': dataset, 'config': configuration},
+                            {'train': train_metrics, 'test': test_metrics},
+                            {'train': train_predicted_y, 'test': test_predicted_y})
 
-		self._results.add_record(partition, best_params, estimator,
-								{'dataset': dataset, 'config': configuration},
-								{'train': train_metrics, 'test': test_metrics},
-								{'train': train_predicted_y, 'test': test_predicted_y})
 
-		# Saving first partition for a different configuration
-		partition = "0"
-		dataset = 'toy'
-		configuration = 'conf_2'
 
-		best_params = OrderedDict([('C', 1), ('gamma', 0.1)])
 
-		train_metrics = OrderedDict([('ccr_train', 0.8333333333), ('mae_train', 0.2777777777)])
-		test_metrics = OrderedDict([('ccr_test', 1.0), ('mae_test', 0.3333333333)])
+    # Checking if everything has been saved correctly
+    experiment_folder = results._experiment_folder
 
-		train_predicted_y = np.array([1,1,1,1,1,2,2,3,3,2,3,3,3,3])
-		test_predicted_y = np.array([1,1,2,1,2,3,3])
 
-		self._results.add_record(partition, best_params, estimator,
-								{'dataset': dataset, 'config': configuration},
-								{'train': train_metrics, 'test': test_metrics},
-								{'train': train_predicted_y, 'test': test_predicted_y})
+    # Data for toy-conf_1
+    expected_data_conf_1 = [OrderedDict([('C', 0.1), ('gamma', 1),
+                                        ('ccr_train', 0.7222222222), ('ccr_test', 0.6666666666),
+                                        ('mae_train', 0.2777777777), ('mae_test', 0.3333333333)]),
 
+                            OrderedDict([('C', 1), ('gamma', 1),
+                                        ('ccr_train', 0.9333333333), ('ccr_test', 1.0),
+                                        ('mae_train', 0.2777777777), ('mae_test', 0.3333333333)])]
+    expected_data_conf_1 = pd.DataFrame(data=expected_data_conf_1, index=[0,1])
+    conf_1_path = ospath.join(experiment_folder, "toy-conf_1")
 
+    # Check inconsistencies in CSV for toy-conf_1
+    actual_data_conf_1 = pd.read_csv(ospath.join(conf_1_path, "toy-conf_1.csv"), index_col=[0])
+    pdt.assert_frame_equal(actual_data_conf_1, expected_data_conf_1)
 
 
-		# Checking if everything has been saved correctly
-		experiment_folder = self._results._experiment_folder
 
+    # Data for toy-conf_2
+    expected_data_conf_2 = [OrderedDict([('C', 1), ('gamma', 0.1),
+                                        ('ccr_train', 0.8333333333), ('ccr_test', 1.0),
+                                        ('mae_train', 0.2777777777), ('mae_test', 0.3333333333)])]
+    expected_data_conf_2 = pd.DataFrame(data=expected_data_conf_2, index=[0])
+    conf_2_path = ospath.join(experiment_folder, "toy-conf_2")
 
-		# Data for toy-conf_1
-		expected_data_conf_1 = [OrderedDict([('C', 0.1), ('gamma', 1),
-											('ccr_train', 0.7222222222), ('ccr_test', 0.6666666666),
-											('mae_train', 0.2777777777), ('mae_test', 0.3333333333)]),
+    # Check inconsistencies in CSV for toy-conf_2
+    actual_data_conf_2 = pd.read_csv(ospath.join(conf_2_path, "toy-conf_2.csv"), index_col=[0])
+    pdt.assert_frame_equal(actual_data_conf_2, expected_data_conf_2)
 
-								OrderedDict([('C', 1), ('gamma', 1),
-											('ccr_train', 0.9333333333), ('ccr_test', 1.0),
-											('mae_train', 0.2777777777), ('mae_test', 0.3333333333)])]
-		expected_data_conf_1 = pd.DataFrame(data=expected_data_conf_1, index=[0,1])
-		conf_1_path = ospath.join(experiment_folder, "toy-conf_1")
 
-		# Check inconsistencies in CSV for toy-conf_1
-		actual_data_conf_1 = pd.read_csv(ospath.join(conf_1_path, "toy-conf_1.csv"), index_col=[0])
-		pdt.assert_frame_equal(actual_data_conf_1, expected_data_conf_1)
 
+    # Checking if models have been saved successfully
+    with open(ospath.join(conf_1_path, "models/", "toy-conf_1.0"), 'rb') as model_0, \
+        open(ospath.join(conf_1_path, "models/", "toy-conf_1.1"), 'rb') as model_1:
 
+        actual_data = [load(model_0), load(model_1)]
+        npt.assert_equal(all(isinstance(model, SVC) for model in actual_data), True)
 
-		# Data for toy-conf_2
-		expected_data_conf_2 = [OrderedDict([('C', 1), ('gamma', 0.1),
-											('ccr_train', 0.8333333333), ('ccr_test', 1.0),
-											('mae_train', 0.2777777777), ('mae_test', 0.3333333333)])]
-		expected_data_conf_2 = pd.DataFrame(data=expected_data_conf_2, index=[0])
-		conf_2_path = ospath.join(experiment_folder, "toy-conf_2")
 
-		# Check inconsistencies in CSV for toy-conf_2
-		actual_data_conf_2 = pd.read_csv(ospath.join(conf_2_path, "toy-conf_2.csv"), index_col=[0])
-		pdt.assert_frame_equal(actual_data_conf_2, expected_data_conf_2)
+    # Checking if actual and expected predictions are the same
+    expected_data = {'0': {'train': np.array([1,1,1,1,1,2,2,2,2,2,3,3,3,3]), 'test': np.array([1,1,2,2,2,3,3])},
+                    '1': {'train': np.array([1,1,1,1,1,2,2,3,3,2,3,3,3,3]), 'test': np.array([1,1,2,1,2,3,3])}}
 
+    with open(ospath.join(conf_1_path, "predictions/", "train_toy-conf_1.0"), 'rb') as train_0, \
+        open(ospath.join(conf_1_path, "predictions/", "test_toy-conf_1.0"), 'rb') as test_0, \
+        open(ospath.join(conf_1_path, "predictions/", "train_toy-conf_1.1"), 'rb') as train_1, \
+        open(ospath.join(conf_1_path, "predictions/", "test_toy-conf_1.1"), 'rb') as test_1:
 
+        actual_data = {'0': {'train': np.loadtxt(train_0), 'test': np.loadtxt(test_0)},
+                        '1': {'train': np.loadtxt(train_1), 'test': np.loadtxt(test_1)}}
 
-		# Checking if models have been saved successfully
-		with open(ospath.join(conf_1_path, "models/", "toy-conf_1.0"), 'rb') as model_0, \
-			open(ospath.join(conf_1_path, "models/", "toy-conf_1.1"), 'rb') as model_1:
+        npt.assert_equal(actual_data, expected_data)
 
-			actual_data = [load(model_0), load(model_1)]
-			npt.assert_equal(all(isinstance(model, SVC) for model in actual_data), True)
 
+    # Deleting temporary directories
+    rmtree("my_runs/")
 
-		# Checking if actual and expected predictions are the same
-		expected_data = {'0': {'train': np.array([1,1,1,1,1,2,2,2,2,2,3,3,3,3]), 'test': np.array([1,1,2,2,2,3,3])},
-						'1': {'train': np.array([1,1,1,1,1,2,2,3,3,2,3,3,3,3]), 'test': np.array([1,1,2,1,2,3,3])}}
+def test_create_summary(results):
+    """
+    Tests create_summary method
+    """
 
-		with open(ospath.join(conf_1_path, "predictions/", "train_toy-conf_1.0"), 'rb') as train_0, \
-			open(ospath.join(conf_1_path, "predictions/", "test_toy-conf_1.0"), 'rb') as test_0, \
-			open(ospath.join(conf_1_path, "predictions/", "train_toy-conf_1.1"), 'rb') as train_1, \
-			open(ospath.join(conf_1_path, "predictions/", "test_toy-conf_1.1"), 'rb') as test_1:
+    dataset = 'toy'
+    configuration = 'conf_1'
 
-			actual_data = {'0': {'train': np.loadtxt(train_0), 'test': np.loadtxt(test_0)},
-							'1': {'train': np.loadtxt(train_1), 'test': np.loadtxt(test_1)}}
+    best_params = OrderedDict([('C', 0.1), ('gamma', 1)])
+    estimator = SVC()
 
-			npt.assert_equal(actual_data, expected_data)
+    train_metrics = OrderedDict([('ccr_train', 0.7222222222), ('mae_train', 0.2777777777)])
+    test_metrics = OrderedDict([('ccr_test', 0.6666666666), ('mae_test', 0.3333333333)])
 
+    train_predicted_y = np.array([1,1,1,1,1,2,2,3,3,2,3,3,3,3])
+    test_predicted_y = np.array([1,1,2,1,2,3,3])
 
-		# Deleting temporary directories
-		rmtree("my_runs/")
+    # Adding two identical rows as two partitions
+    results.add_record("0", best_params, estimator,
+                            {'dataset': dataset, 'config': configuration},
+                            {'train': train_metrics, 'test': test_metrics},
+                            {'train': train_predicted_y, 'test': test_predicted_y})
 
+    results.add_record("1", best_params, estimator,
+                            {'dataset': dataset, 'config': configuration},
+                            {'train': train_metrics, 'test': test_metrics},
+                            {'train': train_predicted_y, 'test': test_predicted_y})
 
 
-	def test_create_summary(self):
+    mean_index = ['ccr_mean', 'mae_mean']
+    std_index = ['ccr_std', 'mae_std']
 
-		"""
-		Tests create_summary method
+    experiment_folder = results._experiment_folder
 
-		"""
 
-		dataset = 'toy'
-		configuration = 'conf_1'
+    # Getting actual summaries
+    df = pd.read_csv(ospath.join(experiment_folder, "toy-conf_1", "toy-conf_1.csv"))
+    train_row, test_row = results._create_summary(df, mean_index, std_index)
 
-		best_params = OrderedDict([('C', 0.1), ('gamma', 1)])
-		estimator = SVC()
+    # Desired row values and indexes
+    desired_train_row = pd.Series(data=OrderedDict([('ccr_mean', 0.7222222222), ('ccr_std', 0.0),\
+                                                    ('mae_mean', 0.2777777777), ('mae_std', 0.0)]),\
+                                    index=['ccr_mean','ccr_std','mae_mean','mae_std'])
 
-		train_metrics = OrderedDict([('ccr_train', 0.7222222222), ('mae_train', 0.2777777777)])
-		test_metrics = OrderedDict([('ccr_test', 0.6666666666), ('mae_test', 0.3333333333)])
+    desired_test_row = pd.Series(data=OrderedDict([('ccr_mean', 0.6666666666), ('ccr_std', 0.0),\
+                                                    ('mae_mean', 0.3333333333), ('mae_std', 0.0)]),\
+                                    index=['ccr_mean','ccr_std','mae_mean','mae_std'])
 
-		train_predicted_y = np.array([1,1,1,1,1,2,2,3,3,2,3,3,3,3])
-		test_predicted_y = np.array([1,1,2,1,2,3,3])
+    # Check series similarity
+    pdt.assert_series_equal(train_row, desired_train_row)
+    pdt.assert_series_equal(test_row, desired_test_row)
 
-		# Adding two identical rows as two partitions
-		self._results.add_record("0", best_params, estimator,
-								{'dataset': dataset, 'config': configuration},
-								{'train': train_metrics, 'test': test_metrics},
-								{'train': train_predicted_y, 'test': test_predicted_y})
-
-		self._results.add_record("1", best_params, estimator,
-								{'dataset': dataset, 'config': configuration},
-								{'train': train_metrics, 'test': test_metrics},
-								{'train': train_predicted_y, 'test': test_predicted_y})
-
-
-		mean_index = ['ccr_mean', 'mae_mean']
-		std_index = ['ccr_std', 'mae_std']
-
-		experiment_folder = self._results._experiment_folder
-
-
-		# Getting actual summaries
-		df = pd.read_csv(ospath.join(experiment_folder, "toy-conf_1", "toy-conf_1.csv"))
-		train_row, test_row = self._results._create_summary(df, mean_index, std_index)
-
-		# Desired row values and indexes
-		desired_train_row = pd.Series(data=OrderedDict([('ccr_mean', 0.7222222222), ('ccr_std', 0.0),\
-														('mae_mean', 0.2777777777), ('mae_std', 0.0)]),\
-										index=['ccr_mean','ccr_std','mae_mean','mae_std'])
-
-		desired_test_row = pd.Series(data=OrderedDict([('ccr_mean', 0.6666666666), ('ccr_std', 0.0),\
-														('mae_mean', 0.3333333333), ('mae_std', 0.0)]),\
-										index=['ccr_mean','ccr_std','mae_mean','mae_std'])
-
-		# Check series similarity
-		pdt.assert_series_equal(train_row, desired_train_row)
-		pdt.assert_series_equal(test_row, desired_test_row)
-
-		# Deleting temporary directories
-		rmtree("my_runs/")
-
-
-
-
-# Running all tests
-if __name__ == "__main__":
-	unittest.main()
+    # Deleting temporary directories
+    rmtree("my_runs/")
