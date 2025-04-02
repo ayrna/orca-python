@@ -123,8 +123,8 @@ def test_standardize_data(util):
 
 def test_load_algorithm():
     # Loading a method from within this framework
-    from OrdinalDecomposition import OrdinalDecomposition
-    imported_class = load_classifier("OrdinalDecomposition")
+    from orca_python.classifiers import OrdinalDecomposition
+    imported_class = load_classifier("orca_python.classifiers.OrdinalDecomposition")
     npt.assert_equal(imported_class, OrdinalDecomposition)
 
     # Loading a scikit-learn classifier
@@ -163,7 +163,7 @@ def test_check_params(util):
 
 
     # Configuration file using an ensemble method
-    util.configurations = {'conf2': {'classifier': 'OrdinalDecomposition',
+    util.configurations = {'conf2': {'classifier': 'orca_python.classifiers.OrdinalDecomposition',
                                         'parameters': {'dtype': 'OrderedPartitions', 
                                             'base_classifier': 'sklearn.svm.SVC', 
                                             'parameters': {'C': [1, 10], 
@@ -189,7 +189,7 @@ def test_check_params(util):
     npt.assert_equal(expected_params, formatted_params)
 
     # Configuration file where it's not necessary to perform cross-validation
-    util.configurations = {'conf3': {'classifier': 'OrdinalDecomposition',
+    util.configurations = {'conf3': {'classifier': 'orca_python.classifiers.OrdinalDecomposition',
                                         'parameters': {'dtype': 'OrderedPartitions', 
                                             'base_classifier': 'sklearn.svm.SVC', 
                                             'parameters': {'C': [1], 'gamma': [1]}}}}
@@ -239,7 +239,7 @@ def configurations():
         },
         "SVMOP": {
         
-            "classifier": "OrdinalDecomposition",
+            "classifier": "orca_python.classifiers.OrdinalDecomposition",
             "parameters": {
                 "dtype": "ordered_partitions",
                 "decision_method": "frank_hall",
