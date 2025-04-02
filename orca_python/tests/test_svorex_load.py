@@ -41,7 +41,7 @@ def general_conf(dataset_path):
 def configurations(values):
     return {
         "svorex_gaussian": {
-            "classifier": "SVOREX",
+            "classifier": "orca_python.classifiers.SVOREX",
             "parameters": {
                 "kernel_type": 0,
                 "c": values,
