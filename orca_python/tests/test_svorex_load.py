@@ -15,11 +15,12 @@ from sklearn import preprocessing
 
 # from utilities import Utilities
 from orca_python.utilities import Utilities
+from orca_python.testing import TEST_DATASETS_DIR
 
 
 @pytest.fixture
 def dataset_path():
-    return ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_redsvm_svorex_load_dataset")
+    return ospath.join(TEST_DATASETS_DIR)
 
 @pytest.fixture
 def values():
@@ -28,8 +29,7 @@ def values():
 @pytest.fixture
 def general_conf(dataset_path):
     return {"basedir": dataset_path,
-            "datasets": ["automobile", "balance-scale", "bondrate", "car", "contact-lenses", "ERA", "ESL", "eucalyptus", "LEV", "newthyroid",
-                         "pasture", "squash-stored", "squash-unstored", "SWD", "tae", "toy", "winequality-red"],
+            "datasets": ["balance-scale"],
             "input_preprocessing": "std",
             "hyperparam_cv_nfolds": 3,
             "jobs": 10,

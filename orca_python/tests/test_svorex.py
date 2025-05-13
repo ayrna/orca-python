@@ -9,21 +9,27 @@ syspath.append(ospath.join('..', 'classifiers'))
 
 # from SVOREX import SVOREX
 from orca_python.classifiers.SVOREX import SVOREX
+from orca_python.testing import TEST_DATASETS_DIR
+from orca_python.testing import TEST_PREDICTIONS_DIR
 
 
 @pytest.fixture
 def dataset_path():
-    return ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_svorex_dataset")
+    return ospath.join(TEST_DATASETS_DIR, "balance-scale")
+
+@pytest.fixture
+def predictions_path():
+    return ospath.join(TEST_PREDICTIONS_DIR, "SVOREX")
 
 @pytest.fixture
 def train_file(dataset_path):
-    return np.loadtxt(ospath.join(dataset_path,"train.0"))
+    return np.loadtxt(ospath.join(dataset_path,"train_balance-scale.csv"), delimiter=",")
 
 @pytest.fixture
 def test_file(dataset_path):
-    return np.loadtxt(ospath.join(dataset_path,"test.0"))
+    return np.loadtxt(ospath.join(dataset_path,"test_balance-scale.csv"), delimiter=",")
 
-def test_svorex_fit_correct(dataset_path, train_file, test_file):
+def test_svorex_fit_correct(dataset_path, train_file, test_file, predictions_path):
     #Check if this algorithm can correctly classify a toy problem.
     
     #Test preparation
@@ -32,9 +38,9 @@ def test_svorex_fit_correct(dataset_path, train_file, test_file):
 
     X_test = test_file[:,0:(-1)]
 
-    expected_predictions = [ospath.join(dataset_path,"expectedPredictions.0"), 
-                            ospath.join(dataset_path,"expectedPredictions.1"),
-                            ospath.join(dataset_path,"expectedPredictions.2"),]
+    expected_predictions = [ospath.join(predictions_path, "expectedPredictions.0"), 
+                            ospath.join(predictions_path, "expectedPredictions.1"),
+                            ospath.join(predictions_path, "expectedPredictions.2"),]
 
     classifiers = [SVOREX(kernel_type=0, t=0.002, c=0.5, k=0.1),
                    SVOREX(kernel_type=1, t=0.002, c=0.5, k=0.1),

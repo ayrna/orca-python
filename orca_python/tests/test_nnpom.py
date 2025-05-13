@@ -9,19 +9,20 @@ import numpy.testing as npt
 
 # from NNPOM import NNPOM
 from orca_python.classifiers.NNPOM import NNPOM
+from orca_python.testing import TEST_DATASETS_DIR
 
 
 @pytest.fixture
 def dataset_path():
-    return ospath.join(ospath.dirname(ospath.abspath(__file__)), "test_datasets", "test_nnpom_nnop_load_dataset", "toy")
+	return ospath.join(TEST_DATASETS_DIR, "balance-scale")
 
 @pytest.fixture
 def train_file(dataset_path):
-    return np.loadtxt(ospath.join(dataset_path,"train_toy.0"))
+	return np.loadtxt(ospath.join(dataset_path,"train_balance-scale.csv"), delimiter=",")
 
 @pytest.fixture
 def test_file(dataset_path):
-    return np.loadtxt(ospath.join(dataset_path,"test_toy.0"))
+	return np.loadtxt(ospath.join(dataset_path,"test_balance-scale.csv"), delimiter=",")
 
 #	-----	NOT APPLIED	-----
 # It doesn't apply to the because can't set seed to randomize model weights.

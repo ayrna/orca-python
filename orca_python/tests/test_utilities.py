@@ -15,6 +15,7 @@ import pytest
 # from utilities import Utilities
 # from utilities import load_classifier
 from orca_python.utilities import Utilities, load_classifier
+from orca_python.testing import TEST_DATASETS_DIR
 
 
 @pytest.fixture
@@ -86,12 +87,12 @@ def test_load_nontrainfile_dataset(util):
 def test_normalize_data(util):
     #Test preparation
     dataset_path = os.path.dirname(os.path.abspath(__file__))
-    dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "partitionless")
+    dataset_path = ospath.join(TEST_DATASETS_DIR, "balance-scale")
 
-    train_file = np.loadtxt(ospath.join(dataset_path,"train_partitionless.csv"))
+    train_file = np.loadtxt(ospath.join(dataset_path, "train_balance-scale.csv"), delimiter=",")
     X_train = train_file[:,0:(-1)]
 
-    test_file = np.loadtxt(ospath.join(dataset_path,"test_partitionless.csv"))
+    test_file = np.loadtxt(ospath.join(dataset_path, "test_balance-scale.csv"), delimiter=",")
     X_test = test_file[:,0:(-1)]
 
     #Test execution
@@ -104,13 +105,12 @@ def test_normalize_data(util):
 
 def test_standardize_data(util):
     #Test preparation
-    dataset_path = os.path.dirname(os.path.abspath(__file__))
-    dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "partitionless")
+    dataset_path = ospath.join(TEST_DATASETS_DIR, "balance-scale")
 
-    train_file = np.loadtxt(ospath.join(dataset_path,"train_partitionless.csv"))
+    train_file = np.loadtxt(ospath.join(dataset_path, "train_balance-scale.csv"), delimiter=",")
     X_train = train_file[:,0:(-1)]
 
-    test_file = np.loadtxt(ospath.join(dataset_path,"test_partitionless.csv"))
+    test_file = np.loadtxt(ospath.join(dataset_path, "test_balance-scale.csv"), delimiter=",")
     X_test = test_file[:,0:(-1)]
 
     #Test execution
