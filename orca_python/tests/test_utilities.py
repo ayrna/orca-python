@@ -24,15 +24,27 @@ def util():
     configurations = {}
     return Utilities(general_conf, configurations)
 
+def create_csv(path, filename):
+    """
+    Create a csv file with sample data
+    """
+    sample_data = "1,2,3,0\n4,5,6,1"
+    (path / filename).write_text(sample_data)
 
-def test_load_complete_dataset(util):
+
+def test_load_complete_dataset(tmp_path, util):
     """
     Loading dataset composed of 5 partitions, 
     each one of them composed of a train and test file
     """
 
-    dataset_path = os.path.dirname(os.path.abspath(__file__))
-    dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "complete")
+    dataset_path = tmp_path / "complete"
+    dataset_path.mkdir()
+
+    for i in range(5):
+        create_csv(dataset_path, f"train_complete.{i}")
+        create_csv(dataset_path, f"test_complete.{i}")
+
 
     partition_list = util._load_dataset(dataset_path)
 
@@ -42,14 +54,17 @@ def test_load_complete_dataset(util):
     npt.assert_equal(all([len(partition[1]) == 4 for partition in partition_list]), True)
 
 
-def test_load_partitionless_dataset(util):
+def test_load_partitionless_dataset(tmp_path, util):
     """
     Loading dataset composed of only two csv
     files (train and test files)
     """
 
-    dataset_path = os.path.dirname(os.path.abspath(__file__))
-    dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "partitionless")
+    dataset_path = tmp_path / "partitionless"
+    dataset_path.mkdir()
+
+    create_csv(dataset_path, "train_partitionless.csv")
+    create_csv(dataset_path, "test_partitionless.csv")
 
     partition_list = util._load_dataset(dataset_path)
 
@@ -57,13 +72,16 @@ def test_load_partitionless_dataset(util):
     npt.assert_equal(all([len(partition[1]) == 4 for partition in partition_list]), True)
 
 
-def test_load_nontestfile_dataset(util):
+def test_load_nontestfile_dataset(tmp_path, util):
     """
     Loading dataset composed of five train files
     """
 
-    dataset_path = os.path.dirname(os.path.abspath(__file__))
-    dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "nontestfile")
+    dataset_path = tmp_path / "nontestfile"
+    dataset_path.mkdir()
+
+    for i in range(5):
+        create_csv(dataset_path, f"train_nontestfile.{i}")
 
     partition_list = util._load_dataset(dataset_path)
 
@@ -71,22 +89,24 @@ def test_load_nontestfile_dataset(util):
     npt.assert_equal(all([len(partition[1]) == 2 for partition in partition_list]), True)
 
 
-def test_load_nontrainfile_dataset(util):
+def test_load_nontrainfile_dataset(tmp_path, util):
     """
     Loading dataset with 2 partitions, one of them lacking
     it's train file. This should raise an exception.
     """
 
-    dataset_path = os.path.dirname(os.path.abspath(__file__))
-    dataset_path = ospath.join(dataset_path, "test_datasets", "test_load_dataset", "nontrainfile")
+    dataset_path = tmp_path / "nontrainfile"
+    dataset_path.mkdir()
+
+    for i in range(2):
+        create_csv(dataset_path, f"test_nontrainfile.{i}")
 
     with pytest.raises(RuntimeError):
         util._load_dataset(dataset_path)
 
 
-def test_normalize_data(util):
+def test_normalize_data(tmp_path, util):
     #Test preparation
-    dataset_path = os.path.dirname(os.path.abspath(__file__))
     dataset_path = ospath.join(TEST_DATASETS_DIR, "balance-scale")
 
     train_file = np.loadtxt(ospath.join(dataset_path, "train_balance-scale.csv"), delimiter=",")
