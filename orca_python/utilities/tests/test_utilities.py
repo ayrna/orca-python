@@ -230,7 +230,7 @@ def test_check_params(util):
 
 @pytest.fixture
 def main_folder():
-    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 @pytest.fixture
 def dataset_folder(main_folder):
@@ -286,7 +286,7 @@ def test_run_experiment(main_folder, general_conf, configurations):
     util.write_report()
 
     # Checking if all outputs have been generated and are correct
-    outputs_folder = os.path.join(main_folder, "tests", "my_runs")
+    outputs_folder = "my_runs"
     npt.assert_equal(os.path.exists(outputs_folder), True)
 
     experiment_folder = sorted(os.listdir(outputs_folder))
