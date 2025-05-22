@@ -227,40 +227,50 @@ class Utilities:
 			train and test inputs and outputs.
 		"""
 
+		def get_partition_index(filename):
+			# Extracts the index between the last "_" and ".csv"
+			return filename.rsplit('_', 1)[-1].replace('.csv', '')
 
 		try:
-
-			# Creating dicts for all partitions (saving partition order as keys)
-			partition_list = {filename[filename.find('.') + 1:]: {} for filename
+			partition_list = {get_partition_index(filename): {} for filename
 																	in os.listdir(dataset_path)
 																	if filename.startswith("train_")}
-
+			
+			# Creating dicts for all partitions (saving partition order as keys)
+			partition_list = {filename.rsplit('_', 1)[-1].replace('.csv', ''): {} for filename
+		                  in os.listdir(dataset_path)
+		                  if filename.startswith("train_")}
+	
 			# Loading each dataset
 			for filename in os.listdir(dataset_path):
+				full_path = os.path.join(dataset_path, filename)
+
+				
 
 				if filename.startswith("train_"):
-					train_inputs, train_outputs = self._read_file(os.path.join(dataset_path, filename))
-					partition_list[filename[filename.find('.') + 1:]]["train_inputs"] = train_inputs
-					partition_list[filename[filename.find('.') + 1:]]["train_outputs"] = train_outputs
+					idx = get_partition_index(filename)
+					train_inputs, train_outputs = self._read_file(full_path)
+					partition_list[idx]["train_inputs"] = train_inputs
+					partition_list[idx]["train_outputs"] = train_outputs
 
 				elif filename.startswith("test_"):
-					test_inputs, test_outputs = self._read_file(os.path.join(dataset_path, filename))
-					partition_list[filename[filename.find('.') + 1:]]["test_inputs"] = test_inputs
-					partition_list[filename[filename.find('.') + 1:]]["test_outputs"] = test_outputs
+					idx = get_partition_index(filename)
+					test_inputs, test_outputs = self._read_file(full_path)
+					partition_list[idx]["test_inputs"] = test_inputs
+					partition_list[idx]["test_outputs"] = test_outputs
 
 		except OSError:
 			raise ValueError("No such file or directory: '%s'" % dataset_path)
 
 		except KeyError:
 			raise RuntimeError("Found partition without train files: partition %s"
-								% filename[filename.find('.') + 1:])
+								% filename)
 
 
 		# Saving partitions as a sorted list of (index, partition) tuples
 		partition_list = sorted(partition_list.items(), key=(lambda t: get_key(t[0])))
 
 		return partition_list
-
 
 
 	def _read_file(self, filename):
@@ -289,7 +299,7 @@ class Utilities:
 		"""
 
 		# Separator is automatically found
-		f = pd.read_csv(filename, header=None, engine='python', sep=None)
+		f = pd.read_csv(filename, header=None, engine='python')
 
 		inputs = f.values[:,0:(-1)]
 		outputs = f.values[:,(-1)]

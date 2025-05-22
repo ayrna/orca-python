@@ -3,7 +3,7 @@
 
 	"general_conf": {
 
-		"basedir": "orca_python/datasets/",
+		"basedir": "orca_python/datasets/data",
 		"datasets": ["tae", "balance-scale", "contact-lenses"],
 		"hyperparam_cv_nfolds": 3,
 		"jobs": 10,

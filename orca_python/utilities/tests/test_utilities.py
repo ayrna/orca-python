@@ -234,7 +234,7 @@ def main_folder():
 
 @pytest.fixture
 def dataset_folder(main_folder):
-    return os.path.join(main_folder, "datasets")
+    return os.path.join(main_folder, "datasets", "data")
 
 @pytest.fixture
 def general_conf(dataset_folder):
