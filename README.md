@@ -28,23 +28,23 @@ In this README, we will explain how to use ORCA-python, and what you need to ins
 
 # Installing ORCA-python
 
-ORCA-python has been developed and tested in GNU/Linux systems. It has been tested with Python 2.7.13 and Python 3.5.3.
+ORCA-python has been developed and tested in GNU/Linux systems. It has been tested with Python 3.8.
 
 ## Installation Requirements
 
 Besides the need for the aforementioned Python interpreter, you will need to install the next Python modules
-in order to run an experiment (needs recent versions of scikit-learn >=0.20.0):
+in order to run an experiment (needs recent versions of scikit-learn >=1.0.0):
 
-- numpy (tested with version 1.18.1)
-- pandas (tested with version 1.0.1)
-- sacred (tested with version 0.8.1)
-- scikit-learn (tested with version 0.22.1)
-- scipy (tested with version 1.4.1)
+- numpy (tested with version 2.2.2)
+- pandas (tested with version 2.2.3)
+- sacred (tested with version 0.8.7)
+- scikit-learn (tested with version 1.6.1)
+- scipy (tested with version 1.15.1)
 
 To install Python, you can use the package management system you like the most.\
 For the installation of the modules, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
 
-A `requirements.txt` file has been added to ease the installation of the different dependencies through `pip`.
+All dependencies and build configurations are managed through `pyproject.toml` file. This simplifies the setup process by allowing you to install the framework and its dependencies.
 
 ## Download ORCA-Python
 
@@ -54,15 +54,15 @@ To download ORCA-python you can simply clone this GitHub repository by using the
   
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
 
-## Algorithms Compilation
-Even if ORCA-Python is written in Python, some algorithms like REDSVM or SVOREX are implemented in C++ and C. Before using the framework is necesary to compile these algorithms using the `make` command in the repository root.
-
-The algorithms will be compiled for the system or virtual environment default Python interpreter. If the framework is executed with another interpreter different from the one used for compiling, the algorithms wont work.
-
-If executing the framework with a different Python interpreter is necesary, execute the `make clean` command in the repository root to clean the old compilation and use the `make` command again.
-
 ## Installation in Python Environnement
-Inside the orca-python root execute `pip install .` Orca-python should be compiled before installing. If you want to compile it after installing add the `--editable` argument: `pip install --editable .`
+
+Inside the ORCA-python root, execute the following command to install the framework along with its dependencies: `pip install .`
+
+All dependencies and build configurations are managed through the `pyproject.toml` file, simplifying the installation process. FOr development or testing purposes, you can use the `--editable` option to allow modifications without reinstalling: `pip install --editable .`
+
+Additionally. optional dependencies for development (e.g., black) can be installed using the corresponding groups defined in the `pyproject.toml` file. For example: `pip install -e .[dev]`
+
+Note: The editable mode is required for running tests due to automatic dependency resolution.
 
 ## Installation Testing
 

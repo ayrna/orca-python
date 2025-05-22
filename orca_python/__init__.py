@@ -1,7 +1,10 @@
+"""orca-python."""
 
-__all__ = [
-    "metrics",
-]
+__version__ = "0.0.1"
 
-import orca_python.metrics as metrics
-
+from . import (
+    classifiers,
+    metrics,
+    results,
+    utilities
+)
