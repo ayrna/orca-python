@@ -8,7 +8,6 @@ import orca_python.datasets.data
 
 
 def get_data_path():
-
     """
     Get the absolute path of the orca_python.datasets.data module.
 
@@ -23,7 +22,6 @@ def get_data_path():
 
 
 def dataset_exists(dataset_name, data_path):
-    
     """
     Check if the dataset directory exists within the data path.
 
@@ -48,7 +46,6 @@ def dataset_exists(dataset_name, data_path):
 
 
 def is_undivided(dataset_name, data_path):
-    
     """
     Check if there is a dataset file with no train/test split.
 
@@ -74,7 +71,6 @@ def is_undivided(dataset_name, data_path):
 
 
 def has_unseeded_split(dataset_name, data_path):
-    
     """
     Check if the dataset has train/test split files without a seed.
 
@@ -102,7 +98,6 @@ def has_unseeded_split(dataset_name, data_path):
 
 
 def has_seeded_split(dataset_name, seed, data_path):
-    
     """
     Check if the dataset has train/test split files with a specific seed.
 
@@ -133,7 +128,6 @@ def has_seeded_split(dataset_name, seed, data_path):
 
 
 def check_ambiguity(dataset_name, data_path, seed=None):
-    
     """
     Check for ambiguity in dataset format.
 
@@ -169,7 +163,6 @@ def check_ambiguity(dataset_name, data_path, seed=None):
 
 
 def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
-    
     """
     Load a dataset file based on split type and seed.
 
@@ -216,7 +209,6 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
 
 
 def load_dataset(dataset_name, data_path=None, seed=None):
-    
     """
     Load a dataset from the specified directory.
 
@@ -281,7 +273,6 @@ def load_dataset(dataset_name, data_path=None, seed=None):
 
 
 def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
-    
     """
     Shuffle data by combining train and test sets and splitting them again.
 
@@ -313,7 +304,7 @@ def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
 
     X_train, y_train, X_test, y_test: array
         Shuffled training and test sets. All are arrays.
-    
+
     """
     if train_size <= 0 or train_size >= 1:
         raise ValueError("train_size must be between 0 and 1")
