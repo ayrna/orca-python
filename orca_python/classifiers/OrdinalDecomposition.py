@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.metrics import make_scorer
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 

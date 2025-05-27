@@ -1,10 +1,8 @@
 import os
-from sys import path as syspath
 from os import path as ospath
 from shutil import rmtree
 
 import numpy.testing as npt
-import pandas.testing as pdt
 import pandas as pd
 import numpy as np
 import pytest

@@ -1,7 +1,4 @@
-from sys import path as syspath
 from os import path as ospath
-from os import listdir
-from os import walk
 from shutil import rmtree
 from collections import OrderedDict
 from pickle import load

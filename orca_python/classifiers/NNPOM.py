@@ -1,5 +1,4 @@
 # encoding: utf-8
-from re import T
 import numpy as np
 import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin

@@ -1,4 +1,3 @@
-from sys import path
 
 import pytest
 from numpy import array

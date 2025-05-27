@@ -1,12 +1,7 @@
-from sys import path as syspath
-from os import path as ospath
-import collections
 
 import pytest
-import numpy as np
 from numpy import array
 import numpy.testing as npt
-import pandas.testing as pdt
 
 # syspath.append(ospath.join('..', 'classifiers'))
 

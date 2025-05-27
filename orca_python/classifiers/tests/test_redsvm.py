@@ -1,4 +1,3 @@
-from sys import path as syspath
 from os import path as ospath
 
 import pytest

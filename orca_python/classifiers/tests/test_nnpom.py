@@ -1,9 +1,7 @@
-from sys import path as syspath
 from os import path as ospath
 
 import pytest
 import numpy as np
-import numpy.testing as npt
 
 # syspath.append(ospath.join('..', 'classifiers'))
 
