@@ -102,7 +102,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
         self.classes_ = unique_labels(y)
 
         # Set the default g value if necessary
-        if self.gamma == None:
+        if self.gamma is None:
             self.gamma = 1 / np.size(X, 1)
 
         # Fit the model

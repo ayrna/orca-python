@@ -428,7 +428,7 @@ class Utilities:
                 parameters["random_state"] = [random_seed]
 
             # An ensemble method is going to be used
-            if "parameters" in parameters and type(parameters["parameters"] == dict):
+            if "parameters" in parameters and isinstance(parameters["parameters"], dict):
 
                 # Adding given seed as random_state value
                 if check_for_random_state(parameters["base_classifier"]):

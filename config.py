@@ -4,25 +4,6 @@ from orca_python.utilities import Utilities
 
 ex = Experiment("Experiment Configuration")
 
-
-@ex.config
-def default_config():
-
-    # Giving default values
-    general_conf = {
-        "basedir": "",
-        "dataset": "",
-        "input_preprocessing": "",
-        "hyperparam_cv_nfolds": 3,
-        "jobs": 1,
-        "metrics": "ccr",
-        "cv_metric": "ccr",
-        "output_folder": "my_runs/",
-    }
-
-    configurations = {}
-
-
 @ex.automain
 def main(general_conf, configurations):
 
