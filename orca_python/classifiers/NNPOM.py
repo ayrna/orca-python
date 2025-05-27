@@ -1,4 +1,5 @@
 # encoding: utf-8
+from re import T
 import numpy as np
 import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -12,7 +13,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 	NNPOM Neural Network based on Proportional Odd Model (NNPOM). This
 		class implements a neural network model for ordinal regression. The
-		model has one hidden layer with hiddenN neurons and one outputlayer
+		model has one hidden layer with hidden_n neurons and one outputlayer
 		with only one neuron but as many threshold as the number of classes
 		minus one. The standard POM model is applied in this neuron to have
 		probabilistic outputs. The learning is based on iRProp+ algorithm and
@@ -50,12 +51,12 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 
 		NNPOM properties:
-			epsilonInit					- Range for initializing the weights.
-			hiddenN						- Number of hidden neurons of the
+			epsilon_init				- Range for initializing the weights.
+			hidden_n					- Number of hidden neurons of the
 										model.
 			iterations					- Number of iterations for fmin_l_bfgs_b
 										algorithm.
-			lambdaValue					- Regularization parameter.
+			lambda_value				- Regularization parameter.
 			theta1						- Hidden layer weigths (with bias)
 			theta2						- Output layer weigths (without bias, the biases will be the thresholds)
 			thresholds					- Class thresholds parameters
@@ -65,12 +66,12 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	"""
 
 	# Constructor of class NNPOM (set parameters values).
-	def __init__(self, epsilonInit=0.5, hiddenN=50, iterations=500, lambdaValue=0.01):
+	def __init__(self, epsilon_init=0.5, hidden_n=50, iterations=500, lambda_value=0.01):
 		
-		self.epsilonInit = epsilonInit
-		self.hiddenN = hiddenN
+		self.epsilon_init = epsilon_init
+		self.hidden_n = hidden_n
 		self.iterations = iterations
-		self.lambdaValue = lambdaValue
+		self.lambda_value = lambda_value
 
 
 	#--------Main functions (Public Access)--------
@@ -99,10 +100,10 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		self: The object NNPOM.
 
 		"""
-		if self.epsilonInit < 0 or self.hiddenN < 1 or self.iterations < 1 or self.lambdaValue < 0:
+		if self.epsilon_init < 0 or self.hidden_n < 1 or self.iterations < 1 or self.lambda_value < 0:
 			return None
 		
-		
+			
 		# Check that X and y have correct shape
 		X, y = check_X_y(X, y)
 		# Store the classes seen during fit
@@ -118,29 +119,29 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Y = 1 * (np.tile(y, (1,num_labels)) == np.tile(np.arange(1,num_labels+1)[np.newaxis,:], (m,1)))
 
 		# Hidden layer weigths (with bias)
-		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
+		initial_theta1 = self.__rand_initialize_weights(input_layer_size+1, self.get_hidden_n())
 		# Output layer weigths (without bias, the biases will be the thresholds)
-		initial_Theta2 = self.__randInitializeWeights(self.getHiddenN(), 1)
+		initial_theta2 = self.__rand_initialize_weights(self.get_hidden_n(), 1)
 		# Class thresholds parameters
-		initial_thresholds = self.__randInitializeWeights((num_labels-1),1)
+		initial_thresholds = self.__rand_initialize_weights((num_labels-1),1)
 		
 		# Pack parameters
-		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
-		 initial_Theta2.flatten(order='F'), initial_thresholds.flatten(order='F')),
+		initial_nn_params = np.concatenate((initial_theta1.flatten(order='F'),
+		 initial_theta2.flatten(order='F'), initial_thresholds.flatten(order='F')),
 		 axis=0)[:,np.newaxis]
 		
-		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnPOMCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.hiddenN,
-			num_labels, X, Y, self.lambdaValue), fprime=None, factr=1e3, maxiter=self.iterations,iprint=-1)
+		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnpom_cost_function, x0=initial_nn_params.ravel(),args=(input_layer_size, self.hidden_n,
+			num_labels, X, Y, self.lambda_value), fprime=None, factr=1e3, maxiter=self.iterations,iprint=-1)
 		
 		self.nn_params = results_optimization[0]
 
 		# Unpack the parameters
-		Theta1, Theta2, thresholds_param = self.__unpackParameters(self.nn_params, input_layer_size,
-		 self.getHiddenN(), num_labels)
+		theta1, theta2, thresholds_param = self.__unpack_parameters(self.nn_params, input_layer_size,
+		 self.get_hidden_n(), num_labels)
 		
-		self.theta1 = Theta1
-		self.theta2 = Theta2
-		self.thresholds = self.__convertThresholds(thresholds_param, num_labels)
+		self.theta1 = theta1
+		self.theta2 = theta2
+		self.thresholds = self.__convert_thresholds(thresholds_param, num_labels)
 		self.num_labels = num_labels
 		self.m = m
 
@@ -192,55 +193,55 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	
 
 	# Getter & Setter of "epsilonInit"
-	def getEpsilonInit (self):
+	def get_epsilon_init (self):
 	
 		"""
 
-		This method returns the value of the variable self.epsilonInit.
-		self.epsilonInit contains the value of epsilon, which is the initialization range of the weights.
+		This method returns the value of the variable self.epsilon_init.
+		self.epsilon_init contains the value of epsilon, which is the initialization range of the weights.
 
 		"""
 
-		return self.epsilonInit
+		return self.epsilon_init
 
-	def setEpsilonInit (self, epsilonInit):
-
-		"""
-
-		This method modify the value of the variable self.epsilonInit.
-		This is replaced by the value contained in the epsilonInit variable passed as an argument.
+	def set_epsilon_init (self, epsilon_init):
 
 		"""
 
-		self.epsilonInit = epsilonInit
+		This method modify the value of the variable self.epsilon_init.
+		This is replaced by the value contained in the epsilon_init variable passed as an argument.
+
+		"""
+
+		self.epsilon_init = epsilon_init
 	
 
-	# Getter & Setter of "hiddenN"
-	def getHiddenN (self):
+	# Getter & Setter of "hidden_n"
+	def get_hidden_n (self):
 
 		"""
 
-		This method returns the value of the variable self.hiddenN.
-		self.hiddenN contains the number of nodes/neurons in the hidden layer.
+		This method returns the value of the variable self.hidden_n.
+		self.hidden_n contains the number of nodes/neurons in the hidden layer.
 
 		"""
 
-		return self.hiddenN
+		return self.hidden_n
 
-	def setHiddenN (self, hiddenN):
+	def set_hidden_n (self, hidden_n):
 		
 		"""
 
-		This method modify the value of the variable self.hiddenN.
-		This is replaced by the value contained in the hiddenN variable passed as an argument.
+		This method modify the value of the variable self.hidden_n.
+		This is replaced by the value contained in the hidden_n variable passed as an argument.
 
 		"""
 
-		self.hiddenN = hiddenN
+		self.hidden_n = hidden_n
 	
 
 	# Getter & Setter of "iterations"
-	def getIterations (self):
+	def get_iterations (self):
 		
 		"""
 
@@ -263,32 +264,32 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		self.iterations = iterations
 	
 
-	# Getter & Setter of "lambdaValue"
-	def getLambdaValue (self):
+	# Getter & Setter of "lambda_value"
+	def get_lambda_value (self):
 
 		"""
 
-		This method returns the value of the variable self.lambdaValue.
-		self.lambdaValue contains the Lambda parameter used in regularization.
+		This method returns the value of the variable self.lambda_value.
+		self.lambda_value contains the Lambda parameter used in regularization.
 
 		"""
 
-		return self.lambdaValue
+		return self.lambda_value
 	
-	def setLambdaValue (self, lambdaValue):
+	def set_lambda_value (self, lambda_value):
 
 		"""
 
-		This method modify the value of the variable self.lambdaValue.
-		This is replaced by the value contained in the lambdaValue variable passed as an argument.
+		This method modify the value of the variable self.lambda_value.
+		This is replaced by the value contained in the lambda_value variable passed as an argument.
 
 		"""
 
-		self.lambdaValue = lambdaValue
+		self.lambda_value = lambda_value
 
 
 	# Getter & Setter of "theta1"
-	def getTheta1 (self):
+	def get_theta1 (self):
 		
 		"""
 
@@ -299,7 +300,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		return self.theta1
 
-	def setTheta1 (self, theta1):
+	def set_theta1 (self, theta1):
 		
 		"""
 
@@ -312,7 +313,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 	
 
 	# Getter & Setter of "theta2"
-	def getTheta2 (self):
+	def get_theta2 (self):
 		
 		"""
 
@@ -323,7 +324,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		return self.theta2
 	
-	def setTheta2 (self, theta2):
+	def set_theta2 (self, theta2):
 		
 		"""
 
@@ -336,7 +337,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 
 	# Getter & Setter of "thresholds"
-	def getThresholds (self):
+	def get_thresholds (self):
 		
 		"""
 
@@ -347,7 +348,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		return self.thresholds
 	
-	def setThresholds (self, thresholds):
+	def set_thresholds (self, thresholds):
 		
 		"""
 
@@ -360,7 +361,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 
 	# Getter & Setter of "num_labels"
-	def getNum_labels (self):
+	def get_num_labels (self):
 		
 		"""
 
@@ -371,7 +372,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		return self.num_labels
 	
-	def setNum_labels (self, num_labels):
+	def set_num_labels (self, num_labels):
 		
 		"""
 
@@ -384,7 +385,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 
 	# Getter & Setter of "m"
-	def getM (self):
+	def get_m (self):
 		
 		"""
 
@@ -395,7 +396,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		return self.m
 	
-	def setM (self, m):
+	def set_m (self, m):
 		
 		"""
 
@@ -411,19 +412,19 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 	# Download and save the values ​​of Theta1, Theta2 and thresholds_param
 	# from the nn_params array to their corresponding array
-	def __unpackParameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels):
+	def __unpack_parameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels):
 		
 		"""
 
-		This method gets Theta1, Theta2 and thresholds_param back from the whole array nn_params.
+		This method gets theta1, theta2 and thresholds_param back from the whole array nn_params.
 
 		Parameters
 		----------
 
 		nn_params: column array, shape ((imput_layer_size+1)*hidden_layer_size
 		+ hidden_layer_size + (num_labels-1))
-			Array that is a column vector. It stores the values ​​of Theta1,
-			Theta2 and thresholds_param, all of them together in an array in this order.
+			Array that is a column vector. It stores the values ​​of theta1,
+			theta2 and thresholds_param, all of them together in an array in this order.
 
 		input_layer_size: integer
 			Number of nodes in the input layer of the neural network model.
@@ -438,32 +439,32 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		Theta1: The weights between the input layer and the hidden layer (with biases included).
+		theta1: The weights between the input layer and the hidden layer (with biases included).
 
-		Theta2: The weights between the hidden layer and the output layer
+		theta2: The weights between the hidden layer and the output layer
 			(biases are not included as they are the thresholds).
 
 		thresholds_param: classification thresholds.
 		
 		"""
 
-		nTheta1 = hidden_layer_size * (input_layer_size + 1)
-		Theta1 = np.reshape(nn_params[0:nTheta1],(hidden_layer_size,
+		n_theta1 = hidden_layer_size * (input_layer_size + 1)
+		theta1 = np.reshape(nn_params[0:n_theta1],(hidden_layer_size,
 		 (input_layer_size + 1)),order='F')
 		
-		nTheta2 = hidden_layer_size
-		Theta2 = np.reshape(nn_params[nTheta1:(nTheta1+nTheta2)], 
+		n_theta2 = hidden_layer_size
+		theta2 = np.reshape(nn_params[n_theta1:(n_theta1+n_theta2)], 
 		 (1, hidden_layer_size),order='F')
 		
-		thresholds_param = np.reshape(nn_params[(nTheta1+nTheta2):],
+		thresholds_param = np.reshape(nn_params[(n_theta1+n_theta2):],
 		 ((num_labels-1), 1),order = 'F')
 		
-		return Theta1, Theta2, thresholds_param
+		return theta1, theta2, thresholds_param
 	
 
 	# Randomly initialize the weights of the neural network layer
 	# by entering the number of input and output nodes of that layer
-	def __randInitializeWeights(self, L_in, L_out):
+	def __rand_initialize_weights(self, L_in, L_out):
 
 		"""
 
@@ -486,22 +487,22 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 		"""
 
-		W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
+		W = np.random.rand(L_out,L_in)*2*self.get_epsilon_init() - self.get_epsilon_init()
 
 		return W
 
 
 	# Calculate the thresholds
-	def __convertThresholds(self, thresholds_param, num_labels):
+	def __convert_thresholds(self, thresholds_param, num_labels):
 			
 		"""
 
 		This method transforms thresholds to perform unconstrained optimization.
 
 		thresholds(1) = thresholds_param(1)
-		thresholds(2) = thresholds_param(1) + thresholds_param(2)^2
-		thresholds(3) = thresholds_param(1) + thresholds_param(2)^2
-						+ thresholds_param(3)^2
+		thresholds(2) = thresholds_param(1) + thresholds_param(2)**2
+		thresholds(3) = thresholds_param(1) + thresholds_param(2)**2
+						+ thresholds_param(3)**2
 
 		Parameters
 		----------
@@ -531,8 +532,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
 
 	# Implements the cost function and obtains the corresponding derivatives.
-	def __nnPOMCostFunction(self, nn_params, input_layer_size, hidden_layer_size,
-	num_labels, X, Y, lambdaValue):
+	def __nnpom_cost_function(self, nn_params, input_layer_size, hidden_layer_size,
+	num_labels, X, Y, lambda_value):
 		
 		"""
 		This method implements the cost function and obtains
@@ -544,8 +545,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		nn_params: column array, shape ((imput_layer_size+1)*hidden_layer_size
 		+ hidden_layer_size + (num_labels-1))
 		
-		Array that is a column vector. It stores the values ​​of Theta1,
-		Theta2 and thresholds_param, all of them together in an array in this order.
+		Array that is a column vector. It stores the values ​​of theta1,
+		theta2 and thresholds_param, all of them together in an array in this order.
 			
 		input_layer_size: integer
 			Number of nodes in the input layer of the neural network model.
@@ -577,21 +578,21 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		# Unroll all the parameters
 		nn_params = nn_params.reshape((nn_params.shape[0],1))
 
-		Theta1,Theta2,thresholds_param = self.__unpackParameters(nn_params,
+		theta1,theta2,thresholds_param = self.__unpack_parameters(nn_params,
 		input_layer_size, hidden_layer_size, num_labels)
 						
 		# Convert thresholds
-		thresholds = self.__convertThresholds(thresholds_param, num_labels)
+		thresholds = self.__convert_thresholds(thresholds_param, num_labels)
 
 		# Setup some useful variables
 		m = np.size(X, 0)
 
 		# Neural Network model
 		a1 = np.append(np.ones((m, 1)), X, axis=1)
-		z2 = np.matmul(a1,Theta1.T)
+		z2 = np.matmul(a1,theta1.T)
 		a2 =  1.0 / (1.0 + np.exp(-z2))
 
-		z3 = np.tile(thresholds,(m,1)) - np.tile(np.matmul(a2,Theta2.T),(1, num_labels-1))
+		z3 = np.tile(thresholds,(m,1)) - np.tile(np.matmul(a2,theta2.T),(1, num_labels-1))
 		a3T =  1.0 / (1.0 + np.exp(-z3))
 		a3 = np.append(a3T, np.ones((m,1)), axis=1)
 		h = np.concatenate((a3[:,0].reshape((a3.shape[0],1)),a3[:,1:] - a3[:,0:-1]), axis = 1)
@@ -600,50 +601,50 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 		out = h
 
 		# Calculate penalty (regularización L2)
-		p = np.sum((Theta1[:,1:]**2).sum() + (Theta2[:,0:]**2).sum())
+		p = np.sum((theta1[:,1:]**2).sum() + (theta2[:,0:]**2).sum())
 
 		# Cross entropy
-		J = np.sum(-np.log(out[np.where(Y==1)]), axis=0)/m + lambdaValue*p/(2*m)
+		J = np.sum(-np.log(out[np.where(Y==1)]), axis=0)/m + lambda_value*p/(2*m)
 
 		# Cross entropy
-		errorDer = np.zeros(Y.shape)
-		errorDer[np.where(Y!=0)] = np.divide(-Y[np.where(Y!=0)],out[np.where(Y!=0)])
+		error_der = np.zeros(Y.shape)
+		error_der[np.where(Y!=0)] = np.divide(-Y[np.where(Y!=0)],out[np.where(Y!=0)])
 
 		# Calculate sigmas
-		fGradients = np.multiply(a3T,(1-a3T))
-		gGradients = np.multiply(errorDer, np.concatenate((fGradients[:,0].reshape(-1,1),
-		 (fGradients[:,1:] - fGradients[:,:-1]), -fGradients[:,-1].reshape(-1,1)), axis=1))
-		sigma3 = -np.sum(gGradients,axis=1)[:,np.newaxis]
-		sigma2 = np.multiply(np.multiply(np.matmul(sigma3, Theta2), a2), (1-a2))
+		f_gradients = np.multiply(a3T,(1-a3T))
+		g_gradients = np.multiply(error_der, np.concatenate((f_gradients[:,0].reshape(-1,1),
+		 (f_gradients[:,1:] - f_gradients[:,:-1]), -f_gradients[:,-1].reshape(-1,1)), axis=1))
+		sigma3 = -np.sum(g_gradients,axis=1)[:,np.newaxis]
+		sigma2 = np.multiply(np.multiply(np.matmul(sigma3, theta2), a2), (1-a2))
 
 		# Accumulate gradients
 		delta_1 = np.matmul(sigma2.T, a1)
 		delta_2 = np.matmul(sigma3.T, a2)
 
 		# Calculate regularized gradient
-		p1 = (lambdaValue/m) * np.concatenate((np.zeros((np.size(Theta1, axis=0), 1)), Theta1[:,1:]), axis=1)
-		p2 = (lambdaValue/m) * Theta2[:,0:]
-		Theta1_grad = delta_1 / m + p1
-		Theta2_grad = delta_2 / m + p2
+		p1 = (lambda_value/m) * np.concatenate((np.zeros((np.size(theta1, axis=0), 1)), theta1[:,1:]), axis=1)
+		p2 = (lambda_value/m) * theta2[:,0:]
+		theta1_grad = delta_1 / m + p1
+		theta2_grad = delta_2 / m + p2
 
 		# Treshold gradients
-		ThreshGradMatrix = np.multiply(np.concatenate((np.triu(np.ones((num_labels-1, num_labels-1))),
-		 np.ones((num_labels-1, 1))), axis=1), np.tile(gGradients.sum(axis=0), (num_labels-1, 1)))
+		thresh_grad_matrix = np.multiply(np.concatenate((np.triu(np.ones((num_labels-1, num_labels-1))),
+		 np.ones((num_labels-1, 1))), axis=1), np.tile(g_gradients.sum(axis=0), (num_labels-1, 1)))
 		
-		originalShape = ThreshGradMatrix.shape
-		ThreshGradMatrix = ThreshGradMatrix.flatten(order='F')
+		original_shape = thresh_grad_matrix.shape
+		thresh_grad_matrix = thresh_grad_matrix.flatten(order='F')
 		
-		ThreshGradMatrix[(num_labels)::num_labels] = ThreshGradMatrix.flatten(order='F')[(num_labels)::num_labels] + np.multiply(errorDer[:,1:(num_labels-1)],
-		 fGradients[:,0:(num_labels-2)]).sum(axis=0)
+		thresh_grad_matrix[(num_labels)::num_labels] = thresh_grad_matrix.flatten(order='F')[(num_labels)::num_labels] + np.multiply(error_der[:,1:(num_labels-1)],
+		 f_gradients[:,0:(num_labels-2)]).sum(axis=0)
 		
-		ThreshGradMatrix = np.reshape(ThreshGradMatrix[:,np.newaxis],originalShape, order ='F')
+		thresh_grad_matrix = np.reshape(thresh_grad_matrix[:,np.newaxis],original_shape, order ='F')
 		
-		Threshold_grad = ThreshGradMatrix.sum(axis=1)[:,np.newaxis]/m
-		Threshold_grad[1:] = 2 * np.multiply(Threshold_grad[1:], thresholds_param[1:])
+		threshold_grad = thresh_grad_matrix.sum(axis=1)[:,np.newaxis]/m
+		threshold_grad[1:] = 2 * np.multiply(threshold_grad[1:], thresholds_param[1:])
 		
 		# Unroll gradients
-		grad = np.concatenate((Theta1_grad.flatten(order='F'),
-		 Theta2_grad.flatten(order='F'), Threshold_grad.flatten(order='F')),
+		grad = np.concatenate((theta1_grad.flatten(order='F'),
+		 theta2_grad.flatten(order='F'), threshold_grad.flatten(order='F')),
 		 axis=0)
 
 		return J,grad

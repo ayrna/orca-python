@@ -40,10 +40,10 @@ def test_file(dataset_path):
 							# ospath.join(self.dataset_path,"expectedPredictions.2"),
 							# ospath.join(self.dataset_path,"expectedPredictions.3")]
 
-# 	classifiers = [NNOP(epsilonInit = 0.5, hiddenN = 10, iterations = 500, lambdaValue = 0.01)]
-	#			   NNOP(epsilonInit = 0.5, hiddenN = 20, iterations = 500, lambdaValue = 0.01),
-	#			   NNOP(epsilonInit = 0.5, hiddenN = 10, iterations = 250, lambdaValue = 0.01),
-	#			   NNOP(epsilonInit = 0.5, hiddenN = 20, iterations = 500, lambdaValue = 0.01)]
+# 	classifiers = [NNOP(epsilon_init = 0.5, hidden_n = 10, iterations = 500, lambda_value = 0.01)]
+	#			   NNOP(epsilon_init = 0.5, hidden_n = 20, iterations = 500, lambda_value = 0.01),
+	#			   NNOP(epsilon_init = 0.5, hidden_n = 10, iterations = 250, lambda_value = 0.01),
+	#			   NNOP(epsilon_init = 0.5, hidden_n = 20, iterations = 500, lambda_value = 0.01)]
 
 
 # 	#Test execution and verification
@@ -59,8 +59,8 @@ def test_nnop_fit_not_valid_parameter(train_file):
 	X_train = train_file[:,0:(-1)]
 	y_train = train_file[:,(-1)]
 
-	classifiers = [NNOP(epsilonInit=0.5, hiddenN=-1, iterations=1000, lambdaValue=0.01),
-					NNOP(epsilonInit=0.5, hiddenN=10, iterations=-1, lambdaValue=0.01)]
+	classifiers = [NNOP(epsilon_init=0.5, hidden_n=-1, iterations=1000, lambda_value=0.01),
+					NNOP(epsilon_init=0.5, hidden_n=10, iterations=-1, lambda_value=0.01)]
 
 	#Test execution and verification
 	for classifier in classifiers:
@@ -75,7 +75,7 @@ def test_nnop_fit_not_valid_data(train_file):
 	y_train_broken = train_file[0:(-1),(-1)]
 
 	#Test execution and verification
-	classifier = NNOP(epsilonInit=0.5, hiddenN=10, iterations=1000, lambdaValue=0.01)
+	classifier = NNOP(epsilon_init=0.5, hidden_n=10, iterations=1000, lambda_value=0.01)
 	with pytest.raises(ValueError):
 			model = classifier.fit(X_train, y_train_broken)
 			assert model is None, "The NNOP fit method doesnt return Null on error"
@@ -103,7 +103,7 @@ def test_nnop_fit_not_valid_data(train_file):
 
 # 	X_test = self.test_file[:,0:(-1)]
 
-# 	classifier = NNOP(epsilonInit = 0.5, hiddenN = 10, iterations = 500, lambdaValue = 0.01)
+# 	classifier = NNOP(epsilon_init = 0.5, hidden_n = 10, iterations = 500, lambda_value = 0.01)
 # 	classifier.fit(X_train, y_train)
 
 # 	#Test execution and verification
@@ -117,7 +117,7 @@ def test_nnop_predict_not_valid_data(train_file):
 	X_train = train_file[:,0:(-1)]
 	y_train = train_file[:,(-1)]
 
-	classifier = NNOP(epsilonInit = 0.5, hiddenN = 10, iterations = 500, lambdaValue = 0.01)
+	classifier = NNOP(epsilon_init = 0.5, hidden_n = 10, iterations = 500, lambda_value = 0.01)
 	classifier.fit(X_train, y_train)
 
 	#Test execution and verification

@@ -47,12 +47,12 @@ class NNOP(BaseEstimator, ClassifierMixin):
 			available at http://www.gnu.org/licenses/gpl-3.0.html
 
 		NNOP properties:
-			epsilonInit					- Range for initializing the weights.
-			hiddenN						- Number of hidden neurons of the
+			epsilon_init				- Range for initializing the weights.
+			hidden_n					- Number of hidden neurons of the
 										model.
 			iterations					- Number of iterations for fmin_l_bfgs_b
 										algorithm.
-			lambdaValue					- Regularization parameter.
+			lambda_value				- Regularization parameter.
 			theta1						- Hidden layer weigths (with bias).
 			theta2						- Output layer weigths.
 			num_labels					- Number of labels in the problem.
@@ -61,12 +61,12 @@ class NNOP(BaseEstimator, ClassifierMixin):
 	"""
 
 	# Constructor of class NNOP (set parameters values).
-	def __init__(self, epsilonInit=0.5, hiddenN=50, iterations=500, lambdaValue=0.01):
+	def __init__(self, epsilon_init=0.5, hidden_n=50, iterations=500, lambda_value=0.01):
 		
-		self.epsilonInit = epsilonInit
-		self.hiddenN = hiddenN
+		self.epsilon_init = epsilon_init
+		self.hidden_n = hidden_n
 		self.iterations = iterations
-		self.lambdaValue = lambdaValue
+		self.lambda_value = lambda_value
 
 
 	#--------Main functions (Public Access)--------
@@ -95,7 +95,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		self: The object NNOP.
 
 		"""
-		if self.epsilonInit < 0 or self.hiddenN < 1 or self.iterations < 1 or self.lambdaValue < 0:
+		if self.epsilon_init < 0 or self.hidden_n < 1 or self.iterations < 1 or self.lambda_value < 0:
 			return None
 		
 		
@@ -114,22 +114,22 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		Y = 1 * (np.tile(y, (1,num_labels)) <= np.tile(np.arange(1,num_labels+1)[np.newaxis,:], (m,1)))
 
 		# Hidden layer weigths (with bias)
-		initial_Theta1 = self.__randInitializeWeights(input_layer_size+1, self.getHiddenN())
+		initial_theta1 = self.__rand_initialize_weights(input_layer_size+1, self.hidden_n)
 		# Output layer weigths
-		initial_Theta2 = self.__randInitializeWeights(self.getHiddenN()+1, num_labels-1)
+		initial_theta2 = self.__rand_initialize_weights(self.hidden_n+1, num_labels-1)
 		
 		# Pack parameters
-		initial_nn_params = np.concatenate((initial_Theta1.flatten(order='F'),
-		 initial_Theta2.flatten(order='F')), axis=0)[:,np.newaxis]
+		initial_nn_params = np.concatenate((initial_theta1.flatten(order='F'),
+		 initial_theta2.flatten(order='F')), axis=0)[:,np.newaxis]
 		
-		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnOPCostFunction, x0=initial_nn_params.ravel(),args=(input_layer_size, self.hiddenN,
-			num_labels, X, Y, self.lambdaValue), fprime=None, factr=1e3, maxiter=self.iterations,iprint=-1)
+		results_optimization = scipy.optimize.fmin_l_bfgs_b(func=self.__nnop_cost_function, x0=initial_nn_params.ravel(),args=(input_layer_size, self.hidden_n,
+			num_labels, X, Y, self.lambda_value), fprime=None, factr=1e3, maxiter=self.iterations,iprint=-1)
 		
 		self.nn_params = results_optimization[0]
 		# Unpack the parameters
-		Theta1, Theta2 = self.__unpackParameters(self.nn_params, input_layer_size, self.getHiddenN(), num_labels)
-		self.theta1 = Theta1
-		self.theta2 = Theta2
+		theta1, theta2 = self.__unpack_parameters(self.nn_params, input_layer_size, self.get_hidden_n(), num_labels)
+		self.theta1 = theta1
+		self.theta2 = theta2
 		self.num_labels = num_labels
 		self.m = m
 
@@ -180,55 +180,55 @@ class NNOP(BaseEstimator, ClassifierMixin):
 	
 
 	# Getter & Setter of "epsilonInit"
-	def getEpsilonInit (self):
+	def get_epsilon_init (self):
 	
 		"""
 
-		This method returns the value of the variable self.epsilonInit.
-		self.epsilonInit contains the value of epsilon, which is the initialization range of the weights.
+		This method returns the value of the variable self.epsilon_init.
+		self.epsilon_init contains the value of epsilon, which is the initialization range of the weights.
 
 		"""
 
-		return self.epsilonInit
+		return self.epsilon_init
 
-	def setEpsilonInit (self, epsilonInit):
-
-		"""
-
-		This method modify the value of the variable self.epsilonInit.
-		This is replaced by the value contained in the epsilonInit variable passed as an argument.
+	def set_epsilon_init (self, epsilon_init):
 
 		"""
 
-		self.epsilonInit = epsilonInit
+		This method modify the value of the variable self.epsilon_init.
+		This is replaced by the value contained in the epsilon_init variable passed as an argument.
+
+		"""
+
+		self.epsilon_init = epsilon_init
 	
 
 	# Getter & Setter of "hiddenN"
-	def getHiddenN (self):
+	def get_hidden_n (self):
 
 		"""
 
-		This method returns the value of the variable self.hiddenN.
-		self.hiddenN contains the number of nodes/neurons in the hidden layer.
+		This method returns the value of the variable self.hidden_n.
+		self.hidden_n contains the number of nodes/neurons in the hidden layer.
 
 		"""
 
-		return self.hiddenN
+		return self.hidden_n
 
-	def setHiddenN (self, hiddenN):
+	def set_hidden_n (self, hidden_n):
 		
 		"""
 
-		This method modify the value of the variable self.hiddenN.
-		This is replaced by the value contained in the hiddenN variable passed as an argument.
+		This method modify the value of the variable self.hidden_n.
+		This is replaced by the value contained in the hidden_n variable passed as an argument.
 
 		"""
 
-		self.hiddenN = hiddenN
+		self.hidden_n = hidden_n
 	
 
 	# Getter & Setter of "iterations"
-	def getIterations (self):
+	def get_iterations (self):
 		
 		"""
 
@@ -239,7 +239,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		return self.iterations
 	
-	def setIterations (self, iterations):
+	def set_iterations (self, iterations):
 
 		"""
 
@@ -252,31 +252,31 @@ class NNOP(BaseEstimator, ClassifierMixin):
 	
 
 	# Getter & Setter of "lambdaValue"
-	def getLambdaValue (self):
+	def get_lambda_value (self):
 
 		"""
 
-		This method returns the value of the variable self.lambdaValue.
-		self.lambdaValue contains the Lambda parameter used in regularization.
+		This method returns the value of the variable self.lambda_value.
+		self.lambda_value contains the Lambda parameter used in regularization.
 
 		"""
 
-		return self.lambdaValue
+		return self.lambda_value
 	
-	def setLambdaValue (self, lambdaValue):
+	def set_lambda_value (self, lambda_value):
 
 		"""
 
-		This method modify the value of the variable self.lambdaValue.
-		This is replaced by the value contained in the lambdaValue variable passed as an argument.
+		This method modify the value of the variable self.lambda_value.
+		This is replaced by the value contained in the lambda_value variable passed as an argument.
 
 		"""
 
-		self.lambdaValue = lambdaValue
+		self.lambda_value = lambda_value
 
 
 	# Getter & Setter of "theta1"
-	def getTheta1 (self):
+	def get_theta1 (self):
 		
 		"""
 
@@ -287,7 +287,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		return self.theta1
 
-	def setTheta1 (self, theta1):
+	def set_theta1 (self, theta1):
 		
 		"""
 
@@ -300,7 +300,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 	
 
 	# Getter & Setter of "theta2"
-	def getTheta2 (self):
+	def get_theta2 (self):
 		
 		"""
 
@@ -311,7 +311,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		return self.theta2
 	
-	def setTheta2 (self, theta2):
+	def set_theta2 (self, theta2):
 		
 		"""
 
@@ -323,7 +323,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		self.theta2 = theta2
 
 	# Getter & Setter of "num_labels"
-	def getNum_labels (self):
+	def get_num_labels (self):
 		
 		"""
 
@@ -334,7 +334,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		return self.num_labels
 	
-	def setNum_labels (self, num_labels):
+	def set_num_labels (self, num_labels):
 		
 		"""
 
@@ -347,7 +347,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 
 	# Getter & Setter of "m"
-	def getM (self):
+	def get_m (self):
 		
 		"""
 
@@ -358,7 +358,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		return self.m
 	
-	def setM (self, m):
+	def set_m (self, m):
 		
 		"""
 
@@ -372,21 +372,21 @@ class NNOP(BaseEstimator, ClassifierMixin):
 	#--------------Private Access functions------------------
 
 
-	# Download and save the values ​​of Theta1, Theta2 and thresholds_param
+	# Download and save the values ​​of theta1, theta2 and thresholds_param
 	# from the nn_params array to their corresponding array
-	def __unpackParameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels):
+	def __unpack_parameters(self, nn_params, input_layer_size, hidden_layer_size, num_labels):
 		
 		"""
 
-		This method gets Theta1 and Theta2 back from the whole array nn_params.
+		This method gets theta1 and theta2 back from the whole array nn_params.
 
 		Parameters
 		----------
 
 		nn_params: column array, shape ((imput_layer_size+1)*hidden_layer_size
 		+ hidden_layer_size + (num_labels-1))
-			Array that is a column vector. It stores the values ​​of Theta1,
-			Theta2 and thresholds_param, all of them together in an array in this order.
+			Array that is a column vector. It stores the values ​​of theta1,
+			theta2 and thresholds_param, all of them together in an array in this order.
 
 		input_layer_size: integer
 			Number of nodes in the input layer of the neural network model.
@@ -401,25 +401,25 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		Theta1: The weights between the input layer and the hidden layer (with biases included).
+		theta1: The weights between the input layer and the hidden layer (with biases included).
 
-		Theta2: The weights between the hidden layer and the output layer.
+		theta2: The weights between the hidden layer and the output layer.
 
 		"""
 
-		nTheta1 = hidden_layer_size * (input_layer_size + 1)
-		Theta1 = np.reshape(nn_params[0:nTheta1],(hidden_layer_size,
+		n_theta1 = hidden_layer_size * (input_layer_size + 1)
+		theta1 = np.reshape(nn_params[0:n_theta1],(hidden_layer_size,
 		 (input_layer_size + 1)),order='F')
 		
-		Theta2 = np.reshape(nn_params[nTheta1:], (num_labels-1,
+		theta2 = np.reshape(nn_params[n_theta1:], (num_labels-1,
 		 hidden_layer_size+1),order='F')
 		
-		return Theta1, Theta2
+		return theta1, theta2
 	
 
 	# Randomly initialize the weights of the neural network layer
 	# by entering the number of input and output nodes of that layer
-	def __randInitializeWeights(self, L_in, L_out):
+	def __rand_initialize_weights(self, L_in, L_out):
 
 		"""
 
@@ -442,14 +442,14 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
 		"""
 
-		W = np.random.rand(L_out,L_in)*2*self.getEpsilonInit() - self.getEpsilonInit()
+		W = np.random.rand(L_out,L_in)*2*self.get_epsilon_init() - self.get_epsilon_init()
 
 		return W
 
 
 	# Implements the cost function and obtains the corresponding derivatives.
-	def __nnOPCostFunction(self, nn_params, input_layer_size, hidden_layer_size,
-	num_labels, X, Y, lambdaValue):
+	def __nnop_cost_function(self, nn_params, input_layer_size, hidden_layer_size,
+	num_labels, X, Y, lambda_value):
 		
 		"""
 		This method implements the cost function and obtains
@@ -480,7 +480,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		Y: array-like, shape (n_samples)
 			Target vector relative to X
 
-		lambdaValue:
+		lambda_value:
 			Regularization parameter.
 
 		Returns
@@ -492,35 +492,35 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		"""
 
 		# Unroll all the parameters
-		Theta1,Theta2 = self.__unpackParameters(nn_params,input_layer_size, hidden_layer_size, num_labels)
+		theta1,theta2 = self.__unpack_parameters(nn_params,input_layer_size, hidden_layer_size, num_labels)
 
 		# Setup some useful variables
 		m = np.size(X, 0)
 
 		# Neural Network model
 		a1 = np.append(np.ones((m, 1)), X, axis=1)
-		z2 = np.matmul(a1,Theta1.T)
+		z2 = np.matmul(a1,theta1.T)
 		a2 = np.append(np.ones((m, 1)), 1.0 / (1.0 + np.exp(-z2)), axis=1)
-		z3 = np.matmul(a2,Theta2.T)
+		z3 = np.matmul(a2,theta2.T)
 		h = np.append(1.0 / (1.0 + np.exp(-z3)), np.ones((m, 1)), axis=1)
 
 		# Final output
 		out = h
 
 		# Calculate penalty (regularización L2)
-		p = np.sum((Theta1[:,1:]**2).sum() + (Theta2[:,1:]**2).sum())
+		p = np.sum((theta1[:,1:]**2).sum() + (theta2[:,1:]**2).sum())
 
 		# MSE
-		J = np.sum((out-Y)**2).sum()/(2*m) + lambdaValue*p/(2*m)
+		J = np.sum((out-Y)**2).sum()/(2*m) + lambda_value*p/(2*m)
 
 		# MSE
-		errorDer = (out-Y)
+		error_der = (out-Y)
 
 		# Calculate sigmas
-		sigma3 = np.multiply(np.multiply(errorDer,h), (1-h))
+		sigma3 = np.multiply(np.multiply(error_der,h), (1-h))
 		sigma3 = sigma3[:,:-1]
 
-		sigma2 = np.multiply(np.multiply(np.matmul(sigma3, Theta2), a2), (1-a2))
+		sigma2 = np.multiply(np.multiply(np.matmul(sigma3, theta2), a2), (1-a2))
 		sigma2 = sigma2[:,1:]
 
 		# Accumulate gradients
@@ -528,14 +528,14 @@ class NNOP(BaseEstimator, ClassifierMixin):
 		delta_2 = np.matmul(sigma3.T, a2)
 
 		# Calculate regularized gradient
-		p1 = (lambdaValue/m) * np.concatenate((np.zeros((np.size(Theta1, axis=0), 1)), Theta1[:,1:]), axis=1)
-		p2 = (lambdaValue/m) * np.concatenate((np.zeros((np.size(Theta2, axis=0), 1)), Theta2[:,1:]), axis=1)
-		Theta1_grad = delta_1 / m + p1
-		Theta2_grad = delta_2 / m + p2
+		p1 = (lambda_value/m) * np.concatenate((np.zeros((np.size(theta1, axis=0), 1)), theta1[:,1:]), axis=1)
+		p2 = (lambda_value/m) * np.concatenate((np.zeros((np.size(theta2, axis=0), 1)), theta2[:,1:]), axis=1)
+		theta1_grad = delta_1 / m + p1
+		theta2_grad = delta_2 / m + p2
 
 		# Unroll gradients
-		grad = np.concatenate((Theta1_grad.flatten(order='F'),
-		 Theta2_grad.flatten(order='F')),axis=0)
+		grad = np.concatenate((theta1_grad.flatten(order='F'),
+		 theta2_grad.flatten(order='F')),axis=0)
 
 		return J,grad
 	
