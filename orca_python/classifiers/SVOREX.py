@@ -32,23 +32,23 @@ class SVOREX(BaseEstimator, ClassifierMixin):
              http://10.1162/neco.2007.19.3.792
 		
 	Model Parameters:
-		kernel_type:
+		kernel:
 			0 -- gaussian: use gaussian kernel (default)
 			1 -- linear:   use imbalanced Linear kernel
 			2 -- polynomial: (Use parameter p to change the order) use Polynomial kernel with order p
-		T t: set Tolerance at t (default 0.001)
-		K o: set kappa value at o (default 1)	
-		C o: set C value at o (default  1)	
+		tol: set Tolerance (default 0.001)
+		kappa: set kappa value (default 1)	
+		C: set C value (default  1)	
 	"""
 
 	#Set parameters values
-	def __init__(self, kernel_type=0, p=2, t=0.001, c=1, k=1):
+	def __init__(self, C=1.0, kernel=0, degree=2, tol=0.001, kappa=1):
 
-		self.kernel_type = kernel_type
-		self.p = p
-		self.t = t
-		self.c = c
-		self.k = k
+		self.C = C
+		self.kernel = kernel
+		self.degree = degree
+		self.tol = tol
+		self.kappa = kappa
 		
 
 	def fit(self, X, y):
@@ -79,14 +79,14 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
 		arg = ""
 		#Prepare the kernel type arguments
-		if (self.kernel_type == 1):
+		if (self.kernel == 1):
 			arg = "-L"
-		elif (self.kernel_type == 2):
-			arg = "-P {}".format(self.p)
+		elif (self.kernel == 2):
+			arg = "-P {}".format(self.degree)
 			
 		# Fit the model
-		options = "svorex {} -T {} -K {} -C {}".format(arg, str(self.t), str(self.k), str(self.c))
-		self.classifier_ = svorex.fit(y.tolist(), X.tolist(), options)
+		options = "svorex {} -T {} -K {} -C {}".format(arg, str(self.tol), str(self.kappa), str(self.C))
+		self.model_ = svorex.fit(y.tolist(), X.tolist(), options)
 		
 		return self
 
@@ -104,16 +104,16 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		predicted_y : array, shape (n_samples,)
+		y_pred : array, shape (n_samples,)
 			Class labels for samples in X.
 		"""
 		
 		# Check is fit had been called
-		check_is_fitted(self, ['classifier_'])
+		check_is_fitted(self, ['model_'])
 
 		# Input validation
 		X = check_array(X)
 
-		predicted_y = svorex.predict(X.tolist(), self.classifier_)
+		y_pred = svorex.predict(X.tolist(), self.model_)
 		
-		return predicted_y
+		return y_pred

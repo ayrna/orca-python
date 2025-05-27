@@ -78,10 +78,10 @@
 
 			"classifier": "orca_python.classifiers.SVOREX",
 			"parameters": {
-				"kernel_type": 0,
-				"c": [0.1, 1, 10],
-				"k": [0.1, 1, 10],
-				"t": 0.001
+				"kernel": 0,
+				"C": [0.1, 1, 10],
+				"kappa": [0.1, 1, 10],
+				"tol": 0.001
 			}
 
 		}

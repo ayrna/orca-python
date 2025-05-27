@@ -42,9 +42,9 @@ def test_svorex_fit_correct(dataset_path, train_file, test_file, predictions_pat
                             ospath.join(predictions_path, "expectedPredictions.1"),
                             ospath.join(predictions_path, "expectedPredictions.2"),]
 
-    classifiers = [SVOREX(kernel_type=0, t=0.002, c=0.5, k=0.1),
-                   SVOREX(kernel_type=1, t=0.002, c=0.5, k=0.1),
-                   SVOREX(kernel_type=2, p=4, t=0.002, c=0.5, k=0.1)]
+    classifiers = [SVOREX(kernel=0, tol=0.002, C=0.5, kappa=0.1),
+                   SVOREX(kernel=1, tol=0.002, C=0.5, kappa=0.1),
+                   SVOREX(kernel=2, degree=4, tol=0.002, C=0.5, kappa=0.1)]
 
     #Test execution and verification
     for expected_prediction, classifier in zip(expected_predictions, classifiers):
@@ -59,11 +59,11 @@ def test_svorex_fit_not_valid_parameter(train_file):
     X_train = train_file[:,0:(-1)]
     y_train = train_file[:,(-1)]
 
-    classifiers = [SVOREX(c=0.1, k=1, t=0),
-                SVOREX(c=0, k=1),
-                SVOREX(c=0.1, k=0),
-                SVOREX(kernel_type=2, p=0, c=0.1, k=1),
-                SVOREX(kernel_type=0, c=0.1, k=-1)]
+    classifiers = [SVOREX(C=0.1, kappa=1, tol=0),
+                SVOREX(C=0, kappa=1),
+                SVOREX(C=0.1, kappa=0),
+                SVOREX(kernel=2, degree=0, C=0.1, kappa=1),
+                SVOREX(kernel=0, C=0.1, kappa=-1)]
     
     error_msgs = ["- T is invalid",
                 "- C is invalid",
@@ -85,7 +85,7 @@ def test_svorex_fit_not_valid_data(train_file):
     y_train_broken = train_file[0:(-1),(-1)]
 
     #Test execution and verification
-    classifier = SVOREX(k=0.1, c=1)
+    classifier = SVOREX(kappa=0.1, C=1)
     with pytest.raises(ValueError):
             model = classifier.fit(X_train, y_train_broken)
             assert model is None, "The SVOREX fit method doesnt return Null on error"
@@ -109,12 +109,12 @@ def test_svorex_model_is_not_a_dict(train_file, test_file):
 
     X_test = test_file[:,0:(-1)]
 
-    classifier = SVOREX(k=0.1, c=1)
+    classifier = SVOREX(kappa=0.1, C=1)
     classifier.fit(X_train, y_train)
 
     #Test execution and verification
     with pytest.raises(TypeError, match="Model should be a dictionary!"):
-            classifier.classifier_ = 1
+            classifier.model_ = 1
             classifier.predict(X_test)
 
 def test_svorex_predict_not_valid_data(train_file):
@@ -122,7 +122,7 @@ def test_svorex_predict_not_valid_data(train_file):
     X_train = train_file[:,0:(-1)]
     y_train = train_file[:,(-1)]
 
-    classifier = SVOREX(k=0.1, c=1)
+    classifier = SVOREX(kappa=0.1, C=1)
     classifier.fit(X_train, y_train)
 
     #Test execution and verification
