@@ -164,7 +164,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		predicted_y: array, shape (n_samples,)
+		y_pred: array, shape (n_samples,)
 			Class labels for samples in X.
 		"""
 
@@ -184,7 +184,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 			# Transforming from binary problems to the original problem
 			losses = self._exponential_loss(predictions)
-			predicted_y = self.classes_[np.argmin(losses, axis=1)]
+			y_pred = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "hinge_loss":
@@ -194,7 +194,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 			# Transforming from binary problems to the original problem
 			losses = self._hinge_loss(predictions)
-			predicted_y = self.classes_[np.argmin(losses, axis=1)]
+			y_pred = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "logarithmic_loss":
@@ -204,14 +204,14 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
 			# Transforming from binary problems to the original problem
 			losses = self._logarithmic_loss(predictions)
-			predicted_y = self.classes_[np.argmin(losses, axis=1)]
+			y_pred = self.classes_[np.argmin(losses, axis=1)]
 
 
 		elif decision_method == "frank_hall":
 
 			# Transforming from binary problems to the original problem
-			predicted_proba_y = self._frank_hall_method(predictions)
-			predicted_y = self.classes_[np.argmax(predicted_proba_y, axis=1)]
+			y_proba = self._frank_hall_method(predictions)
+			y_pred = self.classes_[np.argmax(y_proba, axis=1)]
 
 
 		else:
@@ -219,7 +219,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 									% decision_method)
 
 
-		return predicted_y
+		return y_pred
 
 
 	def predict_proba(self, X):
@@ -235,7 +235,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		predicted_proba_y: array, shape (n_samples,)
+		y_proba: array, shape (n_samples,)
 			Returns the probability of the sample for each class in the model, where classes are ordered as they are in self.classes_.
 		"""
 
@@ -256,10 +256,10 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			# Transforming from binary problems to the original problem
 			losses = self._exponential_loss(predictions)
 			losses = 1 / losses.astype(float)
-			predicted_proba_y = []
+			y_proba = []
 			for losse in losses:
-				predicted_proba_y.append((np.exp(losse) / np.sum(np.exp(losse))))
-			predicted_proba_y = np.array(predicted_proba_y)
+				y_proba.append((np.exp(losse) / np.sum(np.exp(losse))))
+			y_proba = np.array(y_proba)
 
 
 		elif decision_method == "hinge_loss":
@@ -270,10 +270,10 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			# Transforming from binary problems to the original problem
 			losses = self._hinge_loss(predictions)
 			losses = 1 / losses.astype(float)
-			predicted_proba_y = []
+			y_proba = []
 			for losse in losses:
-				predicted_proba_y.append((np.exp(losse) / np.sum(np.exp(losse))))
-			predicted_proba_y = np.array(predicted_proba_y)
+				y_proba.append((np.exp(losse) / np.sum(np.exp(losse))))
+			y_proba = np.array(y_proba)
 
 
 		elif decision_method == "logarithmic_loss":
@@ -284,23 +284,23 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 			# Transforming from binary problems to the original problem
 			losses = self._logarithmic_loss(predictions)
 			losses = 1 / losses.astype(float)
-			predicted_proba_y = []
+			y_proba = []
 			for losse in losses:
-				predicted_proba_y.append((np.exp(losse) / np.sum(np.exp(losse))))
-			predicted_proba_y = np.array(predicted_proba_y)
+				y_proba.append((np.exp(losse) / np.sum(np.exp(losse))))
+			y_proba = np.array(y_proba)
 
 
 		elif decision_method == "frank_hall":
 
 			# Transforming from binary problems to the original problem
-			predicted_proba_y = self._frank_hall_method(predictions)
+			y_proba = self._frank_hall_method(predictions)
 
 		else:
 			raise AttributeError('The specified loss method "%s" is not implemented'
 									% decision_method)
 
 
-		return predicted_proba_y
+		return y_proba
 
 	def _coding_matrix(self, dtype, n_classes):
 
@@ -498,7 +498,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		predicted_proba_y: array, shape (n_samples, n_targets)
+		y_proba: array, shape (n_samples, n_targets)
 			Class labels predicted for samples in dataset X.
 		"""
 
@@ -508,15 +508,15 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 								ordered_partitions must be used")
 
 
-		predicted_proba_y = np.empty([(predictions.shape[0]), (predictions.shape[1] + 1)])
+		y_proba = np.empty([(predictions.shape[0]), (predictions.shape[1] + 1)])
 
 		# Probabilities of each set to belong to the first ordinal class
-		predicted_proba_y[:,0] = 1 - predictions[:,0]
+		y_proba[:,0] = 1 - predictions[:,0]
 
 		# Probabilities for the central classes
-		predicted_proba_y[:,1:-1] = predictions[:,:-1] - predictions[:,1:]
+		y_proba[:,1:-1] = predictions[:,:-1] - predictions[:,1:]
 
 		# Probabilities of each set to belong to the last class
-		predicted_proba_y[:,-1] = predictions[:,-1]
+		y_proba[:,-1] = predictions[:,-1]
 
-		return predicted_proba_y
+		return y_proba
