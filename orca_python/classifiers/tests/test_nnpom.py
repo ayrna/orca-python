@@ -40,11 +40,11 @@ def test_file(dataset_path):
 # 							# ospath.join(self.dataset_path,"expectedPredictions.2"),
 # 							# ospath.join(self.dataset_path,"expectedPredictions.3")]
 
-# 	classifiers = [NNPOM(epsilon_init = 0.5, hidden_n = 10, iterations = 500, lambda_value = 0.01)]
+# 	classifiers = [NNPOM(epsilon_init = 0.5, n_hidden = 10, max_iter = 500, lambda_value = 0.01)]
 
-# 	#			   NNPOM(epsilon_init = 0.5, hidden_n = 20, iterations = 500, lambda_value = 0.01),
-# 	#			   NNPOM(epsilon_init = 0.5, hidden_n = 10, iterations = 250, lambda_value = 0.01),
-# 	#			   NNPOM(epsilon_init = 0.5, hidden_n = 20, iterations = 500, lambda_value = 0.01)]
+# 	#			   NNPOM(epsilon_init = 0.5, n_hidden = 20, max_iter = 500, lambda_value = 0.01),
+# 	#			   NNPOM(epsilon_init = 0.5, n_hidden = 10, max_iter = 250, lambda_value = 0.01),
+# 	#			   NNPOM(epsilon_init = 0.5, n_hidden = 20, max_iter = 500, lambda_value = 0.01)]
 
 
 # 	#Test execution and verification
@@ -59,8 +59,8 @@ def test_nnpom_fit_not_valid_parameter(train_file):
     X_train = train_file[:,0:(-1)]
     y_train = train_file[:,(-1)]
 
-    classifiers = [NNPOM(epsilon_init=0.5, hidden_n=-1, iterations=1000, lambda_value=0.01),
-                    NNPOM(epsilon_init=0.5, hidden_n=10, iterations=-1, lambda_value=0.01)]
+    classifiers = [NNPOM(epsilon_init=0.5, n_hidden=-1, max_iter=1000, lambda_value=0.01),
+                    NNPOM(epsilon_init=0.5, n_hidden=10, max_iter=-1, lambda_value=0.01)]
 
     #Test execution and verification
     for classifier in classifiers:
@@ -75,7 +75,7 @@ def test_nnpom_fit_not_valid_data(train_file):
     y_train_broken = train_file[0:(-1),(-1)]
 
     #Test execution and verification
-    classifier = NNPOM(epsilon_init=0.5, hidden_n=10, iterations=1000, lambda_value=0.01)
+    classifier = NNPOM(epsilon_init=0.5, n_hidden=10, max_iter=1000, lambda_value=0.01)
     with pytest.raises(ValueError):
             model = classifier.fit(X_train, y_train_broken)
             assert model is None, "The NNPOM fit method doesnt return Null on error"
@@ -103,7 +103,7 @@ def test_nnpom_fit_not_valid_data(train_file):
 
 # 	X_test = self.test_file[:,0:(-1)]
 
-# 	classifier = NNPOM(epsilon_init = 0.5, hidden_n = 10, iterations = 500, lambda_value = 0.01)
+# 	classifier = NNPOM(epsilon_init = 0.5, n_hidden = 10, max_iter = 500, lambda_value = 0.01)
 # 	classifier.fit(X_train, y_train)
 
 # 	#Test execution and verification
@@ -117,7 +117,7 @@ def test_nnpom_predict_not_valid_data(train_file):
     X_train = train_file[:,0:(-1)]
     y_train = train_file[:,(-1)]
 
-    classifier = NNPOM(epsilon_init = 0.5, hidden_n = 10, iterations = 500, lambda_value = 0.01)
+    classifier = NNPOM(epsilon_init = 0.5, n_hidden = 10, max_iter = 500, lambda_value = 0.01)
     classifier.fit(X_train, y_train)
 
     #Test execution and verification

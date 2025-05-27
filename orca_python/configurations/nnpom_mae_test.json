@@ -20,8 +20,8 @@
 			"classifier": "NNPOM",
 			"parameters": {
                 "epsilon_init": 0.5,
-                "hidden_n": 10,
-                "iterations": 500,
+                "n_hidden": 10,
+                "max_iter": 500,
 				"lambda_value": 0.01
 
             }
