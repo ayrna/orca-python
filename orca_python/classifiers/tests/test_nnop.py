@@ -59,8 +59,8 @@ def test_nnop_fit_not_valid_parameter(train_file):
 	X_train = train_file[:,0:(-1)]
 	y_train = train_file[:,(-1)]
 
-	classifiers = [NNOP(epsilon_init=0.5, hidden_n=-1, iterations=1000, lambda_value=0.01),
-					NNOP(epsilon_init=0.5, hidden_n=10, iterations=-1, lambda_value=0.01)]
+	classifiers = [NNOP(epsilon_init=0.5, n_hidden=-1, max_iter=1000, lambda_value=0.01),
+					NNOP(epsilon_init=0.5, n_hidden=10, max_iter=-1, lambda_value=0.01)]
 
 	#Test execution and verification
 	for classifier in classifiers:
@@ -75,7 +75,7 @@ def test_nnop_fit_not_valid_data(train_file):
 	y_train_broken = train_file[0:(-1),(-1)]
 
 	#Test execution and verification
-	classifier = NNOP(epsilon_init=0.5, hidden_n=10, iterations=1000, lambda_value=0.01)
+	classifier = NNOP(epsilon_init=0.5, n_hidden=10, max_iter=1000, lambda_value=0.01)
 	with pytest.raises(ValueError):
 			model = classifier.fit(X_train, y_train_broken)
 			assert model is None, "The NNOP fit method doesnt return Null on error"
@@ -117,7 +117,7 @@ def test_nnop_predict_not_valid_data(train_file):
 	X_train = train_file[:,0:(-1)]
 	y_train = train_file[:,(-1)]
 
-	classifier = NNOP(epsilon_init = 0.5, hidden_n = 10, iterations = 500, lambda_value = 0.01)
+	classifier = NNOP(epsilon_init = 0.5, n_hidden = 10, max_iter = 500, lambda_value = 0.01)
 	classifier.fit(X_train, y_train)
 
 	#Test execution and verification
