@@ -47,14 +47,14 @@ def test_redsvm_fit_correct(dataset_path, train_file, test_file, predictions_pat
                             ospath.join(predictions_path, "expectedPredictions.6"),
                             ospath.join(predictions_path, "expectedPredictions.7")]
 
-    classifiers = [REDSVM(t=0, d=2, g=0.1, r=0.5, c=0.1, m=150, e=0.005, h=0),
-                REDSVM(t=1, d=2, g=0.1, r=0.5, c=0.1, m=150, e=0.005, h=0),
-                REDSVM(t=2, d=2, g=0.1, r=0.5, c=0.1, m=150, e=0.005, h=0),
-                REDSVM(t=3, d=2, g=0.1, r=0.5, c=0.1, m=150, e=0.005, h=0),
-                REDSVM(t=4, d=2, g=0.1, r=0.5, c=0.1, m=150, e=0.005, h=0),
-                REDSVM(t=5, d=2, g=0.1, r=0.5, c=0.1, m=150, e=0.005, h=1),
-                REDSVM(t=6, d=2, g=0.1, r=0.5, c=0.1, m=150, e=0.005, h=1),
-                REDSVM(t=7, d=2, g=0.1, r=0.5, c=0.1, m=150, e=0.005, h=1)]
+    classifiers = [REDSVM(kernel=0, degree=2, gamma=0.1, coef0=0.5, C=0.1, cache_size=150, tol=0.005, shrinking=0),
+                REDSVM(kernel=1, degree=2, gamma=0.1, coef0=0.5, C=0.1, cache_size=150, tol=0.005, shrinking=0),
+                REDSVM(kernel=2, degree=2, gamma=0.1, coef0=0.5, C=0.1, cache_size=150, tol=0.005, shrinking=0),
+                REDSVM(kernel=3, degree=2, gamma=0.1, coef0=0.5, C=0.1, cache_size=150, tol=0.005, shrinking=0),
+                REDSVM(kernel=4, degree=2, gamma=0.1, coef0=0.5, C=0.1, cache_size=150, tol=0.005, shrinking=0),
+                REDSVM(kernel=5, degree=2, gamma=0.1, coef0=0.5, C=0.1, cache_size=150, tol=0.005, shrinking=1),
+                REDSVM(kernel=6, degree=2, gamma=0.1, coef0=0.5, C=0.1, cache_size=150, tol=0.005, shrinking=1),
+                REDSVM(kernel=7, degree=2, gamma=0.1, coef0=0.5, C=0.1, cache_size=150, tol=0.005, shrinking=1)]
 
     #Test execution and verification
     for expected_prediction, classifier in zip(expected_predictions, classifiers):
@@ -69,10 +69,10 @@ def test_redsvm_fit_not_valid_parameter(train_file):
     X_train = train_file[:,0:(-1)]
     y_train = train_file[:,(-1)]
 
-    classifiers = [REDSVM(g=0.1, c=1, t=-1),
-                REDSVM(g=0.1, c=1, m=-1),
-                REDSVM(g=0.1, c=1, e=-1),
-                REDSVM(g=0.1, c=1, h=2)]
+    classifiers = [REDSVM(gamma=0.1, C=1, kernel=-1),
+                REDSVM(gamma=0.1, C=1, cache_size=-1),
+                REDSVM(gamma=0.1, C=1, tol=-1),
+                REDSVM(gamma=0.1, C=1, shrinking=2)]
     
     error_msgs = ["unknown kernel type",
                 "cache_size <= 0",
@@ -93,12 +93,12 @@ def test_redsvm_fit_not_valid_data(train_file):
     y_train_broken = train_file[0:(-1),(-1)]
 
     #Test execution and verification
-    classifier = REDSVM(g=0.1, c=1, t=8)
+    classifier = REDSVM(gamma=0.1, C=1, kernel=8)
     with pytest.raises(ValueError, match="Wrong input format: sample_serial_number out of range"):
             model = classifier.fit(X_train, y_train)
             assert model is None, "The REDSVM fit method doesnt return Null on error"
 
-    classifier = REDSVM(g=0.1, c=1)
+    classifier = REDSVM(gamma=0.1, C=1)
     with pytest.raises(ValueError):
             model = classifier.fit(X_train, y_train_broken)
             assert model is None, "The REDSVM fit method doesnt return Null on error"
@@ -122,12 +122,12 @@ def test_redsvm_model_is_not_a_dict(train_file, test_file):
 
     X_test = test_file[:,0:(-1)]
 
-    classifier = REDSVM(g=0.1, c=1)
+    classifier = REDSVM(gamma=0.1, C=1)
     classifier.fit(X_train, y_train)
 
     #Test execution and verification
     with pytest.raises(TypeError, match="Model should be a dictionary!"):
-            classifier.classifier_ = 1
+            classifier.model_ = 1
             classifier.predict(X_test)
 
 def test_redsvm_predict_not_valid_data(train_file):
@@ -135,7 +135,7 @@ def test_redsvm_predict_not_valid_data(train_file):
     X_train = train_file[:,0:(-1)]
     y_train = train_file[:,(-1)]
 
-    classifier = REDSVM(g=0.1, c=1)
+    classifier = REDSVM(gamma=0.1, C=1)
     classifier.fit(X_train, y_train)
 
     #Test execution and verification

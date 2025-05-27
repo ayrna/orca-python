@@ -35,7 +35,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 			 http://dx.doi.org/10.1109/TKDE.2015.2457911
 
 	Model Parameters:
-	t kernel_type : set type of kernel function (default 2)
+	kernel : set type of kernel function (default 2)
 		0 -- linear: u'*v
 		1 -- polynomial: (gamma*u'*v + coef0)^degree
 		2 -- radial basis function: exp(-gamma*|u-v|^2)
@@ -45,27 +45,37 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 		6 -- laplacian: exp(-gamma*|u-v|_1)\n"
 		7 -- exponential: exp(-gamma*|u-v|_2)\n"
 		8 -- precomputed kernel (kernel values in training_instance_matrix)
-	d degree : set degree in kernel function (default 3)
-	g gamma : set gamma in kernel function (default 1/num_features)
-	r coef0 : set coef0 in kernel function (default 0)
-	c cost : set the parameter C (default 1)
-	m cachesize : set cache memory size in MB (default 100)
-	e epsilon : set tolerance of termination criterion (default 0.001)
-	h shrinking : whether to use the shrinking heuristics, 0 or 1 (default 1)
-	q : quiet mode (no outputs)
+	degree : set degree in kernel function (default 3)
+	gamma : set gamma in kernel function (default 1/num_features)
+	coef0 : set coef0 in kernel function (default 0)
+	C : set the parameter C (default 1)
+	cache_size : set cache memory size in MB (default 100)
+	tol : set tolerance of termination criterion (default 0.001)
+	shrinking : whether to use the shrinking heuristics, 0 or 1 (default 1)
+	quiet : quiet mode (no outputs)
 	"""
 
 	#Set parameters values
-	def __init__(self, t=2, d=3, g=None, r=0, c=1, m=100, e=0.001, h=1):
+	def __init__(
+		self,
+		C=1,
+		kernel=2,
+		degree=3,
+		gamma=None,
+		coef0=0,
+		shrinking=1,
+		tol=0.001,
+		cache_size=100,
+	):
 
-		self.t = t
-		self.d = d
-		self.g = g
-		self.r = r
-		self.c = c
-		self.m = m
-		self.e = e
-		self.h = h
+		self.C = C
+		self.kernel = kernel
+		self.degree = degree
+		self.gamma = gamma
+		self.coef0 = coef0
+		self.shrinking = shrinking
+		self.tol = tol
+		self.cache_size = cache_size
 		
 
 	def fit(self, X, y):
@@ -95,19 +105,19 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 		self.classes_ = unique_labels(y)
 		
 		#Set the default g value if necessary
-		if self.g == None:
-			self.g = 1 / np.size(X, 1)
+		if self.gamma == None:
+			self.gamma = 1 / np.size(X, 1)
 			
 		# Fit the model
-		options = "-s 5 -t {} -d {} -g {} -r {} -c {} -m {} -e {} -h {} -q".format(str(self.t),
-																				str(self.d),
-																				str(self.g),
-																				str(self.r),
-																				str(self.c),
-																				str(self.m),
-																				str(self.e),
-																				str(self.h))
-		self.classifier_ = svm.fit(y.tolist(), X.tolist(), options)
+		options = "-s 5 -t {} -d {} -g {} -r {} -c {} -m {} -e {} -h {} -q".format(str(self.kernel),
+																				str(self.degree),
+																				str(self.gamma),
+																				str(self.coef0),
+																				str(self.C),
+																				str(self.cache_size),
+																				str(self.tol),
+																				str(self.shrinking))
+		self.model_ = svm.fit(y.tolist(), X.tolist(), options)
 		
 		return self
 
@@ -125,16 +135,16 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 		Returns
 		-------
 
-		predicted_y : array, shape (n_samples,)
+		y_pred : array, shape (n_samples,)
 			Class labels for samples in X.
 		"""
 		
 		# Check is fit had been called
-		check_is_fitted(self, ['classifier_'])
+		check_is_fitted(self, ['model_'])
 
 		# Input validation
 		X = check_array(X)
 
-		predicted_y = svm.predict(X.tolist(), self.classifier_)
+		y_pred = svm.predict(X.tolist(), self.model_)
 		
-		return predicted_y
+		return y_pred
