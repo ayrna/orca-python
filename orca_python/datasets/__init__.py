@@ -1,4 +1,4 @@
-"""Datasets module"""
+"""Datasets module."""
 
 from .datasets import (
     get_data_path,

@@ -8,40 +8,43 @@ from orca_python.classifiers.svorex import svorex
 
 
 class SVOREX(BaseEstimator, ClassifierMixin):
+    """Support Vector for Ordinal Regression (Explicit constraints).
+
+    This class derives from the Algorithm Class and implements the SVOREX method.
+    This class uses SVOREX implementation by W. Chu et al
+    (http://www.gatsby.ucl.ac.uk/~chuwei/svor.htm).
+
+    Parameters
+    ----------
+    kernel : int, default=0
+        Set type of kernel function.
+        0 -- gaussian: use gaussian kernel
+        1 -- linear: use imbalanced Linear kernel
+        2 -- polynomial: use Polynomial kernel with order p
+
+    tol : float, default=0.001
+        Set Tolerance.
+
+    kappa : float, default=1
+        Set kappa value.
+
+    C : float, default=1
+        Set C value.
+
+    References
+    ----------
+    .. [1] P.A. Gutiérrez, M. Pérez-Ortiz, J. Sánchez-Monedero, F. Fernández-Navarro
+           and C. Hervás-Martínez, "Ordinal regression methods: survey and
+           experimental study", IEEE Transactions on Knowledge and Data Engineering,
+           Vol. 28. Issue 1, 2016, https://doi.org/10.1109/TKDE.2015.2457911
+
+    .. [2] W. Chu and S. S. Keerthi, "Support Vector Ordinal Regression", Neural
+           Computation, vol. 19, no. 3, pp. 792-815, 2007,
+           http://10.1162/neco.2007.19.3.792
+
     """
-        SVOREX Support Vector for Ordinal Regression (Explicit constraints)
-    This class derives from the Algorithm Class and implements the
-    SVOREX method. This class uses SVOREX implementation by
-    W. Chu et al (http://www.gatsby.ucl.ac.uk/~chuwei/svor.htm)
 
-                SVOREX methods:
-                        fit                        - Fits a model from training data
-                        predict                    - Performs label prediction
-
-        References:
-         [1] P.A. Gutiérrez, M. Pérez-Ortiz, J. Sánchez-Monedero,
-             F. Fernández-Navarro and C. Hervás-Martínez
-             Ordinal regression methods: survey and experimental study
-             IEEE Transactions on Knowledge and Data Engineering, Vol. 28. Issue 1
-             2016
-             http://dx.doi.org/10.1109/TKDE.2015.2457911
-         [2] W. Chu and S. S. Keerthi, Support Vector Ordinal Regression,
-             Neural Computation, vol. 19, no. 3, pp. 792–815, 2007.
-             http://10.1162/neco.2007.19.3.792
-
-        Model Parameters:
-                kernel:
-                        0 -- gaussian: use gaussian kernel (default)
-                        1 -- linear:   use imbalanced Linear kernel
-                        2 -- polynomial: (Use parameter p to change the order) use Polynomial kernel with order p
-                tol: set Tolerance (default 0.001)
-                kappa: set kappa value (default 1)
-                C: set C value (default  1)
-    """
-
-    # Set parameters values
     def __init__(self, C=1.0, kernel=0, degree=2, tol=0.001, kappa=1):
-
         self.C = C
         self.kernel = kernel
         self.degree = degree
@@ -49,25 +52,23 @@ class SVOREX(BaseEstimator, ClassifierMixin):
         self.kappa = kappa
 
     def fit(self, X, y):
-        """
-        Fit the model with the training data
+        """Fit the model with the training data.
 
         Parameters
         ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
-        X: {array-like, sparse matrix}, shape (n_samples, n_features)
-                Training patterns array, where n_samples is the number of samples
-                and n_features is the number of features
-
-        y: array-like, shape (n_samples)
-                Target vector relative to X
+        y : array-like of shape (n_samples,)
+            Target vector relative to X.
 
         Returns
         -------
+        self : object
+            Returns self.
 
-        self: object
         """
-
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
@@ -89,21 +90,18 @@ class SVOREX(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        """
-        Performs classification on samples in X
+        """Perform classification on samples in X.
 
         Parameters
         ----------
-
         X : {array-like, sparse matrix}, shape (n_samples, n_features)
 
         Returns
         -------
-
         y_pred : array, shape (n_samples,)
-                Class labels for samples in X.
-        """
+            Class labels for samples in X.
 
+        """
         # Check is fit had been called
         check_is_fitted(self, ["model_"])
 

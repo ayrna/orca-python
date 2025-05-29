@@ -7,12 +7,11 @@ import scipy.stats
 
 
 def greater_is_better(metric_name):
-    """
-    Determines if greater values for one metric represent a better
-    classification rate or vice versa. Needed when declaring a
-    new scorer through make_scorer from sklearn.
-    """
+    """Determine if greater values indicate better classification performance.
 
+    Needed when declaring a new scorer through make_scorer from sklearn.
+
+    """
     greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
     if metric_name in greater_is_better_metrics:
         return True
@@ -21,23 +20,21 @@ def greater_is_better(metric_name):
 
 
 def ccr(y, ypred):
-    """
-    CCR - Correctly Classified Ratio
+    """Calculate the Correctly Classified Ratio.
 
-    Also named Accuracy, it's the percentage of well
-    classified patterns among all patterns from a set.
-    """
+    Also named Accuracy, it's the percentage of well classified patterns among all
+    patterns from a set.
 
+    """
     return np.count_nonzero(y == ypred) / float(len(y))
 
 
 def amae(y, ypred):
-    """
-    AMAE - Average MAE
+    """Calculate the Average MAE.
 
     Mean of the MAE metric among classes.
-    """
 
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -51,14 +48,7 @@ def amae(y, ypred):
 
 
 def gm(y, ypred):
-    """
-
-    GM - Geometric Mean
-
-    Geometric mean of the sensitivy (accuracy) for each class
-
-    """
-
+    """Calculate the Geometric mean of the sensitivity (accuracy) for each class."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -70,13 +60,11 @@ def gm(y, ypred):
 
 
 def mae(y, ypred):
-    """
-    MAE - Mean Absolute Error
+    """Calculate the Mean Absolute Error.
 
-    Average absolute deviation of the predicted class
-    from the actual true class.
-    """
+    Average absolute deviation of the predicted class from the actual true class.
 
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         y = np.asarray(y)
@@ -85,13 +73,12 @@ def mae(y, ypred):
 
 
 def mmae(y, ypred):
-    """
-    MMAE - Maximum MAE
+    """Calculate the Maximum Mean Absolute Error.
 
-    MAE value of the class with higher distance from the
-    true values to the predicted ones.
-    """
+    MAE value of the class with higher distance from the true values to the predicted
+    ones.
 
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -105,14 +92,12 @@ def mmae(y, ypred):
 
 
 def ms(y, ypred):
-    """
-    MS - Minimum Sensitivity
+    """Calculate the Minimum Sensitivity.
 
-    Lowest percentage of patterns correctly predicted as
-    belonging to each class, with respect to the total number
-    of examples in the corresponding class.
-    """
+    Lowest percentage of patterns correctly predicted as belonging to each class, with
+    respect to the total number of examples in the corresponding class.
 
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -125,12 +110,11 @@ def ms(y, ypred):
 
 
 def mze(y, ypred):
-    """
-    MZE - Mean Zero-one Error
+    """Calculate the Mean Zero-one Error.
 
     Better known as error rate, is the complementary measure of CCR.
-    """
 
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -139,12 +123,12 @@ def mze(y, ypred):
 
 
 def tkendall(y, ypred):
-    """
-    The Kendalls t is a statistic used to measure
-    the association between two measured quantities.
-    It is a measure of rank correlation.
-    """
+    """Calculate Kendall's tau.
 
+    A statistic used to measure the association between two measured quantities. It is
+    a measure of rank correlation.
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -153,12 +137,12 @@ def tkendall(y, ypred):
 
 
 def wkappa(y, ypred):
-    """
-    The Weighted Kappa is a modified version of the Kappa
-    statistic calculated to allow as signing different weights
-    to different levels of aggregation between two variables.
-    """
+    """Calculate the Weighted Kappa.
 
+    A modified version of the Kappa statistic calculated to allow assigning
+    different weights to different levels of aggregation between two variables.
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -180,12 +164,11 @@ def wkappa(y, ypred):
 
 
 def spearman(y, ypred):
-    """
-    The Spearmans rank correlation coefficient is
-    a non-parametric measure of statistical dependence
-    between two variables.
-    """
+    """Calculate the Spearman's rank correlation coefficient.
 
+    A non-parametric measure of statistical dependence between two variables.
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 

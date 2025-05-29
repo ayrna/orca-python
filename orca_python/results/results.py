@@ -8,23 +8,19 @@ import pickle
 
 
 class Results:
-    """
-    Results
+    """Handle all information from an experiment that needs to be saved.
 
-    Class that handles all information from an experiment that needs
-    to be saved. This info will be saved into an specified folder.
+    This information will be saved into an specified folder.
 
     Attributes
     ----------
+    _experiment_folder : str
+        Path where all the information about the actual experiment will be saved. This
+        folder will have the next format: 'exp-YY-MM-DD-hh-mm-ss'.
 
-    _experiment_folder: string
-            Path where all the information about the actual experiment
-            will be saved. This folder will have the next format:
-            'exp-YY-MM-DD-hh-mm-ss'.
     """
 
     def __init__(self, output_folder):
-
         # Getting experiment's folder name
         folder_name = (
             "exp-"
@@ -38,42 +34,37 @@ class Results:
     def add_record(
         self, partition, best_params, best_model, configuration, metrics, predictions
     ):
-        """
-        Stores information obtained from the run of one partition.
+        """Store information obtained from the run of one partition.
 
         Parameters
         ----------
+        partition : str
+            Partition's index.
 
-        partition: string
-                Partition's index.
+        best_params : dict
+            Best hyper-parameter's values found for this configuration and dataset
+            during cross-validation. If an ensemble method has been used, there'll
+            exist a parameter called 'parameters' that will store a dict with the best
+            hyper-parameters found for the base classifier. Keys are the name of each
+            parameter.
 
-        best_params: dictionary
-                Best hyper-parameter's values found for this configuration
-                and dataset during cross-validation. If an ensemble method
-                has been used, there'll exist a parameter called
-                'parameters' that will store a dict with the best
-                hyper-parameters found for the base classifier.
-                Keys are the name of each parameter
+        best_model : estimator
+            Best model created during cross-validation.
 
-        best_model: estimator
-                Best model created during cross-validation.
+        configuration : dict
+            Dictionary containing the name used for this pair of dataset and
+            configuration. Keys are 'dataset' and 'config'.
 
-        configuration: dict
-                Dictionary containing the name used for this pair of
-                dataset and configuration. Keys are 'dataset' and
-                'config'.
+        metrics : dict of dictionaries
+            Dictionary containing the metrics for train and test for this particular
+            configuration. It contains computational times for both of them as well.
+            Keys are 'train' and 'test'.
 
-        metrics: dict of dictionaries
-                Dictionary containing the metrics for train and test for
-                this particular configuration. It contains computational
-                times for both of them as well. Keys are 'train' and 'test'
-
-        predictions: dict of lists
-                Dictionary that stores train and test class predictions.
-                Keys are 'train' and 'test'.
+        predictions : dict of lists
+            Dictionary that stores train and test class predictions. Keys are 'train'
+            and 'test'.
 
         """
-
         dataset_folder = os.path.join(
             self._experiment_folder,
             (configuration["dataset"] + "-" + configuration["config"]),
@@ -121,11 +112,8 @@ class Results:
         # Adding best parameters as first elements in row
         for p_name, p_value in best_params.items():
 
-            """
-            If some ensemble method has been used, then one of its
-            parameters will be a dictionary containing the best
-            parameters found for the base classifier.
-            """
+            # If some ensemble method has been used, then one of its parameters will be
+            # a dictionary containing the best parameters found for the base classifier.
             if isinstance(p_value, dict):
                 for k, v in p_value.items():
                     dataframe_row[k] = v
@@ -157,21 +145,19 @@ class Results:
         df.to_csv(df_path)
 
     def save_summaries(self, metrics_names):
-        """
-        Method used to create a experiment summary, where each
-        dataset-configuration will be represented as a single row
-        of data, which will consist in the mean and standard deviation
-        for the different metric's values across partitions.
+        """Create an experiment summary.
+
+        Each dataset-configuration will be represented as a single row of data, which
+        will consist in the mean and standard deviation for the different metric's
+        values across partitions.
 
         Parameters
         ----------
-
-        metrics_names: list of strings
-                List with the names of all metrics used during the
-                execution of the experiment. Includes comp. times.
+        metrics_names : list of str
+            List with the names of all metrics used during the execution of the
+            experiment. Includes computational times.
 
         """
-
         # Name of columns for summary dataframes
         avg_index = [mn + "_mean" for mn in metrics_names]
         std_index = [mn + "_std" for mn in metrics_names]
@@ -203,36 +189,31 @@ class Results:
         test_summary.to_csv(os.path.join(self._experiment_folder, "test_summary.csv"))
 
     def _create_summary(self, df, avg_index, std_index):
-        """
-        Summarices information from a DataFrame into a single row.
+        """Summarize information from a DataFrame into a single row.
 
         Parameters
         ----------
+        df : DataFrame
+            Dataframe representing one Dataset-Configuration. Contains hyper-parameters,
+            metric's scores and computational times.
 
-                df: DataFrame object
-                        Dataframe representing one Dataset-Configuration.
-                        Contains hyper-parameters, metric's scores and
-                        computational times.
+        avg_index : list of str
+            Includes all names of metrics ending with '_mean'.
 
-                avg_index: list of strings
-                        Includes all names of metrics ending with '_mean'
-
-                std_index: list of strings
-                        Includes all names of metrics ending with '_std'
+        std_index : list of str
+            Includes all names of metrics ending with '_std'.
 
         Returns
         -------
+        train_summary_row : DataFrame
+            DataFrame with only one row, containing mean and standard deviation for all
+            metrics calculated across partitions (including computational times). Stores
+            only train information.
 
-                train_summary_row: DataFrame object
-                        DataFrame with only one row, containing mean and
-                        standard deviation for all metrics calculated
-                        across partitions (including computational times).
-                        Stores only train information.
+        test_summary_row : DataFrame
+            Stores only test information.
 
-                test_summary_row: DataFrame object
-                        Stores only test information
         """
-
         # Dissociating train and test metrics
 
         # Number of parameters used in this configuration

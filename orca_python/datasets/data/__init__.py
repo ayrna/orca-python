@@ -1,3 +1,3 @@
-"""Datasets storage"""
+"""Datasets storage."""
 
 __all__ = []

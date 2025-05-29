@@ -8,36 +8,31 @@ import orca_python.datasets.data
 
 
 def get_data_path():
-    """
-    Get the absolute path of the orca_python.datasets.data module.
+    """Get the absolute path of the orca_python.datasets.data module.
 
     Returns
     -------
-
-    data_path: path
-        ORCA-python datasets path
+    data_path : path
+        ORCA-python datasets path.
 
     """
     return Path(os.path.dirname(orca_python.datasets.data.__file__))
 
 
 def dataset_exists(dataset_name, data_path):
-    """
-    Check if the dataset directory exists within the data path.
+    """Check if the dataset directory exists within the data path.
 
     Parameters
     ----------
-
-    dataset_name: string
+    dataset_name : str
         Name of the dataset.
 
-    data_path: string or path
+    data_path : str or path
         Root directory containing dataset files.
 
     Returns
     -------
-
-    is_dir: bool
+    is_dir : bool
         True if both `data_path` and the dataset directory exist, False otherwise.
 
     """
@@ -46,22 +41,19 @@ def dataset_exists(dataset_name, data_path):
 
 
 def is_undivided(dataset_name, data_path):
-    """
-    Check if there is a dataset file with no train/test split.
+    """Check if there is a dataset file with no train/test split.
 
     Parameters
     ----------
-
-    dataset_name: string
+    dataset_name : str
         Name for the specific dataset.
 
-    data_path: string or path
+    data_path : str or path
         Root directory containing dataset files.
 
     Returns
     -------
-
-    is_undivided: bool
+    is_undivided : bool
         True if the full dataset file exists, False otherwise.
 
     """
@@ -71,22 +63,19 @@ def is_undivided(dataset_name, data_path):
 
 
 def has_unseeded_split(dataset_name, data_path):
-    """
-    Check if the dataset has train/test split files without a seed.
+    """Check if the dataset has train/test split files without a seed.
 
     Parameters
     ----------
-
-    dataset_name: string
+    dataset_name : str
         Name for the specific dataset.
 
-    data_path: string or path
+    data_path : str or path
         Root directory containing dataset files.
 
     Returns
     -------
-
-    bool
+    is_unseeded : bool
         True if train and/or test files without a seed exist, False otherwise.
 
     """
@@ -98,25 +87,22 @@ def has_unseeded_split(dataset_name, data_path):
 
 
 def has_seeded_split(dataset_name, seed, data_path):
-    """
-    Check if the dataset has train/test split files with a specific seed.
+    """Check if the dataset has train/test split files with a specific seed.
 
     Parameters
     ----------
-
-    dataset_name: string
+    dataset_name : str
         Name for the specific dataset.
 
-    seed: int
+    seed : int
         Numerical seed ensuring reproducible randomization.
 
-    data_path: string or path
+    data_path : str or path
         Root directory containing dataset files.
 
     Returns
     -------
-
-    bool
+    is_seeded : bool
         True if train and/or test files with the specified seed exist, False otherwise.
 
     """
@@ -128,16 +114,14 @@ def has_seeded_split(dataset_name, seed, data_path):
 
 
 def check_ambiguity(dataset_name, data_path, seed=None):
-    """
-    Check for ambiguity in dataset format.
+    """Check for ambiguity in dataset format.
 
     Parameters
     ----------
-
-    dataset_name: string
+    dataset_name : str
         Name for the specific dataset.
 
-    data_path: string or path
+    data_path : str or path
         Root directory containing dataset files.
 
     seed: int, optional
@@ -163,29 +147,26 @@ def check_ambiguity(dataset_name, data_path, seed=None):
 
 
 def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
-    """
-    Load a dataset file based on split type and seed.
+    """Load a dataset file based on split type and seed.
 
     Parameters
     ----------
-
-    dataset_name: string
+    dataset_name : str
         Name for the specific dataset.
 
-    split: string, optional
-        Data division type ('undivided', 'train' or 'test')
+    split : str, optional
+        Data division type ('undivided', 'train' or 'test').
 
-    data_path: string or path, optional
-        Root directory containing dataset files. If None, defaults to the
-        orca_python datasets path.
+    data_path : str or path, optional
+        Root directory containing dataset files. If None, defaults to the orca-python
+        datasets path.
 
-    seed: int, optional
+    seed : int, optional
         Numerical seed ensuring reproducible randomization.
 
     Returns
     -------
-
-    X, y: array or None
+    X, y : array or None
         Feature and target arrays. Both may be None if the file does not exist.
 
     """
@@ -209,8 +190,7 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
 
 
 def load_dataset(dataset_name, data_path=None, seed=None):
-    """
-    Load a dataset from the specified directory.
+    """Load a dataset from the specified directory.
 
     The dataset can be stored in one of three formats:
         1. **Undivided dataset**: A single file `[dataset_name].csv` containing both
@@ -218,31 +198,29 @@ def load_dataset(dataset_name, data_path=None, seed=None):
         2. **Train/Test split**: Two separate files, `train_[dataset_name].csv` and
            `test_[dataset_name].csv`.
         3. **Train/Test split with seed**: Seed-specific files,
-           `train_[dataset_name]_[seed].csv` and `test_[dataset_name]_[seed].csv`.
+           `train_[dataset_name]_[seed].csv` and
+           `test_[dataset_name]_[seed].csv`.
 
-    The function automatically detects the format and loads the data
-    accordingly.
+    The function automatically detects the format and loads the data accordingly.
 
     Parameters
     ----------
-
-    dataset_name: string
+    dataset_name : str
         Name of the dataset.
 
-    data_path: string or path, optional
-        Root directory containing dataset files. If None, defaults to the
-        orca_python datasets path.
+    data_path : str or path, optional
+        Root directory containing dataset files. If None, defaults to the orca-python
+        datasets path.
 
-    seed: int, optional
+    seed : int, optional
         Numerical seed ensuring reproducible randomization.
 
     Returns
     -------
-
     X_train, y_train, X_test, y_test: array or None
         - If the dataset is undivided: X and y are returned, test data is None.
-        - If the dataset has a split: train and test data arrays are returned.
-        Any value may be None if not available.
+        - If the dataset has a split: train and test data arrays are returned. Any
+        value may be None if not available.
 
     """
     data_path = Path(os.path.expanduser(str(data_path or get_data_path())))
@@ -273,36 +251,33 @@ def load_dataset(dataset_name, data_path=None, seed=None):
 
 
 def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
-    """
-    Shuffle data by combining train and test sets and splitting them again.
+    """Shuffle data by combining train and test sets and splitting them again.
 
     Handles cases where either train or test set may be None.
 
     Parameters
     ----------
-
-    X_train: np.ndarray or None
+    X_train : np.ndarray or None
         Feature matrix used specifically for model training.
 
-    y_train: np.ndarray or None
+    y_train : np.ndarray or None
         Target vector relative to X_train.
 
-    X_test: np.ndarray or None
+    X_test : np.ndarray or None
         Feature matrix for model evaluation and prediction.
 
-    y_test: np.ndarray or None
+    y_test : np.ndarray or None
         Target vector relative to X_test.
 
-    seed: int
+    seed : int
         Numerical seed ensuring reproducible randomization.
 
-    train_size: float, optional
+    train_size : float, optional
         Proportion of the dataset to allocate to training. Default is 0.75.
 
     Returns
     -------
-
-    X_train, y_train, X_test, y_test: array
+    X_train, y_train, X_test, y_test : array or None
         Shuffled training and test sets. All are arrays.
 
     """

@@ -21,52 +21,39 @@ from orca_python.results import Results
 
 
 class Utilities:
-    """
-    Utilities
+    """Run experiments over N datasets with M different configurations.
 
-    Class in charge of running an experiment over N datasets, where we
-    apply M different configurations over each dataset.
+    Configurations are composed of a classifier method and different parameters, where
+    it may be multiple values for every one of them.
 
-    Configurations are composed of a classifier method and different
-    parameters, where it may be multiple values for every one of them.
-
-    Running the main function of this class will perform
-    cross-validation for each partition per dataset-configuration pairs,
-    obtaining the most optimal model, after what will be used to infere
-    the labels for the test sets.
-
+    Running the main function of this class will perform cross-validation for each
+    partition per dataset-configuration pairs, obtaining the most optimal model, after
+    what will be used to infer the labels for the test sets.
 
     Parameters
     ----------
+    general_conf : dict
+        Dictionary containing values needed to run the experiment. It gives this class
+        information about where are located the different datasets, which one are going
+        to be tested, the metrics to use, etc.
 
-    general_conf: dict
-            Dictionary containing values needed to run the experiment.
-            It gives this class information about where are located the
-            different datasets, which one are going to be tested, the
-            metrics to use, etc.
+    configurations : dict
+        Dictionary in which are stated the different classifiers to build methods upon
+        the selected datasets, as well as the different values for the hyper-parameters
+        used to optimize the model during cross-validation phase.
 
-    configurations: dict
-            Dictionary in which are stated the different classifiers
-            to build methods upon the selected datasets, as well as
-            the different values for the hyper-parameters used to
-            optimize the model during cross-validation phase.
-
-    verbose: boolean
-            Variable used for testing purposes. Silences all prints.
-
-    For more usage information, read User Guide of this framework.
-
+    verbose : bool
+        Variable used for testing purposes. Silences all prints.
 
     Attributes
     ----------
+    _results : Results
+        Class used to manage and store all information obtained during the run of an
+        experiment.
 
-    _results: Results object
-            Class used to manage and store all information obtained
-            during the run of an experiment.
     """
 
     def __init__(self, general_conf, configurations, verbose=True):
-
         self.general_conf = deepcopy(general_conf)
         self.configurations = deepcopy(configurations)
         self.verbose = verbose
@@ -74,17 +61,16 @@ class Utilities:
         syspath.append("classifiers")
 
     def run_experiment(self):
+        """Run an experiment. Main method of this framework.
+
+        Loads all datasets, which can be fragmented in partitions. Builds a model per
+        partition, using cross-validation to find the optimal values among the
+        hyper-parameters to compare from.
+
+        Uses the built model to get train and test metrics, storing all the information
+        into a Results object.
+
         """
-        Runs an experiment. Main method of this framework.
-
-        Loads all datasets, which can be fragmented in partitions.
-        Builds a model per partition, using cross-validation to find
-        the optimal values among the hyper-parameters to compare from.
-
-        Uses the built model to get train and test metrics, storing all
-        the information into a Results object.
-        """
-
         self._results = Results(self.general_conf["output_folder"])
 
         self._check_dataset_list()
@@ -230,23 +216,19 @@ class Utilities:
                     )
 
     def _load_dataset(self, dataset_path):
-        """
-        Loads all dataset's files, divided into train and test.
+        """Load all dataset's files, divided into train and test.
 
         Parameters
         ----------
-
-        dataset_path: string
-                Path to dataset folder.
-
+        dataset_path : str
+            Path to dataset folder.
 
         Returns
         -------
+        partition_list : list of tuples
+            List of partitions found inside a dataset folder. Each partition is stored
+            into a dictionary, disjoining train and test inputs and outputs.
 
-        partition_list: list of tuples
-                List of partitions found inside a dataset folder.
-                Each partition is stored into a dictionary, disjoining
-                train and test inputs and outputs.
         """
 
         def get_partition_index(filename):
@@ -297,29 +279,24 @@ class Utilities:
         return partition_list
 
     def _read_file(self, filename):
-        """
-        Reads a CSV containing partitions, or full datasets.
-        Train and test files must be previously divided for
-        the experiment to run.
+        """Read a CSV containing partitions, or full datasets.
+
+        Train and test files must be previously divided for the experiment to run.
 
         Parameters
         ----------
-
-        filename: string
-                Full path to train or test file.
-
+        filename : str
+            Full path to train or test file.
 
         Returns
         -------
+        inputs : {array-like, sparse-matrix} of shape (n_samples, n_features)
+            Vector of sample's features.
 
-        inputs: {array-like, sparse-matrix}, shape (n_samples, n_features)
-                Vector of sample's features.
-
-        outputs: array-like, shape (n_samples)
-                Target vector relative to inputs.
+        outputs : array-like of shape (n_samples)
+            Target vector relative to inputs.
 
         """
-
         # Separator is automatically found
         f = pd.read_csv(filename, header=None, engine="python")
 
@@ -329,19 +306,18 @@ class Utilities:
         return inputs, outputs
 
     def _check_dataset_list(self):
-        """
-        Checks if there is some inconsistency in the dataset list.
+        """Check if there is some inconsistency in the dataset list.
+
         It also simplifies running all datasets inside one folder.
 
         Parameters
         ----------
-        dataset_list: list of strings
-                list containing all the dataset names to run in a given
-                experiment.
-                If 'all' is specified without any other string, then all
-                datasets in basedir folder will be run.
-        """
+        dataset_list : list of str
+            List containing all the dataset names to run in a given experiment. If
+            'all' is specified without any other string, then all datasets in basedir
+            folder will be run.
 
+        """
         base_path = self.general_conf["basedir"]
         dataset_list = self.general_conf["datasets"]
 
@@ -371,53 +347,55 @@ class Utilities:
         self.general_conf["datasets"] = dataset_list
 
     def _normalize_data(self, train_data, test_data):
-        """
-        Normalize the data. Test data normalization will be based on train data
+        """Normalize the data.
+
+        Test data normalization will be based on train data.
 
         Parameters
         ----------
-        train_data: 2d array
-                contain the train data features
-        test_data: 2d array
-                contain the test data features
-        """
+        train_data : 2d array
+            Contain the train data features.
 
+        test_data : 2d array
+            Contain the test data features.
+
+        """
         mm_scaler = preprocessing.MinMaxScaler().fit(train_data)
 
         return mm_scaler.transform(train_data), mm_scaler.transform(test_data)
 
     def _standardize_data(self, train_data, test_data):
-        """
-        Standardize the data. Test data standardization will be based on train data
+        """Standardize the data.
+
+        Test data standardization will be based on train data.
 
         Parameters
         ----------
-        train_data: 2d array
-                contain the train data features
-        test_data: 2d array
-                contain the test data features
-        """
+        train_data : 2d array
+            Contain the train data features.
 
+        test_data : 2d array
+            Contain the test data features.
+
+        """
         std_scaler = preprocessing.StandardScaler().fit(train_data)
 
         return std_scaler.transform(train_data), std_scaler.transform(test_data)
 
     def _check_params(self):
-        """
-        Checks if all given configurations are sintactly correct.
+        """Check if all given configurations are syntactically correct.
 
-        Performs two different transformations over parameter
-        dictionaries when needed:
+        Performs two different transformations over parameter dictionaries when needed:
 
         - If one parameter's values are not inside a list, GridSearchCV
-        will not be able to handle them, so they must be enclosed into one.
+          will not be able to handle them, so they must be enclosed into one.
 
-        - When an ensemble method, as OrderedPartitions, is chosen as
-        classifier, transforms the dict of lists in which the
-        parameters for the internal classifier are stated into a list
-        of dicts (all possible combiantions of those different parameters).
+        - When an ensemble method, as OrderedPartitions, is chosen as classifier,
+          transforms the dict of lists in which the parameters for the internal
+          classifier are stated into a list of dicts (all possible combinations of
+          those different parameters).
+
         """
-
         random_seed = np.random.get_state()[1][0]
         for _, conf in self.configurations.items():
 
@@ -428,7 +406,9 @@ class Utilities:
                 parameters["random_state"] = [random_seed]
 
             # An ensemble method is going to be used
-            if "parameters" in parameters and isinstance(parameters["parameters"], dict):
+            if "parameters" in parameters and isinstance(
+                parameters["parameters"], dict
+            ):
 
                 # Adding given seed as random_state value
                 if check_for_random_state(parameters["base_classifier"]):
@@ -481,45 +461,40 @@ class Utilities:
     def _get_optimal_estimator(
         self, train_inputs, train_outputs, classifier, parameters
     ):
-        """
-        Perform cross-validation over one dataset and configuration.
+        """Perform cross-validation over one dataset and configuration.
 
-        Each configuration consists of one classifier and none, one or
-        multiple hyper-parameters, that, in turn, can contain one or
-        multiple values used to optimize the resulting model.
+        Each configuration consists of one classifier and none, one or multiple
+        hyper-parameters, that, in turn, can contain one or multiple values used to
+        optimize the resulting model.
 
-        At the end of cross-validation phase, the model with the
-        especific combination of values from the hyper-parameters
-        that achieved the best metrics from all the combinations
-        will remain.
+        At the end of cross-validation phase, the model with the specific combination of
+        values from the hyper-parameters that achieved the best metrics from all the
+        combinations will remain.
 
         Parameters
         ----------
+        train_inputs : {array-like, sparse-matrix} of shape (n_samples, n_features)
+            Vector of features for each sample for this dataset.
 
-        train_inputs: {array-like, sparse-matrix}, shape (n_samples, n_features)
-                vector of features for each sample for this dataset.
+        train_outputs : array-like of shape (n_samples)
+            Target vector relative to train_inputs.
 
-        train_outputs: array-like, shape (n_samples)
-                Target vector relative to train_inputs.
+        classifier : object
+            Class implementing a mathematical model able to be trained and to perform
+            predictions over given datasets.
 
-        classifier: object
-                Class implementing a mathematical model able to be trained
-                and to perform predictions over given datasets.
-
-        parameters: dictionary
-                Dictionary containing parameters to optimize as keys,
-                and the list of values that we want to compare as values.
+        parameters : dict
+            Dictionary containing parameters to optimize as keys, and the list of
+            values that we want to compare as values.
 
         Returns
         -------
-
         optimal: GridSearchCV object or classifier object
-                An already fitted model of the given classifier,
-                with the best found parameters after cross-validation.
-                If cross-validation is not needed, it will return the
-                classifier model already trained.
-        """
+            An already fitted model of the given classifier, with the best found
+            parameters after cross-validation. If cross-validation is not needed, it will
+            return the classifier model already trained.
 
+        """
         # No need to cross-validate when there is just one value per parameter
         if all(not isinstance(p, list) for k, p in parameters.items()):
 
@@ -572,11 +547,7 @@ class Utilities:
         return optimal
 
     def write_report(self):
-        """
-        Saves summarized information about experiment
-        through Results class.
-        """
-
+        """Save summarized information about experiment through Results class."""
         if self.verbose:
             print("\nSaving Results...")
 
@@ -596,11 +567,7 @@ class Utilities:
 
 
 def check_packages_version():
-    """
-    Checks if minimum version of packages used by this
-    framework are installed.
-    """
-
+    """Check if minimum version of packages used by this framework are installed."""
     print("Checking packages version...")
 
     print("NumPy...", end=" ")
@@ -637,33 +604,27 @@ def check_packages_version():
 
 
 def load_classifier(classifier_path, params=None):
-    """
-    Loads and returns a classifier.
+    """Load and return a classifier.
 
     Parameters
     ----------
+    classifier_path : str
+        Package path where the classifier class is located in. That module can be local
+        if the classifier is built inside the framework, or relative to scikit-learn
+        package.
 
-    classifier_path: string
-            Package path where the classifier class is located in.
-            That module can be local if the classifier is built inside the
-            framework, or relative to scikit-learn package.
-
-    params: dictionary
-            Parameters to initialize the classifier with. Used when loading
-            a classifiers inside of an ensemble algorithm (base_classifier)
-
+    params : dict
+        Parameters to initialize the classifier with. Used when loading a classifiers
+        inside of an ensemble algorithm (base_classifier).
 
     Returns
     -------
-
-    classifier: object
-            Returns a loaded classifier, either from an scikit-learn
-            module, or from a module of this framework.
-            Depending if hyper-parameters are specified, the object will be
-            instantiated or not.
+    classifier : object
+        Returns a loaded classifier, either from an scikit-learn module, or from a
+        module of this framework. Depending if hyper-parameters are specified, the
+        object will be instantiated or not.
 
     """
-
     # Path to framework local classifier
     if len(classifier_path.split(".")) == 1:
         classifier = __import__(classifier_path)
@@ -683,19 +644,18 @@ def load_classifier(classifier_path, params=None):
 
 
 def check_for_random_state(classifier):
-    """
-    Checks if classifiers has an attribute named random_state
+    """Check if classifier has random_state attribute.
 
     Parameters
     ----------
     classifier: object
-            Instance of an sklearn compatible classifier
+        Instance of an sklearn compatible classifier
 
     Returns
     -------
-    boolean
-    """
+    bool
 
+    """
     try:
 
         load_classifier(classifier)().random_state
@@ -706,19 +666,17 @@ def check_for_random_state(classifier):
 
 
 def get_key(key):
-    """
-    Checks if the key of a dict can be converted to int,
-    if not, returns the key as is.
+    """Convert dict key to int if possible, otherwise return as string.
 
     Parameters
     ----------
-    value: string
+    key : str
 
     Returns
     -------
-    int or string
-    """
+    int or str
 
+    """
     try:
         return int(key)
     except ValueError:
