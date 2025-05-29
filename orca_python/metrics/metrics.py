@@ -1,3 +1,5 @@
+"""Metrics for ordinal classification."""
+
 from __future__ import division
 
 import warnings

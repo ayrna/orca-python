@@ -1,3 +1,5 @@
+"""Results handling for storing and managing experiment results."""
+
 import os
 from datetime import date, datetime
 from collections import OrderedDict

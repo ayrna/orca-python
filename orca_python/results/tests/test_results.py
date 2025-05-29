@@ -1,3 +1,5 @@
+"""Tests for the Results class."""
+
 from os import path as ospath
 from shutil import rmtree
 from collections import OrderedDict

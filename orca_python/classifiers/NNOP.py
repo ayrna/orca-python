@@ -1,4 +1,5 @@
-# encoding: utf-8
+"""Neural Network with Ordered Partitions (NNOP)."""
+
 import numpy as np
 import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin

@@ -1,4 +1,5 @@
-# encoding: utf-8
+"""Neural Network based on Proportional Odd Model (NNPOM)."""
+
 import numpy as np
 import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin

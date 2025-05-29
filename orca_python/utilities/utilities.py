@@ -1,3 +1,5 @@
+"""Utility class for running experiments."""
+
 from __future__ import print_function
 
 import os

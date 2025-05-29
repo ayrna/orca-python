@@ -1,3 +1,5 @@
+"""Tests for the REDSVM classifier."""
+
 from os import path as ospath
 
 import pytest

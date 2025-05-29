@@ -1,4 +1,5 @@
-# encoding: utf-8
+"""Reduction from ordinal regression to binary SVM (REDSVM)."""
+
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted

@@ -1,3 +1,5 @@
+"""Tests for the NNPOM classifier."""
+
 from os import path as ospath
 
 import pytest

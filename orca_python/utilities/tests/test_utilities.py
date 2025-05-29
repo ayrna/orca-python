@@ -1,3 +1,5 @@
+"""Tests for the experiment utilities module."""
+
 import os
 from os import path as ospath
 from shutil import rmtree
