@@ -41,14 +41,20 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_ : ndarray of shape (n_classes,)
+        Array that contains all different class labels found in the original dataset.
+
+    n_classes_ : int
+        Number of labels in the problem.
+    
+    n_samples_ : int
+        Number of samples of X (train patterns array).
+
     theta1_ : ndarray of shape (n_hidden, n_features + 1)
         Hidden layer weights (with bias).
 
     theta2_ : ndarray of shape (n_classes - 1, n_hidden + 1)
         Output layer weights.
-
-    n_samples_ : int
-        Number of samples of X (train patterns array).
 
     Notes
     -----
@@ -89,10 +95,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
         self.lambda_value = lambda_value
 
     def fit(self, X, y):
-        """Train the model for the model NNOP method.
-
-        Returns the projection of patterns (only valid for threshold models) and the
-        predicted labels.
+        """Fit the model with the training data.
 
         Parameters
         ----------
@@ -106,7 +109,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
         Returns
         -------
         self : object
-            Returns self.
+            Fitted estimator.
 
         """
         if (
@@ -168,9 +171,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        """Predict labels of test patterns.
-
-        The object needs to be fitted to the data first.
+        """Perform classification on samples in X.
 
         Parameters
         ----------
@@ -181,7 +182,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
         Returns
         -------
         y_pred : ndarray of shape (n_samples,)
-            Vector array with predicted values for each pattern of test patterns.
+            Class labels for samples in X.
 
         """
         # Check is fit had been called
@@ -212,7 +213,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        float
+        epsilon_init : float
             The initialization range of the weights.
 
         """
@@ -234,7 +235,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        int
+        n_hidden : int
             Number of nodes/neurons in the hidden layer.
 
         """
@@ -256,7 +257,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        int
+        max_iter : int
             Number of iterations.
 
         """
@@ -278,7 +279,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        float
+        lambda_value : float
             Lambda parameter used in regularization.
 
         """
@@ -300,7 +301,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        ndarray of shape (n_hidden, n_features + 1)
+        theta1_ : ndarray of shape (n_hidden, n_features + 1)
             Array with the weights of the hidden layer (with biases included).
 
         """
@@ -322,7 +323,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        ndarray of shape (n_classes - 1, n_hidden + 1)
+        theta2_ : ndarray of shape (n_classes - 1, n_hidden + 1)
             Array with the weights of the output layer.
 
         """
@@ -344,7 +345,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        int
+        n_classes_ : int
             Number of labels in the problem.
 
         """
@@ -366,7 +367,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        int
+        n_samples_ : int
             Number of samples of X (train patterns array).
 
         """
@@ -485,7 +486,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
         J : float
             Matrix with cost function (updated weight matrix).
 
-        grad : ndarray of shape (1, 1)
+        grad : ndarray
             Array with the error gradient of each weight of each layer.
 
         """

@@ -22,7 +22,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    dtype : string
+    dtype : str
         Type of decomposition to be performed by classifier. May be one of 4 different
         types: 'ordered_partitions', 'one_vs_next', 'one_vs_followers' or
         'one_vs_previous'.
@@ -44,11 +44,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         for that binary problem. If there is no sign, then those samples will not be
         used when building the model.
 
-    decision_method : string
+    decision_method : str
         Decision method that transforms the predictions of the n different base
         classifiers to produce the final label (one among the real ordinal classes).
 
-    base_classifier : string
+    base_classifier : str
         Base classifier used to build a model for each binary subproblem. The base
         classifier need to be a classifier of orca-python framework or any classifier
         available in sklearn. Other classifiers implemented in sklearn's API can be
@@ -71,6 +71,13 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
     classifiers_ : list of classifiers
         Initially empty, will include all fitted models for each subproblem once the fit
         function for this class is called successfully.
+
+    X_ : array-like, shape (n_samples, n_features)
+        Training patterns array, where n_samples is the number of samples and
+        n_features is the number of features.
+
+    y_ : array-like, shape (n_samples,)
+        Target vector relative to X.
 
     References
     ----------
@@ -108,7 +115,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         Returns
         -------
         self : object
-            Returns self.
+            Fitted estimator.
 
         """
         X, y = check_X_y(X, y)
@@ -145,7 +152,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Test patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
         Returns
         -------
@@ -205,7 +214,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Test patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
         Returns
         -------
@@ -277,7 +288,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        dtype : string
+        dtype : str
             Type of decomposition to be performed by classifier.
 
         n_classes : int
@@ -329,11 +340,14 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Test patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
         Returns
         -------
         predictions : array, shape (n_samples, n_targets-1)
+            Probability estimates or binary classification outcomes.
 
         """
         predictions = np.array(
@@ -352,12 +366,13 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         predictions : array, shape (n_samples, n_targets-1)
+            Probability estimates or binary classification outcomes.
 
         Returns
         -------
         e_losses : array, shape (n_samples, n_targets)
-            Exponential losses for each sample of dataset X. One
-            different value for each class label.
+            Exponential losses for each sample of dataset X. One different value for
+            each class label.
 
         """
         # Computing exponential losses
@@ -384,10 +399,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         predictions : array, shape (n_samples, n_targets-1)
+            Probability estimates or binary classification outcomes.
 
         Returns
         -------
-        hLosses : array, shape (n_samples, n_targets)
+        h_losses : array, shape (n_samples, n_targets)
             Hinge losses for each sample of dataset X. One different value for each
             class label.
 
@@ -420,10 +436,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         predictions : array, shape (n_samples, n_targets-1)
+            Probability estimates or binary classification outcomes.
 
         Returns
         -------
-        eLosses : array, shape (n_samples, n_targets)
+        l_losses : array, shape (n_samples, n_targets)
             Logarithmic losses for each sample of dataset X. One different value for
             each class label.
 
@@ -456,6 +473,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         predictions : array, shape (n_samples, n_targets-1)
+            Probability estimates or binary classification outcomes.
 
         Returns
         -------

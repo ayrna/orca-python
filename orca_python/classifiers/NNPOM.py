@@ -12,7 +12,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
     """Neural Network based on Proportional Odd Model (NNPOM).
 
     This class implements a neural network model for ordinal regression. The model has
-    one hidden layer with hidden_n neurons and one output layer with only one neuron
+    one hidden layer with n_hidden neurons and one output layer with only one neuron
     but as many thresholds as the number of classes minus one. The standard POM model
     is applied in this neuron to have probabilistic outputs.
 
@@ -21,8 +21,8 @@ class NNPOM(BaseEstimator, ClassifierMixin):
     http://www.ias.informatik.tu-darmstadt.de/Research/RpropToolbox
 
     The model is adjusted by minimizing cross entropy. A regularization parameter
-    "lambda" is included based on L2, and the number of iterations is specified by the
-    "iterations" parameter.
+    "lambda_value" is included based on L2, and the number of iterations is specified
+    by the "max_iter" parameter.
 
     Parameters
     ----------
@@ -40,6 +40,15 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
     Attributes
     ----------
+    classes_ : ndarray of shape (n_classes,)
+        Array that contains all different class labels found in the original dataset.
+
+    n_classes_ : int
+        Number of labels in the problem
+
+    n_samples_ : int
+        Number of samples of X (train patterns array).
+    
     theta1_ : ndarray of shape (n_hidden, n_features + 1)
         Hidden layer weigths (with bias)
 
@@ -48,12 +57,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
     thresholds_ : ndarray of shape (n_classes - 1, 1)
         Class thresholds parameters
-
-    n_classes_ : int
-        Number of labels in the problem
-
-    n_samples_ : int
-        Number of samples of X (train patterns array).
 
     References
     ----------
@@ -93,10 +96,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         self.lambda_value = lambda_value
 
     def fit(self, X, y):
-        """Train the model for the model NNPOM method.
-
-        Returns the projection of patterns (only valid for threshold models) and the
-        predicted labels.
+        """Fit the model with the training data.
 
         Parameters
         ----------
@@ -110,7 +110,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         Returns
         -------
         self : object
-            The object NNPOM.
+            Fitted estimator.
 
         """
         if (
@@ -183,9 +183,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        """Predict labels of test patterns.
-
-        The object needs to be fitted to the data first.
+        """Perform classification on samples in X.
 
         Parameters
         ----------
@@ -196,7 +194,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         Returns
         -------
         y_pred : ndarray of shape (n_samples,)
-            Vector array with predicted values for each pattern of test patterns.
+            Class labels for samples in X.
 
         """
         # Check is fit had been called
@@ -227,7 +225,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        float
+        epsilon_init : float
             The initialization range of the weights.
 
         """
@@ -249,7 +247,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        int
+        n_hidden : int
             Number of nodes/neurons in the hidden layer.
 
         """
@@ -271,7 +269,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        int
+        max_iter : int
             Number of iterations.
 
         """
@@ -293,7 +291,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        float
+        lambda_value : float
             The regularization parameter.
 
         """
@@ -315,7 +313,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        ndarray of shape (n_hidden, n_features + 1)
+        theta1_ : ndarray of shape (n_hidden, n_features + 1)
             The weights of the hidden layer (with biases included).
 
         """
@@ -337,7 +335,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        ndarray of shape (1, n_hidden)
+        theta2_ : ndarray of shape (1, n_hidden)
             The weights of the output layer (without bias, the biases will be the
             thresholds).
 
@@ -361,7 +359,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        ndarray of shape (n_classes - 1, 1)
+        thresholds_ : ndarray of shape (n_classes - 1, 1)
             The class thresholds parameters.
 
         """
@@ -383,7 +381,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        int
+        n_classes_ : int
             Number of labels in the problem.
 
         """
@@ -405,7 +403,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        int
+        n_samples_ : int
             Number of samples of X (train patterns array).
 
         """

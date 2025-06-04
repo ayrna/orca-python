@@ -14,6 +14,11 @@ class Results:
 
     This information will be saved into an specified folder.
 
+    Parameters
+    ----------
+    output_folder : str
+        Base directory for storing experimental results.
+
     Attributes
     ----------
     _experiment_folder : str

@@ -156,7 +156,7 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
     dataset_name : str
         Name for the specific dataset.
 
-    split : str, optional
+    split : str, default='undivided'
         Data division type ('undivided', 'train' or 'test').
 
     data_path : str or path, optional
@@ -274,7 +274,7 @@ def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
     seed : int
         Numerical seed ensuring reproducible randomization.
 
-    train_size : float, optional
+    train_size : float, default=0.75
         Proportion of the dataset to allocate to training. Default is 0.75.
 
     Returns

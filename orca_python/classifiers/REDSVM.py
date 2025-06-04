@@ -19,6 +19,9 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
+    C : float, default=1
+        Set the parameter C.
+    
     kernel : int, default=2
         Set type of kernel function.
         0 -- linear: u'*v
@@ -34,26 +37,28 @@ class REDSVM(BaseEstimator, ClassifierMixin):
     degree : int, default=3
         Set degree in kernel function.
 
-    gamma : float, default=1/num_features
+    gamma : float, default=1/n_features
         Set gamma in kernel function.
 
     coef0 : float, default=0
         Set coef0 in kernel function.
 
-    C : float, default=1
-        Set the parameter C.
-
-    cache_size : int, default=100
-        Set cache memory size in MB.
+    shrinking : int, default=1
+        Set whether to use the shrinking heuristics.
 
     tol : float, default=0.001
         Set tolerance of termination criterion.
 
-    shrinking : int, default=1
-        Set whether to use the shrinking heuristics.
+    cache_size : int, default=100
+        Set cache memory size in MB.
 
-    quiet : bool, default=False
-        Set quiet mode (no outputs).
+    Attributes
+    ----------
+    classes_ : ndarray of shape (n_classes,)
+        Array that contains all different class labels found in the original dataset.
+
+    model_ : object
+        Fitted estimator.
 
     References
     ----------
@@ -104,7 +109,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
         Returns
         -------
         self : object
-            Returns self.
+            Fitted estimator.
 
         """
         # Check that X and y have correct shape
@@ -136,7 +141,9 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Test patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
         Returns
         -------

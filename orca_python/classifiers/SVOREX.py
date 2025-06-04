@@ -17,20 +17,31 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
+    C : float, default=1
+        Set the parameter C.
+    
     kernel : int, default=0
         Set type of kernel function.
         0 -- gaussian: use gaussian kernel
         1 -- linear: use imbalanced Linear kernel
         2 -- polynomial: use Polynomial kernel with order p
 
+    degree : int, default=2
+        Set degree in kernel function.
+    
     tol : float, default=0.001
-        Set Tolerance.
+        Set tolerance of termination criterion.
 
     kappa : float, default=1
         Set kappa value.
 
-    C : float, default=1
-        Set C value.
+    Attributes
+    ----------
+    classes_ : ndarray of shape (n_classes,)
+        Array that contains all different class labels found in the original dataset.
+
+    model_ : object
+        Fitted estimator.
 
     References
     ----------
@@ -67,7 +78,7 @@ class SVOREX(BaseEstimator, ClassifierMixin):
         Returns
         -------
         self : object
-            Returns self.
+            Fitted estimator.
 
         """
         # Check that X and y have correct shape
@@ -95,7 +106,9 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Test patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
         Returns
         -------

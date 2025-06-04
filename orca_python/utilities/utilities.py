@@ -312,13 +312,6 @@ class Utilities:
 
         It also simplifies running all datasets inside one folder.
 
-        Parameters
-        ----------
-        dataset_list : list of str
-            List containing all the dataset names to run in a given experiment. If
-            'all' is specified without any other string, then all datasets in basedir
-            folder will be run.
-
         """
         base_path = self.general_conf["basedir"]
         dataset_list = self.general_conf["datasets"]
@@ -361,6 +354,14 @@ class Utilities:
         test_data : 2d array
             Contain the test data features.
 
+        Returns
+        -------
+        train_normalized : np.ndarray
+            Normalized training data.
+        
+        test_normalized : np.ndarray  
+            Normalized test data using.
+
         """
         mm_scaler = preprocessing.MinMaxScaler().fit(train_data)
 
@@ -378,6 +379,14 @@ class Utilities:
 
         test_data : 2d array
             Contain the test data features.
+
+        Returns
+        -------
+        train_standardized : np.ndarray
+            Standardized training data.
+        
+        test_standardized : np.ndarray  
+            Standardized test data.
 
         """
         std_scaler = preprocessing.StandardScaler().fit(train_data)
@@ -650,12 +659,13 @@ def check_for_random_state(classifier):
 
     Parameters
     ----------
-    classifier: object
-        Instance of an sklearn compatible classifier
-
+    classifier : object
+        Instance of an sklearn compatible classifier.
+    
     Returns
     -------
-    bool
+    has_random_state : bool
+        True if classifier has random_state attribute, False otherwise.
 
     """
     try:
@@ -673,10 +683,12 @@ def get_key(key):
     Parameters
     ----------
     key : str
+        Dictionary key to convert.
 
     Returns
     -------
-    int or str
+    converted_key : int or str
+        Integer if conversion is possible, original string otherwise.
 
     """
     try:

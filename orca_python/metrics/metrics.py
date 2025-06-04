@@ -13,6 +13,16 @@ def greater_is_better(metric_name):
 
     Needed when declaring a new scorer through make_scorer from sklearn.
 
+    Parameters
+    ----------
+    metric_name : str
+        Name of the metric.
+
+    Returns
+    -------
+    greater_is_better : bool
+        True if greater values indicate better classification performance, False otherwise.
+    
     """
     greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
     if metric_name in greater_is_better_metrics:
@@ -27,6 +37,19 @@ def ccr(y, ypred):
     Also named Accuracy, it's the percentage of well classified patterns among all
     patterns from a set.
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    ccr : float
+        Correctly classified ratio.
+
     """
     return np.count_nonzero(y == ypred) / float(len(y))
 
@@ -35,6 +58,19 @@ def amae(y, ypred):
     """Calculate the Average MAE.
 
     Mean of the MAE metric among classes.
+
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    amae : float
+        Average mean absolute error.
 
     """
     with warnings.catch_warnings():
@@ -50,7 +86,22 @@ def amae(y, ypred):
 
 
 def gm(y, ypred):
-    """Calculate the Geometric mean of the sensitivity (accuracy) for each class."""
+    """Calculate the Geometric mean of the sensitivity (accuracy) for each class.
+    
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    gm : float
+        Geometric mean of the sensitivities.
+        
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -66,6 +117,19 @@ def mae(y, ypred):
 
     Average absolute deviation of the predicted class from the actual true class.
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    mae : float
+        Mean absolute error.
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -79,6 +143,19 @@ def mmae(y, ypred):
 
     MAE value of the class with higher distance from the true values to the predicted
     ones.
+
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    mmae : float
+        Maximum mean absolute error.
 
     """
     with warnings.catch_warnings():
@@ -99,6 +176,19 @@ def ms(y, ypred):
     Lowest percentage of patterns correctly predicted as belonging to each class, with
     respect to the total number of examples in the corresponding class.
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    ms : float
+        Minimum sensitivity.
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -116,6 +206,19 @@ def mze(y, ypred):
 
     Better known as error rate, is the complementary measure of CCR.
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    mze : float
+        Mean zero-one error.
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -130,6 +233,19 @@ def tkendall(y, ypred):
     A statistic used to measure the association between two measured quantities. It is
     a measure of rank correlation.
 
+    Parameters
+    ----------
+    y : np.ndarray
+        Ground truth labels.
+
+    ypred : np.ndarray
+        Predicted labels.
+
+    Returns
+    -------
+    tkendall : float
+        Kendall's tau.
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -143,6 +259,19 @@ def wkappa(y, ypred):
 
     A modified version of the Kappa statistic calculated to allow assigning
     different weights to different levels of aggregation between two variables.
+
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    wkappa : float
+        Weighted Kappa.
 
     """
     with warnings.catch_warnings():
@@ -169,6 +298,19 @@ def spearman(y, ypred):
     """Calculate the Spearman's rank correlation coefficient.
 
     A non-parametric measure of statistical dependence between two variables.
+
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    spearman : float
+        Spearman rank correlation coefficient.
 
     """
     with warnings.catch_warnings():
