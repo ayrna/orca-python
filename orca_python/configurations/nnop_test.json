@@ -19,10 +19,10 @@
 
 			"classifier": "NNOP",
 			"parameters": {
-                "epsilonInit": 0.5,
-                "hiddenN": 10,
-                "iterations": 1000,
-				"lambdaValue": 0
+                "epsilon_init": 0.5,
+                "n_hidden": 10,
+                "max_iter": 1000,
+				"lambda_value": 0
 
             }
 

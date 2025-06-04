@@ -63,13 +63,13 @@
 
 			"classifier": "orca_python.classifiers.REDSVM",
 			"parameters": {
-			    "t": 2,
-				"c": [0.1, 1, 10],
-				"g": [0.1, 1, 10],
-				"r": 0,
-				"m": 100,
-				"e": 0.001,
-				"h": 1
+			    "kernel": 2,
+				"degree": 3,
+				"gamma": 0.1,
+				"coef0": 0,
+				"C": 1,
+				"tol": 0.001,
+				"shrinking": 1
 			}
 
 		},
@@ -78,10 +78,10 @@
 
 			"classifier": "orca_python.classifiers.SVOREX",
 			"parameters": {
-				"kernel_type": 0,
-				"c": [0.1, 1, 10],
-				"k": [0.1, 1, 10],
-				"t": 0.001
+				"kernel": 0,
+				"C": [0.1, 1, 10],
+				"kappa": [0.1, 1, 10],
+				"tol": 0.001
 			}
 
 		}
