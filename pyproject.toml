@@ -42,6 +42,9 @@ dev = [
 [project.urls]
 Source = "https://github.com/ayrna/orca-python"
 
+[project.license]
+file = "LICENSE"
+
 [tool.setuptools.packages.find]
 include = [
     "orca_python",
