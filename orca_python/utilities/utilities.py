@@ -72,6 +72,17 @@ class Utilities:
         Uses the built model to get train and test metrics, storing all the information
         into a Results object.
 
+        Raises
+        ------
+        ValueError
+            If the dataset list is inconsistent.
+
+        AttributeError
+            If the input preprocessing is unknown.
+
+        TypeError
+            If the parameters for base_classifier must be list.
+
         """
         self._results = Results(self.general_conf["output_folder"])
 
@@ -231,8 +242,15 @@ class Utilities:
             List of partitions found inside a dataset folder. Each partition is stored
             into a dictionary, disjoining train and test inputs and outputs.
 
-        """
+        Raises
+        ------
+        ValueError
+            If the dataset path does not exist.
 
+        RuntimeError
+            If a partition is found without train files.
+
+        """
         def get_partition_index(filename):
             # Extracts the index between the last "_" and ".csv"
             return filename.rsplit("_", 1)[-1].replace(".csv", "")
@@ -312,6 +330,11 @@ class Utilities:
 
         It also simplifies running all datasets inside one folder.
 
+        Raises
+        ------
+        ValueError
+            If the dataset list is inconsistent or contains non-string values.
+
         """
         base_path = self.general_conf["basedir"]
         dataset_list = self.general_conf["datasets"]
@@ -360,7 +383,7 @@ class Utilities:
             Normalized training data.
         
         test_normalized : np.ndarray  
-            Normalized test data using.
+            Normalized test data.
 
         """
         mm_scaler = preprocessing.MinMaxScaler().fit(train_data)
@@ -405,6 +428,11 @@ class Utilities:
           transforms the dict of lists in which the parameters for the internal
           classifier are stated into a list of dicts (all possible combinations of
           those different parameters).
+
+        Raises
+        ------
+        TypeError
+            If any parameter value for the base_classifier is not a list.
 
         """
         random_seed = np.random.get_state()[1][0]
@@ -504,6 +532,11 @@ class Utilities:
             An already fitted model of the given classifier, with the best found
             parameters after cross-validation. If cross-validation is not needed, it will
             return the classifier model already trained.
+
+        Raises
+        ------
+        AttributeError
+            If the metric name is not found or cv_metric is not a string.
 
         """
         # No need to cross-validate when there is just one value per parameter

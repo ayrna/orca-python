@@ -110,6 +110,11 @@ class NNOP(BaseEstimator, ClassifierMixin):
         -------
         self : object
             Fitted estimator.
+        
+        Raises
+        ------
+        ValueError
+            If parameters are invalid or data has wrong format.
 
         """
         if (
@@ -183,6 +188,14 @@ class NNOP(BaseEstimator, ClassifierMixin):
         -------
         y_pred : ndarray of shape (n_samples,)
             Class labels for samples in X.
+        
+        Raises
+        ------
+        NotFittedError
+            If the model is not fitted yet.
+        
+        ValueError
+            If input is invalid.
 
         """
         # Check is fit had been called

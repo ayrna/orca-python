@@ -80,6 +80,11 @@ class SVOREX(BaseEstimator, ClassifierMixin):
         self : object
             Fitted estimator.
 
+        Raises
+        ------
+        ValueError
+            If parameters are invalid or data has wrong format.
+
         """
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
@@ -114,6 +119,14 @@ class SVOREX(BaseEstimator, ClassifierMixin):
         -------
         y_pred : array, shape (n_samples,)
             Class labels for samples in X.
+
+        Raises
+        ------
+        NotFittedError
+            If the model is not fitted yet.
+
+        ValueError
+            If the input is invalid.
 
         """
         # Check is fit had been called

@@ -129,6 +129,12 @@ def check_ambiguity(dataset_name, data_path, seed=None):
     seed: int, optional
         Numerical seed ensuring reproducible randomization.
 
+    Raises
+    ------
+    ValueError
+        If an ambiguity exists, such as both full dataset and split files in the
+        directory, or if both seeded and unseeded split files are present.
+
     """
     data_path = Path(data_path)
     undivided = is_undivided(dataset_name, data_path)
@@ -170,6 +176,11 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
     -------
     X, y : array or None
         Feature and target arrays. Both may be None if the file does not exist.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the dataset file does not exist.
 
     """
     data_path = Path(os.path.expanduser(str(data_path or get_data_path())))
@@ -223,6 +234,15 @@ def load_dataset(dataset_name, data_path=None, seed=None):
         - If the dataset is undivided: X and y are returned, test data is None.
         - If the dataset has a split: train and test data arrays are returned. Any
         value may be None if not available.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the data path does not exist.
+
+    ValueError
+        If an ambiguity exists, such as both full dataset and split files in the
+        directory.
 
     """
     data_path = Path(os.path.expanduser(str(data_path or get_data_path())))
@@ -281,6 +301,13 @@ def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
     -------
     X_train, y_train, X_test, y_test : array or None
         Shuffled training and test sets. All are arrays.
+
+    Raises
+    ------
+    ValueError
+        - If both training and test sets are None.
+        - If X and y dimensions don't match.
+        - If train_size is not between 0 and 1.
 
     """
     if train_size <= 0 or train_size >= 1:

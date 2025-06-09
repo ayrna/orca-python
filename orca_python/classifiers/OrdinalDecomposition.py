@@ -117,6 +117,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         self : object
             Fitted estimator.
 
+        Raises
+        ------
+        ValueError
+            If parameters are invalid or data has wrong format.
+
         """
         X, y = check_X_y(X, y)
 
@@ -160,6 +165,17 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         -------
         y_pred : array, shape (n_samples,)
             Class labels for samples in X.
+
+        Raises
+        ------
+        NotFittedError
+            If the model is not fitted yet.
+        
+        ValueError
+            If input is invalid.
+
+        AttributeError
+            If the specified loss method is not implemented.
 
         """
         check_is_fitted(self, ["X_", "y_"])
@@ -223,6 +239,17 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         y_proba : ndarray of shape (n_samples,)
             The probability of the sample for each class in the model, where classes are
             ordered as they are in self.classes_.
+
+        Raises
+        ------
+        NotFittedError
+            If the model is not fitted yet.
+        
+        ValueError
+            If input is invalid.
+        
+        AttributeError
+            If the specified loss method is not implemented.
 
         """
         check_is_fitted(self, ["X_", "y_"])
@@ -300,6 +327,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             Each value must be in range {-1, 1, 0}, whether that class will belong to
             negative class, positive class or will not be used for that particular
             binary classifier.
+
+        Raises
+        ------
+        ValueError
+            If the decomposition type does not exist.
 
         """
         if dtype == "ordered_partitions":
@@ -479,6 +511,11 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         -------
         y_proba : array, shape (n_samples, n_targets)
             Class labels predicted for samples in dataset X.
+
+        Raises
+        ------
+        AttributeError
+            If the decomposition type is not ordered_partitions.
 
         """
         if self.dtype.lower() != "ordered_partitions":

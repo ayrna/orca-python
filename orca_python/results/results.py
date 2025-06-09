@@ -71,6 +71,11 @@ class Results:
             Dictionary that stores train and test class predictions. Keys are 'train'
             and 'test'.
 
+        Raises
+        ------
+        OSError
+            If the folder cannot be created.
+        
         """
         dataset_folder = os.path.join(
             self._experiment_folder,
