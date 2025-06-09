@@ -16,6 +16,12 @@ def get_data_path():
     -------
     data_path : path
         ORCA-python datasets path.
+    
+    Examples
+    --------
+    >>> from orca_python.datasets.datasets import get_data_path
+    >>> get_data_path()
+    PosixPath('/path/to/orca_python/datasets/data')
 
     """
     return Path(os.path.dirname(orca_python.datasets.data.__file__))
@@ -37,6 +43,17 @@ def dataset_exists(dataset_name, data_path):
     is_dir : bool
         True if both `data_path` and the dataset directory exist, False otherwise.
 
+    Examples
+    --------
+    >>> from orca_python.datasets.datasets import dataset_exists, get_data_path
+    >>> data_path = get_data_path()
+    >>> dataset_exists("car", data_path)
+    True
+    >>> dataset_exists("tae", data_path)
+    True
+    >>> dataset_exists("nonexistent_dataset", data_path)
+    False
+
     """
     data_path = Path(data_path)
     return data_path.is_dir() and (data_path / dataset_name).is_dir()
@@ -57,6 +74,15 @@ def is_undivided(dataset_name, data_path):
     -------
     is_undivided : bool
         True if the full dataset file exists, False otherwise.
+    
+    Examples
+    --------
+    >>> from orca_python.datasets.datasets import is_undivided, get_data_path
+    >>> data_path = get_data_path()
+    >>> is_undivided("tae", data_path)
+    False
+    >>> is_undivided("nonexistent_dataset", data_path)
+    False
 
     """
     data_path = Path(data_path)
@@ -79,6 +105,15 @@ def has_unseeded_split(dataset_name, data_path):
     -------
     is_unseeded : bool
         True if train and/or test files without a seed exist, False otherwise.
+
+    Examples
+    --------
+    >>> from orca_python.datasets.datasets import has_unseeded_split, get_data_path
+    >>> data_path = get_data_path()
+    >>> has_unseeded_split("tae", data_path)
+    False
+    >>> has_unseeded_split("nonexistent_dataset", data_path)
+    False
 
     """
     data_path = Path(data_path)
@@ -107,6 +142,17 @@ def has_seeded_split(dataset_name, seed, data_path):
     is_seeded : bool
         True if train and/or test files with the specified seed exist, False otherwise.
 
+    Examples
+    --------
+    >>> from orca_python.datasets.datasets import has_seeded_split, get_data_path
+    >>> data_path = get_data_path()
+    >>> has_seeded_split("tae", 0, data_path)
+    True
+    >>> has_seeded_split("tae", 99, data_path)
+    False
+    >>> has_seeded_split("nonexistent_dataset", 0, data_path)
+    False
+
     """
     data_path = Path(data_path)
     return any(
@@ -134,6 +180,14 @@ def check_ambiguity(dataset_name, data_path, seed=None):
     ValueError
         If an ambiguity exists, such as both full dataset and split files in the
         directory, or if both seeded and unseeded split files are present.
+
+    Examples
+    --------
+    >>> from orca_python.datasets.datasets import check_ambiguity, get_data_path
+    >>> data_path = get_data_path()
+    >>> check_ambiguity("tae", data_path)
+    >>> check_ambiguity("tae", data_path, seed=0)
+    >>> check_ambiguity("nonexistent_dataset", data_path, seed=0)
 
     """
     data_path = Path(data_path)
@@ -181,6 +235,19 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
     ------
     FileNotFoundError
         If the dataset file does not exist.
+
+    Examples
+    --------
+    >>> from orca_python.datasets.datasets import load_datafile, get_data_path
+    >>> X_train, y_train = load_datafile("tae", split="train", seed=None)
+    >>> X_train is None, y_train is None
+    (True, True)
+    >>> X_train, y_train = load_datafile("tae", split="train", seed=1)
+    >>> X_train.shape, y_train.shape
+    ((113, 54), (113,))
+    >>> X_test, y_test = load_datafile("tae", split="test", seed=1)
+    >>> X_test.shape, y_test.shape
+    ((38, 54), (38,))
 
     """
     data_path = Path(os.path.expanduser(str(data_path or get_data_path())))
@@ -243,6 +310,16 @@ def load_dataset(dataset_name, data_path=None, seed=None):
     ValueError
         If an ambiguity exists, such as both full dataset and split files in the
         directory.
+
+    Examples
+    --------
+    >>> from orca_python.datasets.datasets import load_dataset
+    >>> X_train, y_train, X_test, y_test = load_dataset("tae", seed=0)
+    >>> X_train.shape, y_train.shape, X_test.shape, y_test.shape
+    ((113, 54), (113,), (38, 54), (38,))
+    >>> X_train, y_train, X_test, y_test = load_dataset("car", seed=0)
+    >>> X_train.shape, y_train.shape, X_test.shape, y_test.shape
+    ((1296, 21), (1296,), (432, 21), (432,))
 
     """
     data_path = Path(os.path.expanduser(str(data_path or get_data_path())))
@@ -308,6 +385,21 @@ def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
         - If both training and test sets are None.
         - If X and y dimensions don't match.
         - If train_size is not between 0 and 1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.datasets.datasets import load_dataset, shuffle_data
+    >>> X_train, y_train, X_test, y_test = load_dataset("tae", seed=0)
+    >>> X_train.shape, y_train.shape, X_test.shape, y_test.shape
+    ((113, 54), (113,), (38, 54), (38,))
+    >>> X_train_sh, y_train_sh, X_test_sh, y_test_sh = shuffle_data(
+    ...     X_train, y_train, X_test, y_test, seed=1)
+    >>> X_train_sh.shape, y_train_sh.shape, X_test_sh.shape, y_test_sh.shape
+    ((113, 54), (113,), (38, 54), (38,))
+    >>> # Verify data is redistributed by comparing first rows
+    >>> np.array_equal(X_train[:5], X_train_sh[:5])
+    False
 
     """
     if train_size <= 0 or train_size >= 1:

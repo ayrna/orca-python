@@ -23,6 +23,16 @@ def greater_is_better(metric_name):
     greater_is_better : bool
         True if greater values indicate better classification performance, False otherwise.
     
+    Examples
+    --------
+    >>> from orca_python.metrics.metrics import greater_is_better
+    >>> greater_is_better("ccr")
+    True
+    >>> greater_is_better("mze")
+    False
+    >>> greater_is_better("mae")
+    False
+    
     """
     greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
     if metric_name in greater_is_better_metrics:
@@ -50,6 +60,15 @@ def ccr(y, ypred):
     ccr : float
         Correctly classified ratio.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import ccr
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 0, 0, 1])
+    >>> ccr(y_true, y_pred)
+    0.5714285714285714
+
     """
     return np.count_nonzero(y == ypred) / float(len(y))
 
@@ -71,6 +90,15 @@ def amae(y, ypred):
     -------
     amae : float
         Average mean absolute error.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import amae
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> amae(y_true, y_pred)
+    np.float64(0.125)
 
     """
     with warnings.catch_warnings():
@@ -100,6 +128,15 @@ def gm(y, ypred):
     -------
     gm : float
         Geometric mean of the sensitivities.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import gm
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> gm(y_true, y_pred)
+    np.float64(0.8408964152537145)
         
     """
     with warnings.catch_warnings():
@@ -130,6 +167,15 @@ def mae(y, ypred):
     mae : float
         Mean absolute error.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import mae
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> mae(y_true, y_pred)
+    np.float64(0.2857142857142857)
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -156,6 +202,15 @@ def mmae(y, ypred):
     -------
     mmae : float
         Maximum mean absolute error.
+        
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import mmae
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> mmae(y_true, y_pred)
+    np.float64(0.5)
 
     """
     with warnings.catch_warnings():
@@ -189,6 +244,15 @@ def ms(y, ypred):
     ms : float
         Minimum sensitivity.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import ms
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> ms(y_true, y_pred)
+    np.float64(0.5)
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -219,6 +283,15 @@ def mze(y, ypred):
     mze : float
         Mean zero-one error.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import mze
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> mze(y_true, y_pred)
+    np.float64(0.2857142857142857)
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -246,6 +319,15 @@ def tkendall(y, ypred):
     tkendall : float
         Kendall's tau.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import tkendall
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> tkendall(y_true, y_pred)
+    np.float64(0.8140915784106943)
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -272,6 +354,15 @@ def wkappa(y, ypred):
     -------
     wkappa : float
         Weighted Kappa.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import wkappa
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> wkappa(y_true, y_pred)
+    np.float64(0.7586206896551724)
 
     """
     with warnings.catch_warnings():
@@ -311,6 +402,15 @@ def spearman(y, ypred):
     -------
     spearman : float
         Spearman rank correlation coefficient.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import spearman
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> spearman(y_true, y_pred)
+    np.float64(0.9165444688834581)
 
     """
     with warnings.catch_warnings():
