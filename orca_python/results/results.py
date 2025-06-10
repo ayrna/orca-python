@@ -1,8 +1,8 @@
 """Results handling for storing and managing experiment results."""
 
-import os
 from datetime import date, datetime
 from collections import OrderedDict
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -21,7 +21,7 @@ class Results:
 
     Attributes
     ----------
-    _experiment_folder : str
+    _experiment_folder : Path
         Path where all the information about the actual experiment will be saved. This
         folder will have the next format: 'exp-YY-MM-DD-hh-mm-ss'.
 
@@ -36,7 +36,7 @@ class Results:
             + datetime.now().strftime("%H-%M-%S")
         )
 
-        self._experiment_folder = os.path.join(output_folder, folder_name)
+        self._experiment_folder = Path(output_folder) / folder_name
 
     def add_record(
         self, partition, best_params, best_model, configuration, metrics, predictions
@@ -75,32 +75,30 @@ class Results:
         ------
         OSError
             If the folder cannot be created.
-        
+
         """
-        dataset_folder = os.path.join(
-            self._experiment_folder,
-            (configuration["dataset"] + "-" + configuration["config"]),
+        dataset_folder = self._experiment_folder / (
+            configuration["dataset"] + "-" + configuration["config"]
         )
-        models_folder = os.path.join(dataset_folder, "models")
-        predictions_folder = os.path.join(dataset_folder, "predictions")
+        models_folder = dataset_folder / "models"
+        predictions_folder = dataset_folder / "predictions"
 
         # Creating folder for this dataset-configuration if necessary
-        if not os.path.exists(dataset_folder):
+        if not dataset_folder.exists():
             try:
-                os.makedirs(models_folder)
-                os.makedirs(predictions_folder)
+                models_folder.mkdir(parents=True)
+                predictions_folder.mkdir(parents=True)
 
             except OSError:
                 raise OSError(
-                    "Could not create folder %s (or subfolders) to store results."
-                    % dataset_folder
+                    f"Could not create folder {dataset_folder} (or subfolders) to store results."
                 )
 
         # Saving partition model
         model_filename = (
             configuration["dataset"] + "-" + configuration["config"] + "." + partition
         )
-        with open(os.path.join(models_folder, model_filename), "wb") as output:
+        with open(models_folder / model_filename, "wb") as output:
             pickle.dump(best_model, output)
 
         # Saving model predictions
@@ -108,14 +106,14 @@ class Results:
             configuration["dataset"] + "-" + configuration["config"] + "." + partition
         )
         np.savetxt(
-            os.path.join(predictions_folder, "train_" + pred_filename),
+            predictions_folder / f"train_{pred_filename}",
             predictions["train"],
             fmt="%d",
         )
 
         if predictions["test"] is not None:
             np.savetxt(
-                os.path.join(predictions_folder, "test_" + pred_filename),
+                predictions_folder / f"test_{pred_filename}",
                 predictions["test"],
                 fmt="%d",
             )
@@ -141,16 +139,13 @@ class Results:
             dataframe_row[ts_name] = ts_value
 
         # Adding row to existing DataFrame or creating new one
-        df_path = os.path.join(
-            dataset_folder,
-            (configuration["dataset"] + "-" + configuration["config"] + ".csv"),
+        df_path = (
+            dataset_folder / f"{configuration['dataset']}-{configuration['config']}.csv"
         )
 
         df = pd.DataFrame([dataframe_row], index=[partition])
-        if os.path.isfile(df_path):
-
+        if df_path.is_file():
             previous_df = pd.read_csv(df_path, index_col=[0])
-            # df = previous_df.append(df)
             df = pd.concat([previous_df, df], axis=0)
 
         # Saving DataFrame to file
@@ -178,17 +173,14 @@ class Results:
         test_summary = []
         summary_index = []
 
-        for folder in os.listdir(self._experiment_folder):
-
-            df = pd.read_csv(
-                os.path.join(self._experiment_folder, folder, folder + ".csv")
-            )
+        for folder in self._experiment_folder.iterdir():
+            df = pd.read_csv(folder / f"{folder.name}.csv")
 
             # Creating one entry per folder in summaries
             tr_sr, ts_sr = self._create_summary(df, avg_index, std_index)
             train_summary.append(tr_sr)
             test_summary.append(ts_sr)
-            summary_index.append(folder)
+            summary_index.append(folder.name)
 
         # Naming each row in datasets
         train_summary = pd.concat(train_summary, axis=1).transpose()
@@ -197,8 +189,8 @@ class Results:
         test_summary.index = summary_index
 
         # Save summaries to csv
-        train_summary.to_csv(os.path.join(self._experiment_folder, "train_summary.csv"))
-        test_summary.to_csv(os.path.join(self._experiment_folder, "test_summary.csv"))
+        train_summary.to_csv(self._experiment_folder / "train_summary.csv")
+        test_summary.to_csv(self._experiment_folder / "test_summary.csv")
 
     def _create_summary(self, df, avg_index, std_index):
         """Summarize information from a DataFrame into a single row.
