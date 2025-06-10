@@ -1,14 +1,11 @@
 """Tests for the REDSVM classifier."""
 
-from os import path as ospath
+from pathlib import Path
 
 import pytest
 import numpy as np
 import numpy.testing as npt
 
-# syspath.append(ospath.join('..', 'classifiers'))
-
-# from REDSVM import REDSVM
 from orca_python.classifiers.REDSVM import REDSVM
 from orca_python.testing import TEST_DATASETS_DIR
 from orca_python.testing import TEST_PREDICTIONS_DIR
@@ -16,25 +13,25 @@ from orca_python.testing import TEST_PREDICTIONS_DIR
 
 @pytest.fixture
 def dataset_path():
-    return ospath.join(TEST_DATASETS_DIR, "balance-scale")
+    return Path(TEST_DATASETS_DIR) / "balance-scale"
 
 
 @pytest.fixture
 def predictions_path():
-    return ospath.join(TEST_PREDICTIONS_DIR, "REDSVM")
+    return Path(TEST_PREDICTIONS_DIR) / "REDSVM"
 
 
 @pytest.fixture
 def train_file(dataset_path):
     return np.loadtxt(
-        ospath.join(dataset_path, "train_balance-scale.csv"), delimiter=","
+        dataset_path / "train_balance-scale.csv", delimiter=","
     )
 
 
 @pytest.fixture
 def test_file(dataset_path):
     return np.loadtxt(
-        ospath.join(dataset_path, "test_balance-scale.csv"), delimiter=","
+        dataset_path / "test_balance-scale.csv", delimiter=","
     )
 
 
@@ -48,14 +45,14 @@ def test_redsvm_fit_correct(dataset_path, train_file, test_file, predictions_pat
     X_test = test_file[:, 0:(-1)]
 
     expected_predictions = [
-        ospath.join(predictions_path, "expectedPredictions.0"),
-        ospath.join(predictions_path, "expectedPredictions.1"),
-        ospath.join(predictions_path, "expectedPredictions.2"),
-        ospath.join(predictions_path, "expectedPredictions.3"),
-        ospath.join(predictions_path, "expectedPredictions.4"),
-        ospath.join(predictions_path, "expectedPredictions.5"),
-        ospath.join(predictions_path, "expectedPredictions.6"),
-        ospath.join(predictions_path, "expectedPredictions.7"),
+        predictions_path / "expectedPredictions.0",
+        predictions_path / "expectedPredictions.1",
+        predictions_path / "expectedPredictions.2",
+        predictions_path / "expectedPredictions.3",
+        predictions_path / "expectedPredictions.4",
+        predictions_path / "expectedPredictions.5",
+        predictions_path / "expectedPredictions.6",
+        predictions_path / "expectedPredictions.7",
     ]
 
     classifiers = [
