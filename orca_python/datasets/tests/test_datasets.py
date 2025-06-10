@@ -1,6 +1,5 @@
 """Tests for the utility functions in the datasets module."""
 
-import os
 import numpy as np
 import pytest
 from pathlib import Path
@@ -37,7 +36,7 @@ def create_tmp_dataset(tmp_path, dataset_name, filename):
 
 
 def test_get_data_path():
-    assert get_data_path() == Path(os.path.dirname(orca_python.datasets.data.__file__))
+    assert get_data_path() == Path(orca_python.datasets.data.__file__).parent
 
 
 def test_dataset_exists(tmp_path):
@@ -88,7 +87,7 @@ def test_check_ambiguity_with_seed(tmp_path):
 
 def test_load_datafile_not_found(tmp_path):
     dataset_name = "dataset"
-    error_msg = f"No dataset found for '{dataset_name}' in '{str(tmp_path)}'."
+    error_msg = f"No dataset found for '{dataset_name}' in '{tmp_path}'."
     with pytest.raises(FileNotFoundError, match=error_msg):
         load_datafile(dataset_name, split="undivided", data_path=tmp_path)
 
@@ -128,7 +127,7 @@ def test_load_datafile_with_invalid_seed(tmp_path):
 
 def test_load_dataset_not_found(tmp_path):
     dataset_name = "dataset"
-    error_msg = f"No dataset found for '{dataset_name}' in '{str(tmp_path)}'."
+    error_msg = f"No dataset found for '{dataset_name}' in '{tmp_path}'."
 
     with pytest.raises(FileNotFoundError, match=error_msg):
         load_dataset(dataset_name, data_path=tmp_path)
@@ -181,7 +180,7 @@ def test_load_dataset_test_split(tmp_path):
 
 
 def test_load_dataset_missing_data(tmp_path):
-    error_msg = f"No dataset found for 'dataset' in '{str(tmp_path)}'."
+    error_msg = f"No dataset found for 'dataset' in '{tmp_path}'."
 
     with pytest.raises(FileNotFoundError, match=error_msg):
         load_dataset("dataset", data_path=tmp_path)

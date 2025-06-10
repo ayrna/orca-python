@@ -1,6 +1,5 @@
 """Utility functions for datasets."""
 
-import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -24,7 +23,7 @@ def get_data_path():
     PosixPath('/path/to/orca_python/datasets/data')
 
     """
-    return Path(os.path.dirname(orca_python.datasets.data.__file__))
+    return Path(orca_python.datasets.data.__file__).parent
 
 
 def dataset_exists(dataset_name, data_path):
@@ -250,11 +249,11 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
     ((38, 54), (38,))
 
     """
-    data_path = Path(os.path.expanduser(str(data_path or get_data_path())))
+    data_path = Path(data_path or get_data_path()).expanduser()
 
     if not dataset_exists(dataset_name, data_path):
         raise FileNotFoundError(
-            f"No dataset found for '{dataset_name}' in '{str(data_path)}'."
+            f"No dataset found for '{dataset_name}' in '{data_path}'."
         )
 
     split_str = f"{split + '_' if split and split != 'undivided' else ''}"
@@ -322,7 +321,7 @@ def load_dataset(dataset_name, data_path=None, seed=None):
     ((1296, 21), (1296,), (432, 21), (432,))
 
     """
-    data_path = Path(os.path.expanduser(str(data_path or get_data_path())))
+    data_path = Path(data_path or get_data_path()).expanduser()
 
     if not dataset_exists(dataset_name, data_path):
         raise FileNotFoundError(
