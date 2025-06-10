@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-import os
+from pathlib import Path
 from time import time
 from collections import OrderedDict
 from itertools import product
@@ -98,7 +98,7 @@ class Utilities:
         for x in self.general_conf["datasets"]:
 
             dataset_name = x.strip()
-            dataset_path = os.path.join(self.general_conf["basedir"], dataset_name)
+            dataset_path = Path(self.general_conf["basedir"]) / dataset_name
 
             dataset = self._load_dataset(dataset_path)
 
@@ -233,7 +233,7 @@ class Utilities:
 
         Parameters
         ----------
-        dataset_path : str
+        dataset_path : Path
             Path to dataset folder.
 
         Returns
@@ -257,40 +257,31 @@ class Utilities:
 
         try:
             partition_list = {
-                get_partition_index(filename): {}
-                for filename in os.listdir(dataset_path)
-                if filename.startswith("train_")
-            }
-
-            # Creating dicts for all partitions (saving partition order as keys)
-            partition_list = {
-                filename.rsplit("_", 1)[-1].replace(".csv", ""): {}
-                for filename in os.listdir(dataset_path)
-                if filename.startswith("train_")
+                get_partition_index(filename.name): {}
+                for filename in dataset_path.iterdir()
+                if filename.name.startswith("train_")
             }
 
             # Loading each dataset
-            for filename in os.listdir(dataset_path):
-                full_path = os.path.join(dataset_path, filename)
-
-                if filename.startswith("train_"):
-                    idx = get_partition_index(filename)
-                    train_inputs, train_outputs = self._read_file(full_path)
+            for filename in dataset_path.iterdir():
+                if filename.name.startswith("train_"):
+                    idx = get_partition_index(filename.name)
+                    train_inputs, train_outputs = self._read_file(filename)
                     partition_list[idx]["train_inputs"] = train_inputs
                     partition_list[idx]["train_outputs"] = train_outputs
 
-                elif filename.startswith("test_"):
-                    idx = get_partition_index(filename)
-                    test_inputs, test_outputs = self._read_file(full_path)
+                elif filename.name.startswith("test_"):
+                    idx = get_partition_index(filename.name)
+                    test_inputs, test_outputs = self._read_file(filename)
                     partition_list[idx]["test_inputs"] = test_inputs
                     partition_list[idx]["test_outputs"] = test_outputs
 
         except OSError:
-            raise ValueError("No such file or directory: '%s'" % dataset_path)
+            raise ValueError(f"No such file or directory: '{dataset_path}'")
 
         except KeyError:
             raise RuntimeError(
-                "Found partition without train files: partition %s" % filename
+                f"Found partition without train files: partition {filename.name}"
             )
 
         # Saving partitions as a sorted list of (index, partition) tuples
@@ -305,7 +296,7 @@ class Utilities:
 
         Parameters
         ----------
-        filename : str
+        filename : str or Path
             Full path to train or test file.
 
         Returns
@@ -336,12 +327,12 @@ class Utilities:
             If the dataset list is inconsistent or contains non-string values.
 
         """
-        base_path = self.general_conf["basedir"]
+        base_path = Path(self.general_conf["basedir"])
         dataset_list = self.general_conf["datasets"]
 
         # Check if home path is shortened
-        if base_path.startswith("~"):
-            base_path = base_path.replace("~", os.path.expanduser("~"), 1)
+        if str(base_path).startswith("~"):
+            base_path = Path.home() / str(base_path)[1:]
 
         # Compatibility between python 2 and 3
         try:
@@ -351,17 +342,16 @@ class Utilities:
 
         # Check if 'all' is the only value, and if it is, expand it
         if len(dataset_list) == 1 and dataset_list[0] == "all":
-
             dataset_list = [
-                item
-                for item in os.listdir(base_path)
-                if os.path.isdir(os.path.join(base_path, item))
+                item.name
+                for item in base_path.iterdir()
+                if item.is_dir()
             ]
 
         elif not all(isinstance(item, basestring) for item in dataset_list):
             raise ValueError("Dataset list can only contain strings")
 
-        self.general_conf["basedir"] = base_path
+        self.general_conf["basedir"] = str(base_path)
         self.general_conf["datasets"] = dataset_list
 
     def _normalize_data(self, train_data, test_data):

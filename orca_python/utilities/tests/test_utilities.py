@@ -1,7 +1,6 @@
 """Tests for the experiment utilities module."""
 
-import os
-from os import path as ospath
+from pathlib import Path
 from shutil import rmtree
 
 import numpy.testing as npt
@@ -9,11 +8,6 @@ import pandas as pd
 import numpy as np
 import pytest
 
-# syspath.append('..')
-# syspath.append(ospath.join('..', 'classifiers'))
-
-# from utilities import Utilities
-# from utilities import load_classifier
 from orca_python.utilities import Utilities, load_classifier
 from orca_python.testing import TEST_DATASETS_DIR
 
@@ -47,7 +41,7 @@ def test_load_complete_dataset(tmp_path, util):
 
     # Check all partitions have been loaded
     npt.assert_equal(
-        len(partition_list), (len([name for name in os.listdir(dataset_path)]) / 2)
+        len(partition_list), (len(list(dataset_path.iterdir())) / 2)
     )
     # Check if every partition has train and test inputs and outputs (4 diferent dictionaries)
     npt.assert_equal(
@@ -82,7 +76,7 @@ def test_load_nontestfile_dataset(tmp_path, util):
     partition_list = util._load_dataset(dataset_path)
 
     npt.assert_equal(
-        len(partition_list), len([name for name in os.listdir(dataset_path)])
+        len(partition_list), len(list(dataset_path.iterdir()))
     )
     npt.assert_equal(
         all([len(partition[1]) == 2 for partition in partition_list]), True
@@ -106,15 +100,15 @@ def test_load_nontrainfile_dataset(tmp_path, util):
 
 def test_normalize_data(tmp_path, util):
     # Test preparation
-    dataset_path = ospath.join(TEST_DATASETS_DIR, "balance-scale")
+    dataset_path = Path(TEST_DATASETS_DIR) / "balance-scale"
 
     train_file = np.loadtxt(
-        ospath.join(dataset_path, "train_balance-scale.csv"), delimiter=","
+        dataset_path / "train_balance-scale.csv", delimiter=","
     )
     X_train = train_file[:, 0:(-1)]
 
     test_file = np.loadtxt(
-        ospath.join(dataset_path, "test_balance-scale.csv"), delimiter=","
+        dataset_path / "test_balance-scale.csv", delimiter=","
     )
     X_test = test_file[:, 0:(-1)]
 
@@ -128,15 +122,15 @@ def test_normalize_data(tmp_path, util):
 
 def test_standardize_data(util):
     # Test preparation
-    dataset_path = ospath.join(TEST_DATASETS_DIR, "balance-scale")
+    dataset_path = Path(TEST_DATASETS_DIR) / "balance-scale"
 
     train_file = np.loadtxt(
-        ospath.join(dataset_path, "train_balance-scale.csv"), delimiter=","
+        dataset_path / "train_balance-scale.csv", delimiter=","
     )
     X_train = train_file[:, 0:(-1)]
 
     test_file = np.loadtxt(
-        ospath.join(dataset_path, "test_balance-scale.csv"), delimiter=","
+        dataset_path / "test_balance-scale.csv", delimiter=","
     )
     X_test = test_file[:, 0:(-1)]
 
@@ -268,15 +262,14 @@ def test_check_params(util):
     # Resetting configurations to not interfere with other experiments
     util.configurations = {}
 
-
 @pytest.fixture
 def main_folder():
-    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    return Path(__file__).parent.parent.parent
 
 
 @pytest.fixture
 def dataset_folder(main_folder):
-    return os.path.join(main_folder, "datasets", "data")
+    return main_folder / "datasets" / "data"
 
 
 @pytest.fixture
@@ -329,46 +322,44 @@ def test_run_experiment(main_folder, general_conf, configurations):
     util.write_report()
 
     # Checking if all outputs have been generated and are correct
-    outputs_folder = "my_runs"
-    npt.assert_equal(os.path.exists(outputs_folder), True)
+    outputs_folder = Path("my_runs")
+    npt.assert_equal(outputs_folder.exists(), True)
 
-    experiment_folder = sorted(os.listdir(outputs_folder))
-    experiment_folder = os.path.join(outputs_folder, experiment_folder[-1])
+    experiment_folder = sorted(outputs_folder.iterdir())
+    experiment_folder = outputs_folder / experiment_folder[-1].name
 
     for dataset in util.general_conf["datasets"]:
         for conf_name, _ in util.configurations.items():
 
             # Check if the folder for that dataset-configurations exists
-            conf_folder = os.path.join(experiment_folder, (dataset + "-" + conf_name))
-            npt.assert_equal(os.path.exists(conf_folder), True)
+            conf_folder = experiment_folder / f"{dataset}-{conf_name}"
+            npt.assert_equal(conf_folder.exists(), True)
 
             # Checking CSV containning all metrics for that configuration
-            metrics_csv = pd.read_csv(
-                os.path.join(conf_folder, (dataset + "-" + conf_name + ".csv"))
-            )
+            metrics_csv = pd.read_csv(conf_folder / f"{dataset}-{conf_name}.csv")
             metrics_csv = metrics_csv.iloc[:, -12:]
 
             npt.assert_equal(metrics_csv.shape, (30, 12))
             npt.assert_equal(all(str(c) == "float64" for c in metrics_csv.dtypes), True)
 
             # Checking that all models have been saved
-            models_folder = os.path.join(conf_folder, "models")
-            npt.assert_equal(os.path.exists(models_folder), True)
-            npt.assert_equal(len(os.listdir(models_folder)), 30)
+            models_folder = conf_folder / "models"
+            npt.assert_equal(models_folder.exists(), True)
+            npt.assert_equal(len(list(models_folder.iterdir())), 30)
 
             # Checking that all predictions have been saved
-            predictions_folder = os.path.join(conf_folder, "predictions")
-            npt.assert_equal(os.path.exists(predictions_folder), True)
-            npt.assert_equal(len(os.listdir(predictions_folder)), 60)
+            predictions_folder = conf_folder / "predictions"
+            npt.assert_equal(predictions_folder.exists(), True)
+            npt.assert_equal(len(list(predictions_folder.iterdir())), 60)
 
     # Checking if summaries are correct
-    train_summary = pd.read_csv(os.path.join(experiment_folder, "train_summary.csv"))
+    train_summary = pd.read_csv(experiment_folder / "train_summary.csv")
     npt.assert_equal(train_summary.shape, (4, 13))
     npt.assert_equal(
         all(str(c) == "float64" for c in train_summary.dtypes.iloc[1:]), True
     )
 
-    test_summary = pd.read_csv(os.path.join(experiment_folder, "test_summary.csv"))
+    test_summary = pd.read_csv(experiment_folder / "test_summary.csv")
     npt.assert_equal(test_summary.shape, (4, 13))
     npt.assert_equal(
         all(str(c) == "float64" for c in test_summary.dtypes.iloc[1:]), True
