@@ -1,3 +1,5 @@
+"""Tests for the experiment utilities module."""
+
 import os
 from os import path as ospath
 from shutil import rmtree
@@ -24,19 +26,16 @@ def util():
 
 
 def create_csv(path, filename):
-    """
-    Create a csv file with sample data
-    """
+    """Create a csv file with sample data."""
     sample_data = "1,2,3,0\n4,5,6,1"
     (path / filename).write_text(sample_data)
 
 
 def test_load_complete_dataset(tmp_path, util):
-    """
-    Loading dataset composed of 5 partitions,
-    each one of them composed of a train and test file
-    """
+    """Loading dataset composed of 5 partitions, each one of them composed of
+    a train and test file.
 
+    """
     dataset_path = tmp_path / "complete"
     dataset_path.mkdir()
 
@@ -57,11 +56,7 @@ def test_load_complete_dataset(tmp_path, util):
 
 
 def test_load_partitionless_dataset(tmp_path, util):
-    """
-    Loading dataset composed of only two csv
-    files (train and test files)
-    """
-
+    """Loading dataset composed of only two csv files (train and test files)"""
     dataset_path = tmp_path / "partitionless"
     dataset_path.mkdir()
 
@@ -77,10 +72,7 @@ def test_load_partitionless_dataset(tmp_path, util):
 
 
 def test_load_nontestfile_dataset(tmp_path, util):
-    """
-    Loading dataset composed of five train files
-    """
-
+    """Loading dataset composed of five train files."""
     dataset_path = tmp_path / "nontestfile"
     dataset_path.mkdir()
 
@@ -98,11 +90,10 @@ def test_load_nontestfile_dataset(tmp_path, util):
 
 
 def test_load_nontrainfile_dataset(tmp_path, util):
-    """
-    Loading dataset with 2 partitions, one of them lacking
-    it's train file. This should raise an exception.
-    """
+    """Loading dataset with 2 partitions, one of them lacking its train file.
+    This should raise an exception.
 
+    """
     dataset_path = tmp_path / "nontrainfile"
     dataset_path.mkdir()
 
@@ -178,13 +169,12 @@ def test_load_algorithm():
 
 
 def test_check_params(util):
-    """
-    Testing functionality of check_params method.
+    """Testing functionality of check_params method.
 
-    It will test the 3 different scenarios contemplated
-    within the framework for passing the configuration.
-    """
+    It will test the 3 different scenarios contemplated within the framework
+    for passing the configuration.
 
+    """
     # Normal use of configuration file with a non nested method
     util.configurations = {
         "conf1": {
@@ -327,13 +317,11 @@ def configurations():
 
 
 def test_run_experiment(main_folder, general_conf, configurations):
-    """
-    To test the main method, a configuration will be run
-    until the end. Next we will check that every expected
-    result file has been created, having all of them the
-    proper dimensions and types.
-    """
+    """To test the main method, a configuration will be run until the end.
+    Next we will check that every expected result file has been created,
+    having all of them the proper dimensions and types.
 
+    """
     # Declaring Utilities object and running the experiment
     util = Utilities(general_conf, configurations, verbose=False)
     util.run_experiment()

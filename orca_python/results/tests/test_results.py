@@ -1,3 +1,5 @@
+"""Tests for the Results class."""
+
 from os import path as ospath
 from shutil import rmtree
 from collections import OrderedDict
@@ -21,13 +23,12 @@ def results():
 
 
 def test_add_record(results):
-    """
-    Checking behavior of add_record method.
+    """Checking behavior of add_record method.
 
-    Two partitions for the same dataset and configuration will
-    be added and retreived later on to check if they are simillar.
-    """
+    Two partitions for the same dataset and configuration will be added and
+    retreived later on to check if they are similar.
 
+    """
     # Saving fist partition results to DataFrame
     partition = "0"
     dataset = "toy"
@@ -202,10 +203,7 @@ def test_add_record(results):
 
 
 def test_create_summary(results):
-    """
-    Tests create_summary method
-    """
-
+    """Tests create_summary method."""
     dataset = "toy"
     configuration = "conf_1"
 

@@ -1,4 +1,5 @@
-# encoding: utf-8
+"""Neural Network with Ordered Partitions (NNOP)."""
+
 import numpy as np
 import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -8,88 +9,112 @@ import scipy
 
 
 class NNOP(BaseEstimator, ClassifierMixin):
+    """Neural Network with Ordered Partitions (NNOP).
+
+    This model considers the OrderedPartitions coding scheme for the labels and a rule
+    for decisions based on the first node whose output is higher than a predefined
+    threshold (T=0.5, in our experiments). The model has one hidden layer with hiddenN
+    neurons and one output layer with as many neurons as the number of classes minus
+    one.
+
+    The learning is based on iRProp+ algorithm and the implementation provided by
+    Roberto Calandra in his toolbox Rprop Toolbox for MATLAB:
+    http://www.ias.informatik.tu-darmstadt.de/Research/RpropToolbox
+
+    The model is adjusted by minimizing mean squared error. A regularization parameter
+    "lambda" is included based on L2, and the number of iterations is specified by the
+    "iterations" parameter.
+
+    Parameters
+    ----------
+    epsilon_init : float, default=0.5
+        Range for initializing the weights.
+
+    n_hidden : int, default=50
+        Number of hidden neurons of the model.
+
+    max_iter : int, default=500
+        Number of iterations for fmin_l_bfgs_b algorithm.
+
+    lambda_value : float, default=0.01
+        Regularization parameter.
+
+    Attributes
+    ----------
+    classes_ : ndarray of shape (n_classes,)
+        Array that contains all different class labels found in the original dataset.
+
+    n_classes_ : int
+        Number of labels in the problem.
+    
+    n_samples_ : int
+        Number of samples of X (train patterns array).
+
+    theta1_ : ndarray of shape (n_hidden, n_features + 1)
+        Hidden layer weights (with bias).
+
+    theta2_ : ndarray of shape (n_classes - 1, n_hidden + 1)
+        Output layer weights.
+
+    Notes
+    -----
+    This file is part of ORCA: https://github.com/ayrna/orca
+
+    References
+    ----------
+    .. [1] J. Cheng, Z. Wang, and G. Pollastri, "A neural network approach to ordinal
+           regression," in Proc. IEEE Int. Joint Conf. Neural Netw. (IEEE World Congr.
+           Comput. Intell.), 2008, pp. 1279-1284.
+
+    .. [2] P.A. Gutiérrez, M. Pérez-Ortiz, J. Sánchez-Monedero, F. Fernández-Navarro
+           and C. Hervás-Martínez, "Ordinal regression methods: survey and
+           experimental study", IEEE Transactions on Knowledge and Data
+           Engineering, Vol. 28. Issue 1, 2016,
+           http://dx.doi.org/10.1109/TKDE.2015.2457911
+
+    Copyright
+    ---------
+    This software is released under the The GNU General Public License v3.0 licence
+    available at http://www.gnu.org/licenses/gpl-3.0.html
+
+    Authors
+    -------
+    Pedro Antonio Gutiérrez, María Pérez Ortiz, Javier Sánchez Monedero
+
+    Citation
+    --------
+    If you use this code, please cite the associated paper
+    http://www.uco.es/grupos/ayrna/orreview
+
     """
 
-    NNOP Neural Network with Ordered Partitions (NNOP). This model
-            considers the OrderedPartitions coding scheme for the labels and a
-            rule for decisions based on the first node whose output is higher
-            than a predefined threshold (T=0.5, in our experiments). The
-            model has one hidden layer with hiddenN neurons and one outputlayer
-            with as many neurons as the number of classes minus one. The learning
-            is based on iRProp+ algorithm and the implementation provided by
-            Roberto Calandra in his toolbox Rprop Toolbox for {MATLAB}:
-            http://www.ias.informatik.tu-darmstadt.de/Research/RpropToolbox
-            The model is adjusted by minimizing mean squared error. A regularization
-            parameter "lambda" is included based on L2, and the number of
-            iterations is specified by the "iterations" parameter.
-
-            NNOP public methods:
-                    fit						- Fits a model from training data
-                    predict					- Performs label prediction
-
-            References:
-                    [1] J. Cheng, Z. Wang, and G. Pollastri, "A neural network
-                            approach to ordinal regression," in Proc. IEEE Int. Joint
-                            Conf. Neural Netw. (IEEE World Congr. Comput. Intell.), 2008,
-                            pp. 1279-1284.
-                    [2] P.A. Gutiérrez, M. Pérez-Ortiz, J. Sánchez-Monedero,
-                            F. Fernández-Navarro and C. Hervás-Martínez
-                            Ordinal regression methods: survey and experimental study
-                            IEEE Transactions on Knowledge and Data Engineering, Vol. 28.
-                            Issue 1, 2016
-                            http://dx.doi.org/10.1109/TKDE.2015.2457911
-
-            This file is part of ORCA: https://github.com/ayrna/orca
-            Original authors: Pedro Antonio Gutiérrez, María Pérez Ortiz, Javier Sánchez Monedero
-            Citation: If you use this code, please cite the associated paper http://www.uco.es/grupos/ayrna/orreview
-            Copyright:
-                    This software is released under the The GNU General Public License v3.0 licence
-                    available at http://www.gnu.org/licenses/gpl-3.0.html
-
-            NNOP properties:
-                    epsilon_init				- Range for initializing the weights.
-                    n_hidden					- Number of hidden neurons of the
-                                                                            model.
-                    max_iter					- Number of iterations for fmin_l_bfgs_b
-                                                                            algorithm.
-                    lambda_value				- Regularization parameter.
-                    theta1_						- Hidden layer weigths (with bias).
-                    theta2_						- Output layer weigths.
-                    n_classes_					- Number of labels in the problem.
-                    n_samples_					- Number of samples of X (train patterns array).
-
-    """
-
-    # Constructor of class NNOP (set parameters values).
     def __init__(self, epsilon_init=0.5, n_hidden=50, max_iter=500, lambda_value=0.01):
-
         self.epsilon_init = epsilon_init
         self.n_hidden = n_hidden
         self.max_iter = max_iter
         self.lambda_value = lambda_value
 
-    # --------Main functions (Public Access)--------
-
     def fit(self, X, y):
-        """
-
-        Trains the model for the model NNOP method with TRAIN data.
-        Returns the projection of patterns (only valid for threshold models) and the predicted labels.
+        """Fit the model with the training data.
 
         Parameters
         ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training patterns array, where n_samples is the number of samples
+            and n_features is the number of features.
 
-        X: {array-like, sparse matrix}, shape (n_samples, n_features)
-                Training patterns array, where n_samples is the number of samples
-                and n_features is the number of features
-
-        y: array-like, shape (n_samples)
-                Target vector relative to X
+        y : array-like of shape (n_samples,)
+            Target vector relative to X.
 
         Returns
         -------
-
-        self: The object NNOP.
+        self : object
+            Fitted estimator.
+        
+        Raises
+        ------
+        ValueError
+            If parameters are invalid or data has wrong format.
 
         """
         if (
@@ -117,9 +142,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
             <= np.tile(np.arange(1, n_classes + 1)[np.newaxis, :], (n_samples, 1))
         )
 
-        # Hidden layer weigths (with bias)
+        # Hidden layer weights (with bias)
         initial_theta1 = self._rand_initialize_weights(n_features + 1, self.n_hidden)
-        # Output layer weigths
+        # Output layer weights
         initial_theta2 = self._rand_initialize_weights(self.n_hidden + 1, n_classes - 1)
 
         # Pack parameters
@@ -151,22 +176,26 @@ class NNOP(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        """
-
-        Predicts labels of TEST patterns labels. The object needs to be fitted to the data first.
+        """Perform classification on samples in X.
 
         Parameters
         ----------
-
-        X: {array-like, sparse matrix}, shape (n_samples, n_features)
-                test patterns array, where n_samples is the number of samples
-                and n_features is the number of features
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Test patterns array, where n_samples is the number of samples and n_features
+            is the number of features.
 
         Returns
         -------
-
-        predicted: {array-like, sparse matrix}, shape (n_samples,)
-                Vector array with predicted values for each pattern of test patterns.
+        y_pred : ndarray of shape (n_samples,)
+            Class labels for samples in X.
+        
+        Raises
+        ------
+        NotFittedError
+            If the model is not fitted yet.
+        
+        ValueError
+            If input is invalid.
 
         """
         # Check is fit had been called
@@ -192,212 +221,211 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         return y_pred
 
-    # --------Getters & Setters (Public Access)--------
-
-    # Getter & Setter of "epsilonInit"
     def get_epsilon_init(self):
-        """
-
-        This method returns the value of the variable self.epsilon_init.
-        self.epsilon_init contains the value of epsilon, which is the initialization range of the weights.
-
-        """
-
-        return self.epsilon_init
-
-    def set_epsilon_init(self, epsilon_init):
-        """
-
-        This method modify the value of the variable self.epsilon_init.
-        This is replaced by the value contained in the epsilon_init variable passed as an argument.
-
-        """
-
-        self.epsilon_init = epsilon_init
-
-    # Getter & Setter of "n_hidden"
-    def get_n_hidden(self):
-        """
-
-        This method returns the value of the variable self.n_hidden.
-        self.n_hidden contains the number of nodes/neurons in the hidden layer.
-
-        """
-
-        return self.n_hidden
-
-    def set_n_hidden(self, n_hidden):
-        """
-
-        This method modify the value of the variable self.n_hidden.
-        This is replaced by the value contained in the n_hidden variable passed as an argument.
-
-        """
-
-        self.n_hidden = n_hidden
-
-    # Getter & Setter of "max_iter"
-    def get_max_iter(self):
-        """
-
-        This method returns the value of the variable self.max_iter.
-        self.max_iter contains the number of iterations.
-
-        """
-
-        return self.max_iter
-
-    def set_max_iter(self, max_iter):
-        """
-
-        This method modify the value of the variable self.max_iter.
-        This is replaced by the value contained in the max_iter variable passed as an argument.
-
-        """
-
-        self.max_iter = max_iter
-
-    # Getter & Setter of "lambda_value"
-    def get_lambda_value(self):
-        """
-
-        This method returns the value of the variable self.lambda_value.
-        self.lambda_value contains the Lambda parameter used in regularization.
-
-        """
-
-        return self.lambda_value
-
-    def set_lambda_value(self, lambda_value):
-        """
-
-        This method modify the value of the variable self.lambda_value.
-        This is replaced by the value contained in the lambda_value variable passed as an argument.
-
-        """
-
-        self.lambda_value = lambda_value
-
-    # Getter & Setter of "theta1"
-    def get_theta1(self):
-        """
-
-        This method returns the value of the variable self.theta1_.
-        self.theta1_ contains an array with the weights of the hidden layer (with biases included).
-
-        """
-
-        return self.theta1_
-
-    def set_theta1(self, theta1):
-        """
-
-        This method modify the value of the variable self.theta1_.
-        This is replaced by the value contained in the theta1 variable passed as an argument.
-
-        """
-
-        self.theta1_ = theta1
-
-    # Getter & Setter of "theta2"
-    def get_theta2(self):
-        """
-
-        This method returns the value of the variable self.theta2_.
-        self.theta2_ contains an array with output layer weigths.
-
-        """
-
-        return self.theta2_
-
-    def set_theta2(self, theta2):
-        """
-
-        This method modify the value of the variable self.theta2_.
-        This is replaced by the value contained in the theta2 variable passed as an argument.
-
-        """
-
-        self.theta2_ = theta2
-
-    # Getter & Setter of "n_classes_"
-    def get_n_classes(self):
-        """
-
-        This method returns the value of the variable self.n_classes_.
-        self.n_classes_ contains the number of labels in the problem.
-
-        """
-
-        return self.n_classes_
-
-    def set_n_classes(self, n_classes):
-        """
-
-        This method modify the value of the variable self.n_classes_.
-        This is replaced by the value contained in the n_classes variable passed as an argument.
-
-        """
-
-        self.n_classes_ = n_classes
-
-    # Getter & Setter of "n_samples_"
-    def get_n_samples(self):
-        """
-
-        This method returns the value of the variable self.n_samples_.
-        self.n_samples_ contains the number of samples of X (train patterns array).
-
-        """
-
-        return self.n_samples_
-
-    def set_n_samples(self, n_samples):
-        """
-
-        This method modify the value of the variable self.n_samples_.
-        This is replaced by the value contained in the n_samples variable passed as an argument.
-
-        """
-
-        self.n_samples_ = n_samples
-
-    # --------------Private Access functions------------------
-
-    # Download and save the values ​​of theta1, theta2 and thresholds_param
-    # from the nn_params array to their corresponding array
-    def _unpack_parameters(self, nn_params, n_features, n_hidden, n_classes):
-        """
-
-        This method gets theta1 and theta2 back from the whole array nn_params.
-
-        Parameters
-        ----------
-
-        nn_params: column array, shape ((n_features+1)*n_hidden
-        + n_hidden + (n_classes-1))
-                Array that is a column vector. It stores the values ​​of theta1,
-                theta2 and thresholds_param, all of them together in an array in this order.
-
-        n_features: integer
-                Number of nodes in the input layer of the neural network model.
-
-        n_hidden: integer
-                Number of nodes in the hidden layer of the neural network model.
-
-        n_classes: integer
-                Number of classes.
-
+        """Return the value of the variable self.epsilon_init.
 
         Returns
         -------
-
-        theta1: The weights between the input layer and the hidden layer (with biases included).
-
-        theta2: The weights between the hidden layer and the output layer.
+        epsilon_init : float
+            The initialization range of the weights.
 
         """
+        return self.epsilon_init
 
+    def set_epsilon_init(self, epsilon_init):
+        """Modify the value of the variable self.epsilon_init.
+
+        Parameters
+        ----------
+        epsilon_init : float
+            The initialization range of the weights.
+
+        """
+        self.epsilon_init = epsilon_init
+
+    def get_n_hidden(self):
+        """Return the value of the variable self.n_hidden.
+
+        Returns
+        -------
+        n_hidden : int
+            Number of nodes/neurons in the hidden layer.
+
+        """
+        return self.n_hidden
+
+    def set_n_hidden(self, n_hidden):
+        """Modify the value of the variable self.n_hidden.
+
+        Parameters
+        ----------
+        n_hidden : int
+            Number of nodes/neurons in the hidden layer.
+
+        """
+        self.n_hidden = n_hidden
+
+    def get_max_iter(self):
+        """Return the value of the variable self.max_iter.
+
+        Returns
+        -------
+        max_iter : int
+            Number of iterations.
+
+        """
+        return self.max_iter
+
+    def set_max_iter(self, max_iter):
+        """Modify the value of the variable self.max_iter.
+
+        Parameters
+        ----------
+        max_iter : int
+            Number of iterations.
+
+        """
+        self.max_iter = max_iter
+
+    def get_lambda_value(self):
+        """Return the value of the variable self.lambda_value.
+
+        Returns
+        -------
+        lambda_value : float
+            Lambda parameter used in regularization.
+
+        """
+        return self.lambda_value
+
+    def set_lambda_value(self, lambda_value):
+        """Modify the value of the variable self.lambda_value.
+
+        Parameters
+        ----------
+        lambda_value : float
+            Lambda parameter used in regularization.
+
+        """
+        self.lambda_value = lambda_value
+
+    def get_theta1(self):
+        """Return the value of the variable self.theta1_.
+
+        Returns
+        -------
+        theta1_ : ndarray of shape (n_hidden, n_features + 1)
+            Array with the weights of the hidden layer (with biases included).
+
+        """
+        return self.theta1_
+
+    def set_theta1(self, theta1):
+        """Modify the value of the variable self.theta1_.
+
+        Parameters
+        ----------
+        theta1 : ndarray of shape (n_hidden, n_features + 1)
+            Array with the weights of the hidden layer (with biases included).
+
+        """
+        self.theta1_ = theta1
+
+    def get_theta2(self):
+        """Return the value of the variable self.theta2_.
+
+        Returns
+        -------
+        theta2_ : ndarray of shape (n_classes - 1, n_hidden + 1)
+            Array with the weights of the output layer.
+
+        """
+        return self.theta2_
+
+    def set_theta2(self, theta2):
+        """Modify the value of the variable self.theta2_.
+
+        Parameters
+        ----------
+        theta2 : ndarray of shape (n_classes - 1, n_hidden + 1)
+            Array with the weights of the output layer.
+
+        """
+        self.theta2_ = theta2
+
+    def get_n_classes(self):
+        """Return the value of the variable self.n_classes_.
+
+        Returns
+        -------
+        n_classes_ : int
+            Number of labels in the problem.
+
+        """
+        return self.n_classes_
+
+    def set_n_classes(self, n_classes):
+        """Modify the value of the variable self.n_classes_.
+
+        Parameters
+        ----------
+        n_classes : int
+            Number of labels in the problem.
+
+        """
+        self.n_classes_ = n_classes
+
+    def get_n_samples(self):
+        """Return the value of the variable self.n_samples_.
+
+        Returns
+        -------
+        n_samples_ : int
+            Number of samples of X (train patterns array).
+
+        """
+        return self.n_samples_
+
+    def set_n_samples(self, n_samples):
+        """Modify the value of the variable self.n_samples_.
+
+        Parameters
+        ----------
+        n_samples : int
+            Number of samples of X (train patterns array).
+
+        """
+        self.n_samples_ = n_samples
+
+    def _unpack_parameters(self, nn_params, n_features, n_hidden, n_classes):
+        """Get theta1 and theta2 back from nn_params.
+
+        Parameters
+        ----------
+        nn_params : ndarray of shape ((n_features+1)*n_hidden + n_hidden +
+                                      (n_classes-1))
+            Array that is a column vector. It stores the values of theta1, theta2 and
+            thresholds_param, all of them together in an array in this order.
+
+        n_features : int
+            Number of nodes in the input layer of the neural network model.
+
+        n_hidden : int
+            Number of nodes in the hidden layer of the neural network model.
+
+        n_classes : int
+            Number of classes.
+
+        Returns
+        -------
+        theta1 : ndarray of shape (n_hidden, n_features + 1)
+            The weights between the input layer and the hidden layer (with biases
+            included).
+
+        theta2 : ndarray of shape (n_classes - 1, n_hidden + 1)
+            The weights between the hidden layer and the output layer.
+
+        """
         n_theta1 = n_hidden * (n_features + 1)
         theta1 = np.reshape(
             nn_params[0:n_theta1], (n_hidden, (n_features + 1)), order="F"
@@ -409,30 +437,26 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         return theta1, theta2
 
-    # Randomly initialize the weights of the neural network layer
-    # by entering the number of input and output nodes of that layer
     def _rand_initialize_weights(self, L_in, L_out):
-        """
+        """Initialize layer weights randomly.
 
-        This method randomly initializes the weights of a layer
-         with L_in incoming connections and L_out outgoing connections
+        Randomly initialize the weights of a layer with L_in incoming connections and
+        L_out outgoing connections.
 
-         Parameters
+        Parameters
         ----------
+        L_in : int
+            Number of inputs of the layer.
 
-        L_in: integer
-                Number of inputs of the layer.
-
-        L_out: integer
-                Number of outputs of the layer.
+        L_out : int
+            Number of outputs of the layer.
 
         Returns
         -------
-
-        W: Array with the weights of each synaptic relationship between nodes.
+        W : ndarray of shape (L_out, L_in)
+            Array with the weights of each synaptic relationship between nodes.
 
         """
-
         W = (
             np.random.rand(L_out, L_in) * 2 * self.get_epsilon_init()
             - self.get_epsilon_init()
@@ -440,50 +464,45 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         return W
 
-    # Implements the cost function and obtains the corresponding derivatives.
     def _nnop_cost_function(
         self, nn_params, n_features, n_hidden, n_classes, X, Y, lambda_value
     ):
-        """
-        This method implements the cost function and obtains
-        the corresponding derivatives.
+        """Implement the cost function and obtain the corresponding derivatives.
 
         Parameters
         ----------
+        nn_params : ndarray of shape ((n_features+1)*n_hidden + n_hidden)
+            Array that is a column vector. It stores the values of Theta1 and Theta2,
+            all of them together in an array in this order.
 
-        nn_params: column array, shape ((n_features+1)*n_hidden
-        + n_hidden)
+        n_features : int
+            Number of nodes in the input layer of the neural network model.
 
-        Array that is a column vector. It stores the values ​​of Theta1 and
-        Theta2, all of them together in an array in this order.
+        n_hidden : int
+            Number of nodes in the hidden layer of the neural network model.
 
-        n_features: integer
-                Number of nodes in the input layer of the neural network model.
+        n_classes : int
+            Number of classes.
 
-        n_hidden: integer
-                Number of nodes in the hidden layer of the neural network model.
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            Training patterns array, where n_samples is the number of samples and
+            n_features is the number of features
 
-        n_classes: integer
-                Number of classes.
+        Y : array-like of shape (n_samples,)
+            Target vector relative to X
 
-        X: {array-like, sparse matrix}, shape (n_samples, n_features)
-                Training patterns array, where n_samples is the number of samples
-                and n_features is the number of features
-
-        Y: array-like, shape (n_samples)
-                Target vector relative to X
-
-        lambda_value:
-                Regularization parameter.
+        lambda_value : float
+            Regularization parameter.
 
         Returns
         -------
+        J : float
+            Matrix with cost function (updated weight matrix).
 
-        J: Matrix with cost function (updated weight matrix).
-        grad: Array with the error gradient of each weight of each layer.
+        grad : ndarray
+            Array with the error gradient of each weight of each layer.
 
         """
-
         # Unroll all the parameters
         theta1, theta2 = self._unpack_parameters(
             nn_params, n_features, n_hidden, n_classes

@@ -1,3 +1,4 @@
+"""Tests for the metrics module."""
 
 import pytest
 from numpy import array

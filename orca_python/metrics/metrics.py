@@ -1,3 +1,5 @@
+"""Metrics for ordinal classification."""
+
 from __future__ import division
 
 import warnings
@@ -7,12 +9,31 @@ import scipy.stats
 
 
 def greater_is_better(metric_name):
-    """
-    Determines if greater values for one metric represent a better
-    classification rate or vice versa. Needed when declaring a
-    new scorer through make_scorer from sklearn.
-    """
+    """Determine if greater values indicate better classification performance.
 
+    Needed when declaring a new scorer through make_scorer from sklearn.
+
+    Parameters
+    ----------
+    metric_name : str
+        Name of the metric.
+
+    Returns
+    -------
+    greater_is_better : bool
+        True if greater values indicate better classification performance, False otherwise.
+    
+    Examples
+    --------
+    >>> from orca_python.metrics.metrics import greater_is_better
+    >>> greater_is_better("ccr")
+    True
+    >>> greater_is_better("mze")
+    False
+    >>> greater_is_better("mae")
+    False
+    
+    """
     greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
     if metric_name in greater_is_better_metrics:
         return True
@@ -21,23 +42,65 @@ def greater_is_better(metric_name):
 
 
 def ccr(y, ypred):
-    """
-    CCR - Correctly Classified Ratio
+    """Calculate the Correctly Classified Ratio.
 
-    Also named Accuracy, it's the percentage of well
-    classified patterns among all patterns from a set.
-    """
+    Also named Accuracy, it's the percentage of well classified patterns among all
+    patterns from a set.
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    ccr : float
+        Correctly classified ratio.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import ccr
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 0, 0, 1])
+    >>> ccr(y_true, y_pred)
+    0.5714285714285714
+
+    """
     return np.count_nonzero(y == ypred) / float(len(y))
 
 
 def amae(y, ypred):
-    """
-    AMAE - Average MAE
+    """Calculate the Average MAE.
 
     Mean of the MAE metric among classes.
-    """
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    amae : float
+        Average mean absolute error.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import amae
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> amae(y_true, y_pred)
+    np.float64(0.125)
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -51,14 +114,31 @@ def amae(y, ypred):
 
 
 def gm(y, ypred):
+    """Calculate the Geometric mean of the sensitivity (accuracy) for each class.
+    
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    gm : float
+        Geometric mean of the sensitivities.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import gm
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> gm(y_true, y_pred)
+    np.float64(0.8408964152537145)
+        
     """
-
-    GM - Geometric Mean
-
-    Geometric mean of the sensitivy (accuracy) for each class
-
-    """
-
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -70,13 +150,33 @@ def gm(y, ypred):
 
 
 def mae(y, ypred):
-    """
-    MAE - Mean Absolute Error
+    """Calculate the Mean Absolute Error.
 
-    Average absolute deviation of the predicted class
-    from the actual true class.
-    """
+    Average absolute deviation of the predicted class from the actual true class.
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    mae : float
+        Mean absolute error.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import mae
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> mae(y_true, y_pred)
+    np.float64(0.2857142857142857)
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         y = np.asarray(y)
@@ -85,13 +185,34 @@ def mae(y, ypred):
 
 
 def mmae(y, ypred):
-    """
-    MMAE - Maximum MAE
+    """Calculate the Maximum Mean Absolute Error.
 
-    MAE value of the class with higher distance from the
-    true values to the predicted ones.
-    """
+    MAE value of the class with higher distance from the true values to the predicted
+    ones.
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    mmae : float
+        Maximum mean absolute error.
+        
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import mmae
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> mmae(y_true, y_pred)
+    np.float64(0.5)
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -105,14 +226,34 @@ def mmae(y, ypred):
 
 
 def ms(y, ypred):
-    """
-    MS - Minimum Sensitivity
+    """Calculate the Minimum Sensitivity.
 
-    Lowest percentage of patterns correctly predicted as
-    belonging to each class, with respect to the total number
-    of examples in the corresponding class.
-    """
+    Lowest percentage of patterns correctly predicted as belonging to each class, with
+    respect to the total number of examples in the corresponding class.
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    ms : float
+        Minimum sensitivity.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import ms
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> ms(y_true, y_pred)
+    np.float64(0.5)
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y, ypred)
@@ -125,12 +266,33 @@ def ms(y, ypred):
 
 
 def mze(y, ypred):
-    """
-    MZE - Mean Zero-one Error
+    """Calculate the Mean Zero-one Error.
 
     Better known as error rate, is the complementary measure of CCR.
-    """
 
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    mze : float
+        Mean zero-one error.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import mze
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> mze(y_true, y_pred)
+    np.float64(0.2857142857142857)
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -139,12 +301,34 @@ def mze(y, ypred):
 
 
 def tkendall(y, ypred):
-    """
-    The Kendalls t is a statistic used to measure
-    the association between two measured quantities.
-    It is a measure of rank correlation.
-    """
+    """Calculate Kendall's tau.
 
+    A statistic used to measure the association between two measured quantities. It is
+    a measure of rank correlation.
+
+    Parameters
+    ----------
+    y : np.ndarray
+        Ground truth labels.
+
+    ypred : np.ndarray
+        Predicted labels.
+
+    Returns
+    -------
+    tkendall : float
+        Kendall's tau.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import tkendall
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> tkendall(y_true, y_pred)
+    np.float64(0.8140915784106943)
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -153,12 +337,34 @@ def tkendall(y, ypred):
 
 
 def wkappa(y, ypred):
-    """
-    The Weighted Kappa is a modified version of the Kappa
-    statistic calculated to allow as signing different weights
-    to different levels of aggregation between two variables.
-    """
+    """Calculate the Weighted Kappa.
 
+    A modified version of the Kappa statistic calculated to allow assigning
+    different weights to different levels of aggregation between two variables.
+
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    wkappa : float
+        Weighted Kappa.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import wkappa
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> wkappa(y_true, y_pred)
+    np.float64(0.7586206896551724)
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -180,12 +386,33 @@ def wkappa(y, ypred):
 
 
 def spearman(y, ypred):
-    """
-    The Spearmans rank correlation coefficient is
-    a non-parametric measure of statistical dependence
-    between two variables.
-    """
+    """Calculate the Spearman's rank correlation coefficient.
 
+    A non-parametric measure of statistical dependence between two variables.
+
+    Parameters
+    ----------
+    y : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    ypred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    spearman : float
+        Spearman rank correlation coefficient.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import spearman
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> spearman(y_true, y_pred)
+    np.float64(0.9165444688834581)
+
+    """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 

@@ -1,4 +1,5 @@
-# encoding: utf-8
+"""Neural Network based on Proportional Odd Model (NNPOM)."""
+
 import numpy as np
 import math as math
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -8,92 +9,113 @@ import scipy
 
 
 class NNPOM(BaseEstimator, ClassifierMixin):
+    """Neural Network based on Proportional Odd Model (NNPOM).
+
+    This class implements a neural network model for ordinal regression. The model has
+    one hidden layer with n_hidden neurons and one output layer with only one neuron
+    but as many thresholds as the number of classes minus one. The standard POM model
+    is applied in this neuron to have probabilistic outputs.
+
+    The learning is based on iRProp+ algorithm and the implementation provided by
+    Roberto Calandra in his toolbox Rprop Toolbox for MATLAB:
+    http://www.ias.informatik.tu-darmstadt.de/Research/RpropToolbox
+
+    The model is adjusted by minimizing cross entropy. A regularization parameter
+    "lambda_value" is included based on L2, and the number of iterations is specified
+    by the "max_iter" parameter.
+
+    Parameters
+    ----------
+    epsilon_init : float, default=0.5
+        Range for initializing the weights.
+
+    n_hidden : int, default=50
+        Number of hidden neurons of the model.
+
+    max_iter : int, default=500
+        Number of iterations for fmin_l_bfgs_b algorithm.
+
+    lambda_value : float, default=0.01
+        Regularization parameter.
+
+    Attributes
+    ----------
+    classes_ : ndarray of shape (n_classes,)
+        Array that contains all different class labels found in the original dataset.
+
+    n_classes_ : int
+        Number of labels in the problem
+
+    n_samples_ : int
+        Number of samples of X (train patterns array).
+    
+    theta1_ : ndarray of shape (n_hidden, n_features + 1)
+        Hidden layer weigths (with bias)
+
+    theta2_ : ndarray of shape (1, n_hidden)
+        Output layer weigths (without bias, the biases will be the thresholds)
+
+    thresholds_ : ndarray of shape (n_classes - 1, 1)
+        Class thresholds parameters
+
+    References
+    ----------
+    .. [1] P. McCullagh, "Regression models for ordinal data", Journal of the
+           Royal Statistical Society. Series B (Methodological), vol. 42, no. 2,
+           pp. 109-142, 1980.
+
+    .. [2] M. J. Mathieson, "Ordinal models for neural networks", in Proc. 3rd Int.
+           Conf. Neural Netw. Capital Markets, 1996, pp. 523-536.
+
+    .. [3] P.A. Gutiérrez, M. Pérez-Ortiz, J. Sánchez-Monedero, F. Fernández-Navarro
+           and C. Hervás-Martínez, "Ordinal regression methods: survey and experimental
+           study", IEEE Transactions on Knowledge and Data Engineering, Vol. 28. Issue
+           1, 2016,
+           https://doi.org/10.1109/TKDE.2015.2457911
+
+    Copyright
+    ---------
+    This software is released under the The GNU General Public License v3.0 licence
+    available at http://www.gnu.org/licenses/gpl-3.0.html
+
+    Authors
+    -------
+    Pedro Antonio Gutiérrez, María Pérez Ortiz, Javier Sánchez Monedero
+
+    Citation
+    --------
+    If you use this code, please cite the associated paper
+    http://www.uco.es/grupos/ayrna/orreview
+
     """
 
-    NNPOM Neural Network based on Proportional Odd Model (NNPOM). This
-            class implements a neural network model for ordinal regression. The
-            model has one hidden layer with hidden_n neurons and one outputlayer
-            with only one neuron but as many threshold as the number of classes
-            minus one. The standard POM model is applied in this neuron to have
-            probabilistic outputs. The learning is based on iRProp+ algorithm and
-            the implementation provided by Roberto Calandra in his toolbox Rprop
-            Toolbox for {MATLAB}:
-            http://www.ias.informatik.tu-darmstadt.de/Research/RpropToolbox
-            The model is adjusted by minimizing cross entropy. A regularization
-            parameter "lambda" is included based on L2, and the number of
-            iterations is specified by the "iterations" parameter.
-
-            NNPOM public methods:
-                    fit						- Fits a model from training data
-                    predict					- Performs label prediction
-
-            References:
-                    [1] P. McCullagh, Regression models for ordinal data,  Journal of
-                            the Royal Statistical Society. Series B (Methodological), vol. 42,
-                            no. 2, pp. 109–142, 1980.
-                    [2] M. J. Mathieson, Ordinal models for neural networks, in Proc.
-                            3rd Int. Conf. Neural Netw. Capital Markets, 1996, pp.
-                            523-536.
-                    [3] P.A. Gutiérrez, M. Pérez-Ortiz, J. Sánchez-Monedero,
-                            F. Fernández-Navarro and C. Hervás-Martínez
-                            Ordinal regression methods: survey and experimental study
-                            IEEE Transactions on Knowledge and Data Engineering, Vol. 28.
-                            Issue 1, 2016
-                            http://dx.doi.org/10.1109/TKDE.2015.2457911
-
-            This file is part of ORCA: https://github.com/ayrna/orca
-            Original authors: Pedro Antonio Gutiérrez, María Pérez Ortiz, Javier Sánchez Monedero
-            Citation: If you use this code, please cite the associated paper http://www.uco.es/grupos/ayrna/orreview
-            Copyright:
-                    This software is released under the The GNU General Public License v3.0 licence
-                    available at http://www.gnu.org/licenses/gpl-3.0.html
-
-
-            NNPOM properties:
-                    epsilon_init				- Range for initializing the weights.
-                    n_hidden					- Number of hidden neurons of the
-                                                                            model.
-                    max_iter					- Number of iterations for fmin_l_bfgs_b
-                                                                            algorithm.
-                    lambda_value				- Regularization parameter.
-                    theta1_						- Hidden layer weigths (with bias)
-                    theta2_						- Output layer weigths (without bias, the biases will be the thresholds)
-                    thresholds_					- Class thresholds parameters
-                    n_classes_					- Number of labels in the problem
-                    n_samples_					- Number of samples of X (train patterns array).
-
-    """
-
-    # Constructor of class NNPOM (set parameters values).
     def __init__(self, epsilon_init=0.5, n_hidden=50, max_iter=500, lambda_value=0.01):
-
         self.epsilon_init = epsilon_init
         self.n_hidden = n_hidden
         self.max_iter = max_iter
         self.lambda_value = lambda_value
 
-    # --------Main functions (Public Access)--------
-
     def fit(self, X, y):
-        """
-
-        Trains the model for the model NNPOM method with TRAIN data.
-        Returns the projection of patterns (only valid for threshold models) and the predicted labels.
+        """Fit the model with the training data.
 
         Parameters
         ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
-        X: {array-like, sparse matrix}, shape (n_samples, n_features)
-                Training patterns array, where n_samples is the number of samples
-                and n_features is the number of features
-
-        y: array-like, shape (n_samples)
-                Target vector relative to X
+        y : array-like of shape (n_samples,)
+            Target vector relative to X.
 
         Returns
         -------
-
-        self: The object NNPOM.
+        self : object
+            Fitted estimator.
+        
+        Raises
+        ------
+        ValueError
+            If parameters are invalid or data has wrong format.
 
         """
         if (
@@ -166,25 +188,28 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        """
-
-        Predicts labels of TEST patterns labels. The object needs to be fitted to the data first.
+        """Perform classification on samples in X.
 
         Parameters
         ----------
-
-        X: {array-like, sparse matrix}, shape (n_samples, n_features)
-                test patterns array, where n_samples is the number of samples
-                and n_features is the number of features
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Test patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
         Returns
         -------
-
-        predicted: {array-like, sparse matrix}, shape (n_samples,)
-                Vector array with predicted values for each pattern of test patterns.
+        y_pred : ndarray of shape (n_samples,)
+            Class labels for samples in X.
+        
+        Raises
+        ------
+        NotFittedError
+            If the model is not fitted yet.
+        
+        ValueError
+            If input is invalid.
 
         """
-
         # Check is fit had been called
         check_is_fitted(self)
 
@@ -208,236 +233,239 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         return y_pred
 
-    # --------Getters & Setters (Public Access)--------
-
-    # Getter & Setter of "epsilon_init"
     def get_epsilon_init(self):
-        """
-
-        This method returns the value of the variable self.epsilon_init.
-        self.epsilon_init contains the value of epsilon, which is the initialization range of the weights.
-
-        """
-
-        return self.epsilon_init
-
-    def set_epsilon_init(self, epsilon_init):
-        """
-
-        This method modify the value of the variable self.epsilon_init.
-        This is replaced by the value contained in the epsilon_init variable passed as an argument.
-
-        """
-
-        self.epsilon_init = epsilon_init
-
-    # Getter & Setter of "n_hidden"
-    def get_n_hidden(self):
-        """
-
-        This method returns the value of the variable self.n_hidden.
-        self.n_hidden contains the number of nodes/neurons in the hidden layer.
-
-        """
-
-        return self.n_hidden
-
-    def set_n_hidden(self, n_hidden):
-        """
-
-        This method modify the value of the variable self.n_hidden.
-        This is replaced by the value contained in the n_hidden variable passed as an argument.
-
-        """
-
-        self.n_hidden = n_hidden
-
-    # Getter & Setter of "max_iter"
-    def get_max_iter(self):
-        """
-
-        This method returns the value of the variable self.max_iter.
-        self.max_iter contains the number of iterations.
-
-        """
-
-        return self.max_iter
-
-    def set_max_iter(self, max_iter):
-        """
-
-        This method modify the value of the variable self.max_iter.
-        This is replaced by the value contained in the max_iter variable passed as an argument.
-
-        """
-
-        self.max_iter = max_iter
-
-    # Getter & Setter of "lambda_value"
-    def get_lambda_value(self):
-        """
-
-        This method returns the value of the variable self.lambda_value.
-        self.lambda_value contains the Lambda parameter used in regularization.
-
-        """
-
-        return self.lambda_value
-
-    def set_lambda_value(self, lambda_value):
-        """
-
-        This method modify the value of the variable self.lambda_value.
-        This is replaced by the value contained in the lambda_value variable passed as an argument.
-
-        """
-
-        self.lambda_value = lambda_value
-
-    # Getter & Setter of "theta1"
-    def get_theta1(self):
-        """
-
-        This method returns the value of the variable self.theta1_.
-        self.theta1_ contains an array with the weights of the hidden layer (with biases included).
-
-        """
-
-        return self.theta1_
-
-    def set_theta1(self, theta1):
-        """
-
-        This method modify the value of the variable self.theta1_.
-        This is replaced by the value contained in the theta1 variable passed as an argument.
-
-        """
-
-        self.theta1_ = theta1
-
-    # Getter & Setter of "theta2"
-    def get_theta2(self):
-        """
-
-        This method returns the value of the variable self.theta2_.
-        self.theta2_ contains an array with output layer weigths (without bias, the biases will be the thresholds)
-
-        """
-
-        return self.theta2_
-
-    def set_theta2(self, theta2):
-        """
-
-        This method modify the value of the variable self.theta2_.
-        This is replaced by the value contained in the theta2 variable passed as an argument.
-
-        """
-
-        self.theta2_ = theta2
-
-    # Getter & Setter of "thresholds"
-    def get_thresholds(self):
-        """
-
-        This method returns the value of the variable self.thresholds_.
-        self.thresholds_ contains an array with the class thresholds parameters.
-
-        """
-
-        return self.thresholds_
-
-    def set_thresholds(self, thresholds):
-        """
-
-        This method modify the value of the variable self.thresholds_.
-        This is replaced by the value contained in the thresholds variable passed as an argument.
-
-        """
-
-        self.thresholds_ = thresholds
-
-    # Getter & Setter of "n_classes_"
-    def get_n_classes(self):
-        """
-
-        This method returns the value of the variable self.n_classes_.
-        self.n_classes_ contains the number of labels in the problem.
-
-        """
-
-        return self.n_classes_
-
-    def set_n_classes(self, n_classes):
-        """
-
-        This method modify the value of the variable self.n_classes_.
-        This is replaced by the value contained in the n_classes variable passed as an argument.
-
-        """
-
-        self.n_classes_ = n_classes
-
-    # Getter & Setter of "n_samples_"
-    def get_n_samples(self):
-        """
-
-        This method returns the value of the variable self.n_samples_.
-        self.n_samples_ contains the number of samples of X (train patterns array).
-
-        """
-
-        return self.n_samples_
-
-    def set_n_samples(self, n_samples):
-        """
-
-        This method modify the value of the variable self.n_samples_.
-        This is replaced by the value contained in the n_samples variable passed as an argument.
-
-        """
-
-        self.n_samples_ = n_samples
-
-    # --------------Private Access functions------------------
-
-    # Download and save the values ​​of Theta1, Theta2 and thresholds_param
-    # from the nn_params array to their corresponding array
-    def _unpack_parameters(self, nn_params, n_features, n_hidden, n_classes):
-        """
-
-        This method gets theta1, theta2 and thresholds_param back from the whole array nn_params.
-
-        Parameters
-        ----------
-
-        nn_params: column array, shape ((n_features+1)*n_hidden
-        + n_hidden + (n_classes-1))
-                Array that is a column vector. It stores the values of theta1,
-                theta2 and thresholds_param, all of them together in an array in this order.
-
-        n_features: integer
-                Number of nodes in the input layer of the neural network model.
-
-        n_hidden: integer
-                Number of nodes in the hidden layer of the neural network model.
-
-        n_classes: integer
-                Number of classes.
-
+        """Return the value of the variable self.epsilon_init.
 
         Returns
         -------
-
-        theta1: The weights between the input layer and the hidden layer (with biases included).
-
-        theta2: The weights between the hidden layer and the output layer
-                (biases are not included as they are the thresholds).
-
-        thresholds_param: classification thresholds.
+        epsilon_init : float
+            The initialization range of the weights.
 
         """
+        return self.epsilon_init
 
+    def set_epsilon_init(self, epsilon_init):
+        """Modify the value of the variable self.epsilon_init.
+
+        Parameters
+        ----------
+        epsilon_init : float
+            The initialization range of the weights.
+
+        """
+        self.epsilon_init = epsilon_init
+
+    def get_n_hidden(self):
+        """Return the value of the variable self.n_hidden.
+
+        Returns
+        -------
+        n_hidden : int
+            Number of nodes/neurons in the hidden layer.
+
+        """
+        return self.n_hidden
+
+    def set_n_hidden(self, n_hidden):
+        """Modify the value of the variable self.n_hidden.
+
+        Parameters
+        ----------
+        n_hidden : int
+            Number of nodes/neurons in the hidden layer.
+
+        """
+        self.n_hidden = n_hidden
+
+    def get_max_iter(self):
+        """Return the value of the variable self.max_iter.
+
+        Returns
+        -------
+        max_iter : int
+            Number of iterations.
+
+        """
+        return self.max_iter
+
+    def set_max_iter(self, max_iter):
+        """Modify the value of the variable self.max_iter.
+
+        Parameters
+        ----------
+        max_iter : int
+            Number of iterations.
+
+        """
+        self.max_iter = max_iter
+
+    def get_lambda_value(self):
+        """Return the value of the variable self.lambda_value.
+
+        Returns
+        -------
+        lambda_value : float
+            The regularization parameter.
+
+        """
+        return self.lambda_value
+
+    def set_lambda_value(self, lambda_value):
+        """Modify the value of the variable self.lambda_value.
+
+        Parameters
+        ----------
+        lambda_value : float
+            The regularization parameter.
+
+        """
+        self.lambda_value = lambda_value
+
+    def get_theta1(self):
+        """Return the value of the variable self.theta1_.
+
+        Returns
+        -------
+        theta1_ : ndarray of shape (n_hidden, n_features + 1)
+            The weights of the hidden layer (with biases included).
+
+        """
+        return self.theta1_
+
+    def set_theta1(self, theta1):
+        """Modify the value of the variable self.theta1_.
+
+        Parameters
+        ----------
+        theta1 : ndarray of shape (n_hidden, n_features + 1)
+            The weights of the hidden layer (with biases included).
+
+        """
+        self.theta1_ = theta1
+
+    def get_theta2(self):
+        """Return the value of the variable self.theta2_.
+
+        Returns
+        -------
+        theta2_ : ndarray of shape (1, n_hidden)
+            The weights of the output layer (without bias, the biases will be the
+            thresholds).
+
+        """
+        return self.theta2_
+
+    def set_theta2(self, theta2):
+        """Modify the value of the variable self.theta2_.
+
+        Parameters
+        ----------
+        theta2 : ndarray of shape (1, n_hidden)
+            The weights of the output layer (without bias, the biases will be the
+            thresholds).
+
+        """
+        self.theta2_ = theta2
+
+    def get_thresholds(self):
+        """Return the value of the variable self.thresholds_.
+
+        Returns
+        -------
+        thresholds_ : ndarray of shape (n_classes - 1, 1)
+            The class thresholds parameters.
+
+        """
+        return self.thresholds_
+
+    def set_thresholds(self, thresholds):
+        """Modify the value of the variable self.thresholds_.
+
+        Parameters
+        ----------
+        thresholds : ndarray of shape (n_classes - 1, 1)
+            The class thresholds parameters.
+
+        """
+        self.thresholds_ = thresholds
+
+    def get_n_classes(self):
+        """Return the value of the variable self.n_classes_.
+
+        Returns
+        -------
+        n_classes_ : int
+            Number of labels in the problem.
+
+        """
+        return self.n_classes_
+
+    def set_n_classes(self, n_classes):
+        """Modify the value of the variable self.n_classes_.
+
+        Parameters
+        ----------
+        n_classes : int
+            Number of labels in the problem.
+
+        """
+        self.n_classes_ = n_classes
+
+    def get_n_samples(self):
+        """Return the value of the variable self.n_samples_.
+
+        Returns
+        -------
+        n_samples_ : int
+            Number of samples of X (train patterns array).
+
+        """
+        return self.n_samples_
+
+    def set_n_samples(self, n_samples):
+        """Modify the value of the variable self.n_samples_.
+
+        Parameters
+        ----------
+        n_samples : int
+            Number of samples of X (train patterns array).
+
+        """
+        self.n_samples_ = n_samples
+
+    def _unpack_parameters(self, nn_params, n_features, n_hidden, n_classes):
+        """Get theta1, theta2 and thresholds_param from nn_params.
+
+        Parameters
+        ----------
+        nn_params : ndarray of shape ((n_features + 1) * n_hidden + n_hidden +
+                                      (n_classes - 1))
+            Array that is a column vector. It stores the values of theta1, theta2 and
+            thresholds_param, all of them together in an array in this order.
+
+        n_features : int
+            Number of nodes in the input layer of the neural network model.
+
+        n_hidden : int
+            Number of nodes in the hidden layer of the neural network model.
+
+        n_classes : int
+            Number of classes.
+
+        Returns
+        -------
+        theta1 : ndarray of shape (n_hidden, n_features + 1)
+            The weights between the input layer and the hidden layer (with biases
+            included).
+
+        theta2 : ndarray of shape (1, n_hidden)
+            The weights between the hidden layer and the output layer (biases are not
+            included as they are the thresholds).
+
+        thresholds_param : ndarray of shape (n_classes - 1, 1)
+            Classification thresholds.
+
+        """
         n_theta1 = n_hidden * (n_features + 1)
         theta1 = np.reshape(
             nn_params[0:n_theta1], (n_hidden, (n_features + 1)), order="F"
@@ -454,30 +482,26 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         return theta1, theta2, thresholds_param
 
-    # Randomly initialize the weights of the neural network layer
-    # by entering the number of input and output nodes of that layer
     def _rand_initialize_weights(self, L_in, L_out):
-        """
+        """Initialize layer weights randomly.
 
-        This method randomly initializes the weights of a layer
-         with L_in incoming connections and L_out outgoing connections
+        Randomly initialize the weights of a layer with L_in incoming connections and
+        L_out outgoing connections.
 
-         Parameters
+        Parameters
         ----------
+        L_in : int
+            Number of inputs of the layer.
 
-        L_in: integer
-                Number of inputs of the layer.
-
-        L_out: integer
-                Number of outputs of the layer.
+        L_out : int
+            Number of outputs of the layer.
 
         Returns
         -------
-
-        W: Array with the weights of each synaptic relationship between nodes.
+        W : ndarray of shape (L_out, L_in)
+            Array with the weights of each synaptic relationship between nodes.
 
         """
-
         W = (
             np.random.rand(L_out, L_in) * 2 * self.get_epsilon_init()
             - self.get_epsilon_init()
@@ -485,33 +509,28 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         return W
 
-    # Calculate the thresholds
     def _convert_thresholds(self, thresholds_param, n_classes):
-        """
-
-        This method transforms thresholds to perform unconstrained optimization.
+        """Transform thresholds to perform unconstrained optimization.
 
         thresholds(1) = thresholds_param(1)
         thresholds(2) = thresholds_param(1) + thresholds_param(2)**2
-        thresholds(3) = thresholds_param(1) + thresholds_param(2)**2
-                                        + thresholds_param(3)**2
+        thresholds(3) = thresholds_param(1) + thresholds_param(2)**2 +
+                        thresholds_param(3)**2
 
         Parameters
         ----------
+        thresholds_param : ndarray of shape (n_classes - 1, 1)
+            Contains the original value of the thresholds between classes
 
-        thresholds_param: {array-like, column vector}, shape (n_classes-1, 1)
-                Contains the original value of the thresholds between classes
-
-        n_classes: integer
-                Number of classes.
+        n_classes : int
+            Number of classes.
 
         Returns
         -------
-
-        thresholds: thresholds of the line
+        thresholds : ndarray of shape (n_classes - 1, 1)
+            Thresholds of the line
 
         """
-
         # Threshold ^2 element by element
         thresholds_pquad = thresholds_param**2
 
@@ -531,50 +550,47 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         return thresholds
 
-    # Implements the cost function and obtains the corresponding derivatives.
     def _nnpom_cost_function(
         self, nn_params, n_features, n_hidden, n_classes, X, Y, lambda_value
     ):
-        """
-        This method implements the cost function and obtains
-        the corresponding derivatives.
+        """Implement the cost function and obtain the corresponding derivatives.
 
         Parameters
         ----------
+        nn_params : ndarray of shape ((n_features + 1) * n_hidden + n_hidden +
+                                      (n_classes - 1))
+            Array that is a column vector. It stores the values of theta1, theta2 and
+            thresholds_param, all of them together in an array in this order.
 
-        nn_params: column array, shape ((n_features+1)*n_hidden
-        + n_hidden + (n_classes-1))
+        n_features : int
+            Number of nodes in the input layer of the neural network model.
 
-        Array that is a column vector. It stores the values of theta1,
-        theta2 and thresholds_param, all of them together in an array in this order.
+        n_hidden : int
+            Number of nodes in the hidden layer of the neural network model.
 
-        n_features: integer
-                Number of nodes in the input layer of the neural network model.
+        n_classes : int
+            Number of classes.
 
-        n_hidden: integer
-                Number of nodes in the hidden layer of the neural network model.
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training patterns array, where n_samples is the number of samples and
+            n_features is the number of features.
 
-        n_classes: integer
-                Number of classes.
+        Y : array-like of shape (n_samples,)
+            Target vector relative to X.
 
-        X: {array-like, sparse matrix}, shape (n_samples, n_features)
-                Training patterns array, where n_samples is the number of samples
-                and n_features is the number of features
-
-        Y: array-like, shape (n_samples)
-                Target vector relative to X
-
-        lambdaValue:
-                Regularization parameter.
+        lambda_value : float
+            Regularization parameter.
 
         Returns
         -------
+        J : float
+            Cost function (updated weight matrix).
 
-        J: Matrix with cost function (updated weight matrix).
-        grad: Array with the error gradient of each weight of each layer.
+        grad : ndarray of shape ((n_features + 1) * n_hidden + n_hidden +
+                                 (n_classes - 1))
+            Error gradient of each weight of each layer.
 
         """
-
         # Unroll all the parameters
         nn_params = nn_params.reshape((nn_params.shape[0], 1))
 
