@@ -1,6 +1,6 @@
 """Tests for the Results class."""
 
-from os import path as ospath
+from pathlib import Path
 from shutil import rmtree
 from collections import OrderedDict
 from pickle import load
@@ -12,8 +12,6 @@ import numpy.testing as npt
 import pandas.testing as pdt
 from sklearn.svm import SVC
 
-# syspath.append('..')
-# from results import Results
 from orca_python.results import Results
 
 
@@ -103,7 +101,7 @@ def test_add_record(results):
     )
 
     # Checking if everything has been saved correctly
-    experiment_folder = results._experiment_folder
+    experiment_folder = Path(results._experiment_folder)
 
     # Data for toy-conf_1
     expected_data_conf_1 = [
@@ -129,12 +127,10 @@ def test_add_record(results):
         ),
     ]
     expected_data_conf_1 = pd.DataFrame(data=expected_data_conf_1, index=[0, 1])
-    conf_1_path = ospath.join(experiment_folder, "toy-conf_1")
+    conf_1_path = experiment_folder / "toy-conf_1"
 
     # Check inconsistencies in CSV for toy-conf_1
-    actual_data_conf_1 = pd.read_csv(
-        ospath.join(conf_1_path, "toy-conf_1.csv"), index_col=[0]
-    )
+    actual_data_conf_1 = pd.read_csv(conf_1_path / "toy-conf_1.csv", index_col=[0])
     pdt.assert_frame_equal(actual_data_conf_1, expected_data_conf_1)
 
     # Data for toy-conf_2
@@ -151,19 +147,15 @@ def test_add_record(results):
         )
     ]
     expected_data_conf_2 = pd.DataFrame(data=expected_data_conf_2, index=[0])
-    conf_2_path = ospath.join(experiment_folder, "toy-conf_2")
+    conf_2_path = experiment_folder / "toy-conf_2"
 
     # Check inconsistencies in CSV for toy-conf_2
-    actual_data_conf_2 = pd.read_csv(
-        ospath.join(conf_2_path, "toy-conf_2.csv"), index_col=[0]
-    )
+    actual_data_conf_2 = pd.read_csv(conf_2_path / "toy-conf_2.csv", index_col=[0])
     pdt.assert_frame_equal(actual_data_conf_2, expected_data_conf_2)
 
     # Checking if models have been saved successfully
-    with open(
-        ospath.join(conf_1_path, "models/", "toy-conf_1.0"), "rb"
-    ) as model_0, open(
-        ospath.join(conf_1_path, "models/", "toy-conf_1.1"), "rb"
+    with open(conf_1_path / "models" / "toy-conf_1.0", "rb") as model_0, open(
+        conf_1_path / "models" / "toy-conf_1.1", "rb"
     ) as model_1:
 
         actual_data = [load(model_0), load(model_1)]
@@ -182,13 +174,13 @@ def test_add_record(results):
     }
 
     with open(
-        ospath.join(conf_1_path, "predictions/", "train_toy-conf_1.0"), "rb"
+        conf_1_path / "predictions" / "train_toy-conf_1.0", "rb"
     ) as train_0, open(
-        ospath.join(conf_1_path, "predictions/", "test_toy-conf_1.0"), "rb"
+        conf_1_path / "predictions" / "test_toy-conf_1.0", "rb"
     ) as test_0, open(
-        ospath.join(conf_1_path, "predictions/", "train_toy-conf_1.1"), "rb"
+        conf_1_path / "predictions" / "train_toy-conf_1.1", "rb"
     ) as train_1, open(
-        ospath.join(conf_1_path, "predictions/", "test_toy-conf_1.1"), "rb"
+        conf_1_path / "predictions" / "test_toy-conf_1.1", "rb"
     ) as test_1:
 
         actual_data = {
@@ -243,7 +235,7 @@ def test_create_summary(results):
     experiment_folder = results._experiment_folder
 
     # Getting actual summaries
-    df = pd.read_csv(ospath.join(experiment_folder, "toy-conf_1", "toy-conf_1.csv"))
+    df = pd.read_csv(experiment_folder / "toy-conf_1" / "toy-conf_1.csv")
     train_row, test_row = results._create_summary(df, mean_index, std_index)
 
     # Desired row values and indexes

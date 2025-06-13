@@ -1,33 +1,30 @@
 """Tests for the NNOP classifier."""
 
-from os import path as ospath
+from pathlib import Path
 
 import pytest
 import numpy as np
 
-# syspath.append(ospath.join('..', 'classifiers'))
-
-# from NNOP import NNOP
 from orca_python.classifiers.NNOP import NNOP
 from orca_python.testing import TEST_DATASETS_DIR
 
 
 @pytest.fixture
 def dataset_path():
-    return ospath.join(TEST_DATASETS_DIR, "balance-scale")
+    return Path(TEST_DATASETS_DIR) / "balance-scale"
 
 
 @pytest.fixture
 def train_file(dataset_path):
     return np.loadtxt(
-        ospath.join(dataset_path, "train_balance-scale.csv"), delimiter=","
+        dataset_path / "train_balance-scale.csv", delimiter=","
     )
 
 
 @pytest.fixture
 def test_file(dataset_path):
     return np.loadtxt(
-        ospath.join(dataset_path, "test_balance-scale.csv"), delimiter=","
+        dataset_path / "test_balance-scale.csv", delimiter=","
     )
 
 
@@ -42,10 +39,10 @@ def test_file(dataset_path):
 
 # 	X_test = self.test_file[:,0:(-1)]
 
-# expected_predictions = [ospath.join(self.dataset_path,"expectedPredictions.0")]
-# ospath.join(self.dataset_path,"expectedPredictions.1"),
-# ospath.join(self.dataset_path,"expectedPredictions.2"),
-# ospath.join(self.dataset_path,"expectedPredictions.3")]
+# expected_predictions = [self.dataset_path / "expectedPredictions.0",
+# self.dataset_path / "expectedPredictions.1",
+# self.dataset_path / "expectedPredictions.2",
+# self.dataset_path / "expectedPredictions.3"]
 
 # 	classifiers = [NNOP(epsilon_init = 0.5, hidden_n = 10, iterations = 500, lambda_value = 0.01)]
 # 			   NNOP(epsilon_init = 0.5, hidden_n = 20, iterations = 500, lambda_value = 0.01),
