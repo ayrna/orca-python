@@ -71,6 +71,14 @@ def ccr(y_true, y_pred):
     0.5714285714285714
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     return np.count_nonzero(y_true == y_pred) / float(len(y_true))
 
 
@@ -102,6 +110,14 @@ def amae(y_true, y_pred):
     np.float64(0.125)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y_true, y_pred)
@@ -140,6 +156,14 @@ def gm(y_true, y_pred):
     np.float64(0.8408964152537145)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y_true, y_pred)
@@ -178,6 +202,14 @@ def mae(y_true, y_pred):
     np.float64(0.2857142857142857)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         y_true = np.asarray(y_true)
@@ -214,6 +246,14 @@ def mmae(y_true, y_pred):
     np.float64(0.5)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y_true, y_pred)
@@ -255,6 +295,14 @@ def ms(y_true, y_pred):
     np.float64(0.5)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cm = confusion_matrix(y_true, y_pred)
@@ -294,6 +342,14 @@ def mze(y_true, y_pred):
     np.float64(0.2857142857142857)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -330,6 +386,14 @@ def tkendall(y_true, y_pred):
     np.float64(0.8140915784106943)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -366,6 +430,14 @@ def wkappa(y_true, y_pred):
     np.float64(0.7586206896551724)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
@@ -414,6 +486,14 @@ def spearman(y_true, y_pred):
     np.float64(0.9165444688834581)
 
     """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
