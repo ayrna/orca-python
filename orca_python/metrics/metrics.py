@@ -42,7 +42,7 @@ def greater_is_better(metric_name):
         return False
 
 
-def ccr(y, ypred):
+def ccr(y_true, y_pred):
     """Calculate the Correctly Classified Ratio.
 
     Also named Accuracy, it's the percentage of well classified patterns among all
@@ -71,10 +71,10 @@ def ccr(y, ypred):
     0.5714285714285714
 
     """
-    return np.count_nonzero(y == ypred) / float(len(y))
+    return np.count_nonzero(y_true == y_pred) / float(len(y_true))
 
 
-def amae(y, ypred):
+def amae(y_true, y_pred):
     """Calculate the Average MAE.
 
     Mean of the MAE metric among classes.
@@ -104,17 +104,17 @@ def amae(y, ypred):
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        cm = confusion_matrix(y, ypred)
+        cm = confusion_matrix(y_true, y_pred)
         n_class = cm.shape[0]
         costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
         costs = np.abs(costs - np.transpose(costs))
-        errores = costs * cm
-        amaes = np.sum(errores, axis=1) / np.sum(cm, axis=1).astype("double")
-        amaes = amaes[~np.isnan(amaes)]
-        return np.mean(amaes)
+        errors = costs * cm
+        per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
+        per_class_maes = per_class_maes[~np.isnan(per_class_maes)]
+        return np.mean(per_class_maes)
 
 
-def gm(y, ypred):
+def gm(y_true, y_pred):
     """Calculate the Geometric mean of the sensitivity (accuracy) for each class.
 
     Parameters
@@ -142,15 +142,15 @@ def gm(y, ypred):
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        cm = confusion_matrix(y, ypred)
-        sum_byclass = np.sum(cm, axis=1)
-        sensitivities = np.diag(cm) / sum_byclass.astype("double")
-        sensitivities[sum_byclass == 0] = 1
-        gm_result = pow(np.prod(sensitivities), 1.0 / cm.shape[0])
-        return gm_result
+        cm = confusion_matrix(y_true, y_pred)
+        sum_by_class = np.sum(cm, axis=1)
+        sensitivities = np.diag(cm) / sum_by_class.astype("double")
+        sensitivities[sum_by_class == 0] = 1
+        gm = pow(np.prod(sensitivities), 1.0 / cm.shape[0])
+        return gm
 
 
-def mae(y, ypred):
+def mae(y_true, y_pred):
     """Calculate the Mean Absolute Error.
 
     Average absolute deviation of the predicted class from the actual true class.
@@ -180,12 +180,12 @@ def mae(y, ypred):
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        y = np.asarray(y)
-        ypred = np.asarray(ypred)
-        return abs(y - ypred).sum() / len(y)
+        y_true = np.asarray(y_true)
+        y_pred = np.asarray(y_pred)
+        return abs(y_true - y_pred).sum() / len(y_true)
 
 
-def mmae(y, ypred):
+def mmae(y_true, y_pred):
     """Calculate the Maximum Mean Absolute Error.
 
     MAE value of the class with higher distance from the true values to the predicted
@@ -216,17 +216,17 @@ def mmae(y, ypred):
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        cm = confusion_matrix(y, ypred)
+        cm = confusion_matrix(y_true, y_pred)
         n_class = cm.shape[0]
-        costes = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
-        costes = np.abs(costes - np.transpose(costes))
-        errores = costes * cm
-        amaes = np.sum(errores, axis=1) / np.sum(cm, axis=1).astype("double")
-        amaes = amaes[~np.isnan(amaes)]
-        return amaes.max()
+        costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
+        costs = np.abs(costs - np.transpose(costs))
+        errors = costs * cm
+        per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
+        per_class_maes = per_class_maes[~np.isnan(per_class_maes)]
+        return per_class_maes.max()
 
 
-def ms(y, ypred):
+def ms(y_true, y_pred):
     """Calculate the Minimum Sensitivity.
 
     Lowest percentage of patterns correctly predicted as belonging to each class, with
@@ -257,16 +257,16 @@ def ms(y, ypred):
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        cm = confusion_matrix(y, ypred)
-        sum_byclass = np.sum(cm, axis=1)
-        sensitivities = np.diag(cm) / sum_byclass.astype("double")
-        sensitivities[sum_byclass == 0] = 1
+        cm = confusion_matrix(y_true, y_pred)
+        sum_by_class = np.sum(cm, axis=1)
+        sensitivities = np.diag(cm) / sum_by_class.astype("double")
+        sensitivities[sum_by_class == 0] = 1
         ms = np.min(sensitivities)
 
         return ms
 
 
-def mze(y, ypred):
+def mze(y_true, y_pred):
     """Calculate the Mean Zero-one Error.
 
     Better known as error rate, is the complementary measure of CCR.
@@ -297,11 +297,11 @@ def mze(y, ypred):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        confusion = confusion_matrix(y, ypred)
+        confusion = confusion_matrix(y_true, y_pred)
         return 1 - np.diagonal(confusion).sum() / confusion.sum()
 
 
-def tkendall(y, ypred):
+def tkendall(y_true, y_pred):
     """Calculate Kendall's tau.
 
     A statistic used to measure the association between two measured quantities. It is
@@ -333,11 +333,11 @@ def tkendall(y, ypred):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        corr, pvalue = scipy.stats.kendalltau(y, ypred)
+        corr, pvalue = scipy.stats.kendalltau(y_true, y_pred)
         return corr
 
 
-def wkappa(y, ypred):
+def wkappa(y_true, y_pred):
     """Calculate the Weighted Kappa.
 
     A modified version of the Kappa statistic calculated to allow assigning
@@ -369,11 +369,11 @@ def wkappa(y, ypred):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        cm = confusion_matrix(y, ypred)
+        cm = confusion_matrix(y_true, y_pred)
         n_class = cm.shape[0]
-        costes = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
-        costes = np.abs(costes - np.transpose(costes))
-        f = 1 - costes
+        costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
+        costs = np.abs(costs - np.transpose(costs))
+        f = 1 - costs
 
         n = cm.sum()
         x = cm / n
@@ -386,7 +386,7 @@ def wkappa(y, ypred):
         return (po - pe) / (1 - pe)
 
 
-def spearman(y, ypred):
+def spearman(y_true, y_pred):
     """Calculate the Spearman's rank correlation coefficient.
 
     A non-parametric measure of statistical dependence between two variables.
@@ -417,13 +417,14 @@ def spearman(y, ypred):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
 
-        n = len(y)
+        n = len(y_true)
         num = (
-            (y - np.repeat(np.mean(y), n)) * (ypred - np.repeat(np.mean(ypred), n))
+            (y_true - np.repeat(np.mean(y_true), n))
+            * (y_pred - np.repeat(np.mean(y_pred), n))
         ).sum()
         div = np.sqrt(
-            (pow(y - np.repeat(np.mean(y), n), 2)).sum()
-            * (pow(ypred - np.repeat(np.mean(ypred), n), 2)).sum()
+            (pow(y_true - np.repeat(np.mean(y_true), n), 2)).sum()
+            * (pow(y_pred - np.repeat(np.mean(y_pred), n), 2)).sum()
         )
 
         if num == 0:
