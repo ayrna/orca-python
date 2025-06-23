@@ -48,10 +48,10 @@ def ccr(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
@@ -87,10 +87,10 @@ def amae(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
@@ -131,10 +131,10 @@ def gm(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
@@ -175,10 +175,10 @@ def mae(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
@@ -215,10 +215,10 @@ def mmae(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
@@ -262,10 +262,10 @@ def ms(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
@@ -302,10 +302,10 @@ def mze(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
@@ -343,10 +343,10 @@ def tkendall(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray
+    y_true : np.ndarray
         Ground truth labels.
 
-    ypred : np.ndarray
+    y_pred : np.ndarray
         Predicted labels.
 
     Returns
@@ -384,10 +384,10 @@ def wkappa(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
@@ -437,10 +437,10 @@ def spearman(y_true, y_pred):
 
     Parameters
     ----------
-    y : np.ndarray, shape (n_samples,)
+    y_true : np.ndarray, shape (n_samples,)
         Ground truth labels.
 
-    ypred : np.ndarray, shape (n_samples,)
+    y_pred : np.ndarray, shape (n_samples,)
         Predicted labels.
 
     Returns
