@@ -2,12 +2,12 @@
 
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+
+from orca_python.utilities import load_classifier
 
 # from sys import path
 # path.append('..')
-
-from orca_python.utilities import load_classifier
 
 
 class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
@@ -170,7 +170,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         ------
         NotFittedError
             If the model is not fitted yet.
-        
+
         ValueError
             If input is invalid.
 
@@ -244,10 +244,10 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         ------
         NotFittedError
             If the model is not fitted yet.
-        
+
         ValueError
             If input is invalid.
-        
+
         AttributeError
             If the specified loss method is not implemented.
 

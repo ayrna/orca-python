@@ -1,13 +1,13 @@
 """Tests for the metrics module."""
 
+import numpy.testing as npt
 import pytest
 from numpy import array
-import numpy.testing as npt
-
-# path.append('..')
 
 # import metrics
 import orca_python.metrics as metrics
+
+# path.append('..')
 
 
 @pytest.fixture

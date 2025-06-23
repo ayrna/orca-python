@@ -2,22 +2,20 @@
 
 from __future__ import print_function
 
-from pathlib import Path
-from time import time
-from collections import OrderedDict
-from itertools import product
-from sys import path as syspath
-from copy import deepcopy
-import pandas as pd
-
 from ast import literal_eval
-from pkg_resources import parse_version, get_distribution
+from collections import OrderedDict
+from copy import deepcopy
+from itertools import product
+from pathlib import Path
+from sys import path as syspath
+from time import time
 
 import numpy as np
-from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import make_scorer
+import pandas as pd
+from pkg_resources import get_distribution, parse_version
 from sklearn import preprocessing
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
 from orca_python.results import Results
 
@@ -251,6 +249,7 @@ class Utilities:
             If a partition is found without train files.
 
         """
+
         def get_partition_index(filename):
             # Extracts the index between the last "_" and ".csv"
             return filename.rsplit("_", 1)[-1].replace(".csv", "")
@@ -342,11 +341,7 @@ class Utilities:
 
         # Check if 'all' is the only value, and if it is, expand it
         if len(dataset_list) == 1 and dataset_list[0] == "all":
-            dataset_list = [
-                item.name
-                for item in base_path.iterdir()
-                if item.is_dir()
-            ]
+            dataset_list = [item.name for item in base_path.iterdir() if item.is_dir()]
 
         elif not all(isinstance(item, basestring) for item in dataset_list):
             raise ValueError("Dataset list can only contain strings")
@@ -371,8 +366,8 @@ class Utilities:
         -------
         train_normalized : np.ndarray
             Normalized training data.
-        
-        test_normalized : np.ndarray  
+
+        test_normalized : np.ndarray
             Normalized test data.
 
         """
@@ -397,8 +392,8 @@ class Utilities:
         -------
         train_standardized : np.ndarray
             Standardized training data.
-        
-        test_standardized : np.ndarray  
+
+        test_standardized : np.ndarray
             Standardized test data.
 
         """
@@ -684,7 +679,7 @@ def check_for_random_state(classifier):
     ----------
     classifier : object
         Instance of an sklearn compatible classifier.
-    
+
     Returns
     -------
     has_random_state : bool

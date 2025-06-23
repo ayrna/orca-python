@@ -3,9 +3,10 @@
 from __future__ import division
 
 import warnings
+
 import numpy as np
-from sklearn.metrics import confusion_matrix
 import scipy.stats
+from sklearn.metrics import confusion_matrix
 
 
 def greater_is_better(metric_name):
@@ -22,7 +23,7 @@ def greater_is_better(metric_name):
     -------
     greater_is_better : bool
         True if greater values indicate better classification performance, False otherwise.
-    
+
     Examples
     --------
     >>> from orca_python.metrics.metrics import greater_is_better
@@ -32,7 +33,7 @@ def greater_is_better(metric_name):
     False
     >>> greater_is_better("mae")
     False
-    
+
     """
     greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
     if metric_name in greater_is_better_metrics:
@@ -115,7 +116,7 @@ def amae(y, ypred):
 
 def gm(y, ypred):
     """Calculate the Geometric mean of the sensitivity (accuracy) for each class.
-    
+
     Parameters
     ----------
     y : np.ndarray, shape (n_samples,)
@@ -137,7 +138,7 @@ def gm(y, ypred):
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> gm(y_true, y_pred)
     np.float64(0.8408964152537145)
-        
+
     """
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -202,7 +203,7 @@ def mmae(y, ypred):
     -------
     mmae : float
         Maximum mean absolute error.
-        
+
     Examples
     --------
     >>> import numpy as np

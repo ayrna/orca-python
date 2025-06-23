@@ -2,13 +2,12 @@
 
 from pathlib import Path
 
-import pytest
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from orca_python.classifiers.SVOREX import SVOREX
-from orca_python.testing import TEST_DATASETS_DIR
-from orca_python.testing import TEST_PREDICTIONS_DIR
+from orca_python.testing import TEST_DATASETS_DIR, TEST_PREDICTIONS_DIR
 
 
 @pytest.fixture
@@ -23,16 +22,12 @@ def predictions_path():
 
 @pytest.fixture
 def train_file(dataset_path):
-    return np.loadtxt(
-        dataset_path / "train_balance-scale.csv", delimiter=","
-    )
+    return np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
 
 
 @pytest.fixture
 def test_file(dataset_path):
-    return np.loadtxt(
-        dataset_path / "test_balance-scale.csv", delimiter=","
-    )
+    return np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
 
 
 def test_svorex_fit_correct(dataset_path, train_file, test_file, predictions_path):

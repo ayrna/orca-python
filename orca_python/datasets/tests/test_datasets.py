@@ -1,22 +1,23 @@
 """Tests for the utility functions in the datasets module."""
 
-import numpy as np
-import pytest
 from pathlib import Path
 
+import numpy as np
+import pytest
+
 import orca_python.datasets.data
-from orca_python.testing.testing_utils import TEST_RANDOM_STATE
 from orca_python.datasets.datasets import (
-    get_data_path,
-    dataset_exists,
-    is_undivided,
-    has_unseeded_split,
-    has_seeded_split,
     check_ambiguity,
+    dataset_exists,
+    get_data_path,
+    has_seeded_split,
+    has_unseeded_split,
+    is_undivided,
     load_datafile,
     load_dataset,
     shuffle_data,
 )
+from orca_python.testing.testing_utils import TEST_RANDOM_STATE
 
 
 def create_tmp_dataset(tmp_path, dataset_name, filename):

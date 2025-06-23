@@ -1,13 +1,13 @@
 """Tests for the OrdinalDecomposition ensemble."""
 
+import numpy.testing as npt
 import pytest
 from numpy import array
-import numpy.testing as npt
-
-# syspath.append(ospath.join('..', 'classifiers'))
 
 # from OrdinalDecomposition import OrdinalDecomposition
 from orca_python.classifiers.OrdinalDecomposition import OrdinalDecomposition
+
+# syspath.append(ospath.join('..', 'classifiers'))
 
 
 # Data is just 6 separable points in the plane

@@ -1,11 +1,12 @@
 """Neural Network based on Proportional Odd Model (NNPOM)."""
 
-import numpy as np
 import math as math
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.utils.multiclass import unique_labels
+
+import numpy as np
 import scipy
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.utils.multiclass import unique_labels
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class NNPOM(BaseEstimator, ClassifierMixin):
@@ -48,7 +49,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
     n_samples_ : int
         Number of samples of X (train patterns array).
-    
+
     theta1_ : ndarray of shape (n_hidden, n_features + 1)
         Hidden layer weigths (with bias)
 
@@ -111,7 +112,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         -------
         self : object
             Fitted estimator.
-        
+
         Raises
         ------
         ValueError
@@ -200,12 +201,12 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         -------
         y_pred : ndarray of shape (n_samples,)
             Class labels for samples in X.
-        
+
         Raises
         ------
         NotFittedError
             If the model is not fitted yet.
-        
+
         ValueError
             If input is invalid.
 

@@ -46,7 +46,7 @@ La correcta ejecución de *framework* requiere de la instalación de las siguien
 - `scikit-learn` [3] (probado con la versión 0.22.1).
 - `scipy` [8] (probado con la versión 1.4.1).
 
-Para la instalación de todas las dependencias se incluye el archivo `requirements.txt`, que facilitará el proceso utilizando el gestor de paquetes `pip` [9]. 
+Para la instalación de todas las dependencias se incluye el archivo `requirements.txt`, que facilitará el proceso utilizando el gestor de paquetes `pip` [9].
 
 Al utilizar el siguiente comando se instalarán todas las dependencias. Si se quiere ejecutar en una consola fuera de este cuaderno Jupyter se debe eliminar la exclamación del principio.
 
@@ -207,11 +207,11 @@ Se proporcionan varias bases de datos y un experimento para comprobar que la ins
 !python config.py with configurations/full_functionality_test.json -l ERROR
 ```
 
-    
+
     ###############################
     	Running Experiment
     ###############################
-    
+
     Running tae dataset
     --------------------------
     Running LR ...
@@ -369,7 +369,7 @@ Se proporcionan varias bases de datos y un experimento para comprobar que la ins
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Running balance-scale dataset
     --------------------------
     Running LR ...
@@ -527,7 +527,7 @@ Se proporcionan varias bases de datos y un experimento para comprobar que la ins
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Running contact-lenses dataset
     --------------------------
     Running LR ...
@@ -685,7 +685,7 @@ Se proporcionan varias bases de datos y un experimento para comprobar que la ins
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Saving Results...
 
 
@@ -736,7 +736,7 @@ Este manual hace uso de tres bases de datos (`balance-scale`, `contact-lenses` y
 Los experimentos se lanzan y configuran a través de ficheros de configuración en formato JSON. Estos archivos cuentan con dos secciones:
 
 - **Configuración general:** Llamada `general-conf` en el archivo de configuración, se encarga de indicar información básica acerca del experimento a realizar: localización de los conjuntos de datos, nombres de los diferentes *datasets* que utilizarán, número de *k-folds* a utilizar para la validación cruzada...
-- **Configuraciones:** Llamada `configurations` en el archivo de configuración, indica al *framework* aquellos algoritmos que se utilizarán en el experimento. Además para cada uno de ellos es posible indica que parámetros utilizar o ajustar entre dos o más valores. 
+- **Configuraciones:** Llamada `configurations` en el archivo de configuración, indica al *framework* aquellos algoritmos que se utilizarán en el experimento. Además para cada uno de ellos es posible indica que parámetros utilizar o ajustar entre dos o más valores.
 
 Ambas secciones se encontrarán en el interior de un diccionario que tendrá como claves los nombres de las secciones mencionadas.
 
@@ -821,7 +821,7 @@ Si varias configuraciones de algoritmos tienen el mismo nombre solo se utilizar�
 
         }
     },
-    
+
     "REDSVM": {
 
 	"classifier": "REDSVM",
@@ -836,7 +836,7 @@ Si varias configuraciones de algoritmos tienen el mismo nombre solo se utilizar�
 	}
 
     },
-    
+
     "SVOREX": {
 
 	"classifier": "SVOREX",
@@ -933,11 +933,11 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
 !python config.py with configurations/redsvm_test.json seed=12345 -l ERROR
 ```
 
-    
+
     ###############################
     	Running Experiment
     ###############################
-    
+
     Running tae dataset
     --------------------------
     Running redsvm ...
@@ -971,7 +971,7 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Running balance-scale dataset
     --------------------------
     Running redsvm ...
@@ -1005,7 +1005,7 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Running contact-lenses dataset
     --------------------------
     Running redsvm ...
@@ -1039,7 +1039,7 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Saving Results...
 
 
@@ -1048,11 +1048,11 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
 !python config.py with configurations/svorex_test.json seed=12345 -l ERROR
 ```
 
-    
+
     ###############################
     	Running Experiment
     ###############################
-    
+
     Running tae dataset
     --------------------------
     Running svorex ...
@@ -1086,7 +1086,7 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Running balance-scale dataset
     --------------------------
     Running svorex ...
@@ -1120,7 +1120,7 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Running contact-lenses dataset
     --------------------------
     Running svorex ...
@@ -1154,7 +1154,7 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
       Running Partition 27
       Running Partition 28
       Running Partition 29
-    
+
     Saving Results...
 
 
@@ -1162,7 +1162,7 @@ Se han incluido dos ficheros de configuración para realizar un experimento util
 
 A lo largo de la ejecución de un experimento y al finalizar el mismo sin ningún error, el *framework* almacena toda la información producida.
 
-Se supondrá que se ha configurado la opción `output_folder` con la ruta `my_runs`. En la raíz del repositorio se generará dicha carpeta si no existe y será en su interior donde se almacenen los resultados de los experimentos. 
+Se supondrá que se ha configurado la opción `output_folder` con la ruta `my_runs`. En la raíz del repositorio se generará dicha carpeta si no existe y será en su interior donde se almacenen los resultados de los experimentos.
 
 Cada experimento genera una carpeta con el nombre `exp-año-mes-día-hora-minuto-segundo`. En su interior se generará lo siguiente:
 
@@ -1170,7 +1170,7 @@ Cada experimento genera una carpeta con el nombre `exp-año-mes-día-hora-minuto
     - Una carpeta con los mejores modelos obtenidos en la fase de validación. Uno por partición del conjunto de datos.
     - Una carpeta con las predicciones realizadas por el mejor modelo de cada partición, tanto las del conjunto de entrenamiento y de *test*.
     - Un archivo CSV que contendrá las métricas especificadas en el archivo de configuración y los tiempos computacionales requeridos en cada fase de entrenamiento. Las métricas se calculan de forma independiente para los conjuntos de entrenamiento y *test*, almacenando solo los mejores resultados por partición. También se almacenan los parámetros del clasificador seleccionados como mejores. Cada fila del fichero se corresponde con una partición.
-    
+
 - **Ficheros Resumen:** Al final del experimento se generarán dos ficheros, uno para las métricas obtenidas con los conjuntos de entrenamiento y otro para las de *test*. En este fichero existirá tantas filas como bases de datos y para cada una se calculará la media y desviación típica de cada una de las métricas y tiempos computacionales obtenidos.
 
 Para ilustrar esta sección, a continuación se muestran algunas imágenes del formato de los archivos mencionados y de la estructura de carpetas generada.

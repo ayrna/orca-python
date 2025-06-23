@@ -1,15 +1,15 @@
 """Tests for the Results class."""
 
-from pathlib import Path
-from shutil import rmtree
 from collections import OrderedDict
+from pathlib import Path
 from pickle import load
+from shutil import rmtree
 
-import pytest
 import numpy as np
-import pandas as pd
 import numpy.testing as npt
+import pandas as pd
 import pandas.testing as pdt
+import pytest
 from sklearn.svm import SVC
 
 from orca_python.results import Results

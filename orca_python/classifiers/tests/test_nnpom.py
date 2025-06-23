@@ -2,8 +2,8 @@
 
 from pathlib import Path
 
-import pytest
 import numpy as np
+import pytest
 
 from orca_python.classifiers.NNPOM import NNPOM
 from orca_python.testing import TEST_DATASETS_DIR
@@ -16,16 +16,12 @@ def dataset_path():
 
 @pytest.fixture
 def train_file(dataset_path):
-    return np.loadtxt(
-        dataset_path / "train_balance-scale.csv", delimiter=","
-    )
+    return np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
 
 
 @pytest.fixture
 def test_file(dataset_path):
-    return np.loadtxt(
-        dataset_path / "test_balance-scale.csv", delimiter=","
-    )
+    return np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
 
 
 # 	-----	NOT APPLIED	-----

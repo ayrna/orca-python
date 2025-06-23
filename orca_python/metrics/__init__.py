@@ -1,17 +1,17 @@
 """Metrics module."""
 
 from .metrics import (
-    greater_is_better,
-    ccr,
     amae,
+    ccr,
     gm,
+    greater_is_better,
     mae,
     mmae,
     ms,
     mze,
+    spearman,
     tkendall,
     wkappa,
-    spearman,
 )
 
 __all__ = [
