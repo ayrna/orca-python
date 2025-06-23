@@ -2,8 +2,6 @@
 
 from __future__ import division
 
-import warnings
-
 import numpy as np
 import scipy.stats
 from sklearn.metrics import confusion_matrix
@@ -118,16 +116,14 @@ def amae(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        cm = confusion_matrix(y_true, y_pred)
-        n_class = cm.shape[0]
-        costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
-        costs = np.abs(costs - np.transpose(costs))
-        errors = costs * cm
-        per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
-        per_class_maes = per_class_maes[~np.isnan(per_class_maes)]
-        return np.mean(per_class_maes)
+    cm = confusion_matrix(y_true, y_pred)
+    n_class = cm.shape[0]
+    costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
+    costs = np.abs(costs - np.transpose(costs))
+    errors = costs * cm
+    per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
+    per_class_maes = per_class_maes[~np.isnan(per_class_maes)]
+    return np.mean(per_class_maes)
 
 
 def gm(y_true, y_pred):
@@ -164,14 +160,12 @@ def gm(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        cm = confusion_matrix(y_true, y_pred)
-        sum_by_class = np.sum(cm, axis=1)
-        sensitivities = np.diag(cm) / sum_by_class.astype("double")
-        sensitivities[sum_by_class == 0] = 1
-        gm = pow(np.prod(sensitivities), 1.0 / cm.shape[0])
-        return gm
+    cm = confusion_matrix(y_true, y_pred)
+    sum_by_class = np.sum(cm, axis=1)
+    sensitivities = np.diag(cm) / sum_by_class.astype("double")
+    sensitivities[sum_by_class == 0] = 1
+    gm = pow(np.prod(sensitivities), 1.0 / cm.shape[0])
+    return gm
 
 
 def mae(y_true, y_pred):
@@ -210,11 +204,7 @@ def mae(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        y_true = np.asarray(y_true)
-        y_pred = np.asarray(y_pred)
-        return abs(y_true - y_pred).sum() / len(y_true)
+    return abs(y_true - y_pred).sum() / len(y_true)
 
 
 def mmae(y_true, y_pred):
@@ -254,16 +244,14 @@ def mmae(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        cm = confusion_matrix(y_true, y_pred)
-        n_class = cm.shape[0]
-        costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
-        costs = np.abs(costs - np.transpose(costs))
-        errors = costs * cm
-        per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
-        per_class_maes = per_class_maes[~np.isnan(per_class_maes)]
-        return per_class_maes.max()
+    cm = confusion_matrix(y_true, y_pred)
+    n_class = cm.shape[0]
+    costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
+    costs = np.abs(costs - np.transpose(costs))
+    errors = costs * cm
+    per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
+    per_class_maes = per_class_maes[~np.isnan(per_class_maes)]
+    return per_class_maes.max()
 
 
 def ms(y_true, y_pred):
@@ -303,15 +291,13 @@ def ms(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        cm = confusion_matrix(y_true, y_pred)
-        sum_by_class = np.sum(cm, axis=1)
-        sensitivities = np.diag(cm) / sum_by_class.astype("double")
-        sensitivities[sum_by_class == 0] = 1
-        ms = np.min(sensitivities)
+    cm = confusion_matrix(y_true, y_pred)
+    sum_by_class = np.sum(cm, axis=1)
+    sensitivities = np.diag(cm) / sum_by_class.astype("double")
+    sensitivities[sum_by_class == 0] = 1
+    ms = np.min(sensitivities)
 
-        return ms
+    return ms
 
 
 def mze(y_true, y_pred):
@@ -350,11 +336,8 @@ def mze(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-
-        confusion = confusion_matrix(y_true, y_pred)
-        return 1 - np.diagonal(confusion).sum() / confusion.sum()
+    confusion = confusion_matrix(y_true, y_pred)
+    return 1 - np.diagonal(confusion).sum() / confusion.sum()
 
 
 def tkendall(y_true, y_pred):
@@ -394,11 +377,8 @@ def tkendall(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-
-        corr, pvalue = scipy.stats.kendalltau(y_true, y_pred)
-        return corr
+    corr, pvalue = scipy.stats.kendalltau(y_true, y_pred)
+    return corr
 
 
 def wkappa(y_true, y_pred):
@@ -438,24 +418,21 @@ def wkappa(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+    cm = confusion_matrix(y_true, y_pred)
+    n_class = cm.shape[0]
+    costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
+    costs = np.abs(costs - np.transpose(costs))
+    f = 1 - costs
 
-        cm = confusion_matrix(y_true, y_pred)
-        n_class = cm.shape[0]
-        costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
-        costs = np.abs(costs - np.transpose(costs))
-        f = 1 - costs
+    n = cm.sum()
+    x = cm / n
 
-        n = cm.sum()
-        x = cm / n
-
-        r = x.sum(axis=1)  # Row sum
-        s = x.sum(axis=0)  # Col sum
-        Ex = r.reshape(-1, 1) * s
-        po = (x * f).sum()
-        pe = (Ex * f).sum()
-        return (po - pe) / (1 - pe)
+    r = x.sum(axis=1)  # Row sum
+    s = x.sum(axis=0)  # Col sum
+    Ex = r.reshape(-1, 1) * s
+    po = (x * f).sum()
+    pe = (Ex * f).sum()
+    return (po - pe) / (1 - pe)
 
 
 def spearman(y_true, y_pred):
@@ -494,20 +471,17 @@ def spearman(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+    n = len(y_true)
+    num = (
+        (y_true - np.repeat(np.mean(y_true), n))
+        * (y_pred - np.repeat(np.mean(y_pred), n))
+    ).sum()
+    div = np.sqrt(
+        (pow(y_true - np.repeat(np.mean(y_true), n), 2)).sum()
+        * (pow(y_pred - np.repeat(np.mean(y_pred), n), 2)).sum()
+    )
 
-        n = len(y_true)
-        num = (
-            (y_true - np.repeat(np.mean(y_true), n))
-            * (y_pred - np.repeat(np.mean(y_pred), n))
-        ).sum()
-        div = np.sqrt(
-            (pow(y_true - np.repeat(np.mean(y_true), n), 2)).sum()
-            * (pow(y_pred - np.repeat(np.mean(y_pred), n), 2)).sum()
-        )
-
-        if num == 0:
-            return 0
-        else:
-            return num / div
+    if num == 0:
+        return 0
+    else:
+        return num / div
