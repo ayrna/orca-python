@@ -4,7 +4,7 @@ from __future__ import division
 
 import numpy as np
 import scipy.stats
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, recall_score
 
 
 def greater_is_better(metric_name):
@@ -291,13 +291,8 @@ def ms(y_true, y_pred):
     if len(y_pred.shape) > 1:
         y_pred = np.argmax(y_pred, axis=1)
 
-    cm = confusion_matrix(y_true, y_pred)
-    sum_by_class = np.sum(cm, axis=1)
-    sensitivities = np.diag(cm) / sum_by_class.astype("double")
-    sensitivities[sum_by_class == 0] = 1
-    ms = np.min(sensitivities)
-
-    return ms
+    sensitivities = recall_score(y_true, y_pred, average=None)
+    return np.min(sensitivities)
 
 
 def mze(y_true, y_pred):
