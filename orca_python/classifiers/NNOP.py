@@ -1,11 +1,12 @@
 """Neural Network with Ordered Partitions (NNOP)."""
 
-import numpy as np
 import math as math
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.utils.multiclass import unique_labels
+
+import numpy as np
 import scipy
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.utils.multiclass import unique_labels
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class NNOP(BaseEstimator, ClassifierMixin):
@@ -46,7 +47,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
     n_classes_ : int
         Number of labels in the problem.
-    
+
     n_samples_ : int
         Number of samples of X (train patterns array).
 
@@ -110,7 +111,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
         -------
         self : object
             Fitted estimator.
-        
+
         Raises
         ------
         ValueError
@@ -188,12 +189,12 @@ class NNOP(BaseEstimator, ClassifierMixin):
         -------
         y_pred : ndarray of shape (n_samples,)
             Class labels for samples in X.
-        
+
         Raises
         ------
         NotFittedError
             If the model is not fitted yet.
-        
+
         ValueError
             If input is invalid.
 

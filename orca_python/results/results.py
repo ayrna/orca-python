@@ -1,12 +1,12 @@
 """Results handling for storing and managing experiment results."""
 
-from datetime import date, datetime
+import pickle
 from collections import OrderedDict
+from datetime import date, datetime
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pickle
 
 
 class Results:

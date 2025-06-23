@@ -1,6 +1,7 @@
 """Utility functions for datasets."""
 
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -15,7 +16,7 @@ def get_data_path():
     -------
     data_path : path
         ORCA-python datasets path.
-    
+
     Examples
     --------
     >>> from orca_python.datasets.datasets import get_data_path
@@ -73,7 +74,7 @@ def is_undivided(dataset_name, data_path):
     -------
     is_undivided : bool
         True if the full dataset file exists, False otherwise.
-    
+
     Examples
     --------
     >>> from orca_python.datasets.datasets import is_undivided, get_data_path

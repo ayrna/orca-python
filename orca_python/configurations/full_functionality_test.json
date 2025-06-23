@@ -17,7 +17,7 @@
 	"configurations": {
 
 		"SVM": {
-		
+
 			"classifier": "sklearn.svm.SVC",
 			"parameters": {
 				"C": [0.001, 0.1, 1, 10, 100],
@@ -27,7 +27,7 @@
 
 
 		"SVMOP": {
-		
+
 			"classifier": "orca_python.classifiers.OrdinalDecomposition",
 			"parameters": {
 				"dtype": "ordered_partitions",
@@ -44,7 +44,7 @@
 
 
 		"LR": {
-		
+
 			"classifier": "orca_python.classifiers.OrdinalDecomposition",
 			"parameters": {
 				"dtype": ["ordered_partitions", "one_vs_next"],
@@ -58,7 +58,7 @@
 
 			}
 		},
-		
+
 		"REDSVM": {
 
 			"classifier": "orca_python.classifiers.REDSVM",
@@ -73,7 +73,7 @@
 			}
 
 		},
-		
+
 		"SVOREX": {
 
 			"classifier": "orca_python.classifiers.SVOREX",

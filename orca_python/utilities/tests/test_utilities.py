@@ -3,13 +3,13 @@
 from pathlib import Path
 from shutil import rmtree
 
+import numpy as np
 import numpy.testing as npt
 import pandas as pd
-import numpy as np
 import pytest
 
-from orca_python.utilities import Utilities, load_classifier
 from orca_python.testing import TEST_DATASETS_DIR
+from orca_python.utilities import Utilities, load_classifier
 
 
 @pytest.fixture
@@ -40,9 +40,7 @@ def test_load_complete_dataset(tmp_path, util):
     partition_list = util._load_dataset(dataset_path)
 
     # Check all partitions have been loaded
-    npt.assert_equal(
-        len(partition_list), (len(list(dataset_path.iterdir())) / 2)
-    )
+    npt.assert_equal(len(partition_list), (len(list(dataset_path.iterdir())) / 2))
     # Check if every partition has train and test inputs and outputs (4 diferent dictionaries)
     npt.assert_equal(
         all([len(partition[1]) == 4 for partition in partition_list]), True
@@ -75,9 +73,7 @@ def test_load_nontestfile_dataset(tmp_path, util):
 
     partition_list = util._load_dataset(dataset_path)
 
-    npt.assert_equal(
-        len(partition_list), len(list(dataset_path.iterdir()))
-    )
+    npt.assert_equal(len(partition_list), len(list(dataset_path.iterdir())))
     npt.assert_equal(
         all([len(partition[1]) == 2 for partition in partition_list]), True
     )
@@ -102,14 +98,10 @@ def test_normalize_data(tmp_path, util):
     # Test preparation
     dataset_path = Path(TEST_DATASETS_DIR) / "balance-scale"
 
-    train_file = np.loadtxt(
-        dataset_path / "train_balance-scale.csv", delimiter=","
-    )
+    train_file = np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
     X_train = train_file[:, 0:(-1)]
 
-    test_file = np.loadtxt(
-        dataset_path / "test_balance-scale.csv", delimiter=","
-    )
+    test_file = np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
     X_test = test_file[:, 0:(-1)]
 
     # Test execution
@@ -124,14 +116,10 @@ def test_standardize_data(util):
     # Test preparation
     dataset_path = Path(TEST_DATASETS_DIR) / "balance-scale"
 
-    train_file = np.loadtxt(
-        dataset_path / "train_balance-scale.csv", delimiter=","
-    )
+    train_file = np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
     X_train = train_file[:, 0:(-1)]
 
-    test_file = np.loadtxt(
-        dataset_path / "test_balance-scale.csv", delimiter=","
-    )
+    test_file = np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
     X_test = test_file[:, 0:(-1)]
 
     # Test execution
@@ -261,6 +249,7 @@ def test_check_params(util):
 
     # Resetting configurations to not interfere with other experiments
     util.configurations = {}
+
 
 @pytest.fixture
 def main_folder():

@@ -1,8 +1,8 @@
 """Support Vector for Ordinal Regression (Explicit constraints) (SVOREX)."""
 
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 # from .svorex import svorex
 from orca_python.classifiers.svorex import svorex
@@ -19,7 +19,7 @@ class SVOREX(BaseEstimator, ClassifierMixin):
     ----------
     C : float, default=1
         Set the parameter C.
-    
+
     kernel : int, default=0
         Set type of kernel function.
         0 -- gaussian: use gaussian kernel
@@ -28,7 +28,7 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
     degree : int, default=2
         Set degree in kernel function.
-    
+
     tol : float, default=0.001
         Set tolerance of termination criterion.
 

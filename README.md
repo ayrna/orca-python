@@ -17,7 +17,7 @@
 
 ## What is ORCA-python?
 
-ORCA-python is an experimental framework, completely built on Python (integrated with scikit-learn and sacred modules), 
+ORCA-python is an experimental framework, completely built on Python (integrated with scikit-learn and sacred modules),
 that seeks to automatize the run of machine learning experiments through simple-to-understand configuration files.
 
 ORCA-python has been initially created to test ordinal classification, but it can handle regular classification algorithms,
@@ -51,7 +51,7 @@ All dependencies and build configurations are managed through `pyproject.toml` f
 To download ORCA-python you can simply clone this GitHub repository by using the following commands:
 
   `$ git clone https://github.com/ayrna/orca-python`
-  
+
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
 
 ## Installation in Python Environnement
@@ -83,10 +83,10 @@ The datasets are already partitioned with a 30-holdout experimental design (trai
 
 ## Configuration Files
 
-All experiments are run through configuration files, which are written in JSON format, and consist of two well differentiated 
+All experiments are run through configuration files, which are written in JSON format, and consist of two well differentiated
 sections:
 
-  - **`general-conf`**: indicates basic information to run the experiment, such as the location to datasets, the names of the different datasets to run, etc. 
+  - **`general-conf`**: indicates basic information to run the experiment, such as the location to datasets, the names of the different datasets to run, etc.
   - **`configurations`**: tells the framework what classification algorithms to apply over all the datasets, with the collection of hyper-parameters to tune.
 
 Each one of this sections will be inside a dictionary, having the said section names as keys.
@@ -129,7 +129,7 @@ this dictionary will contain, at the same time, one dictionary for each configur
 ```
 "configurations": {
 	"SVM": {
-		
+
 		"classifier": "sklearn.svm.SVC",
 		"parameters": {
 			"C": [0.001, 0.1, 1, 10, 100],
@@ -218,7 +218,7 @@ while the other consists of the non-reproducibility of the results of the experi
 Both problems can be easily fixed. The seed can be specified after "with" in the command:
 
   `$ python config.py with experiment_file.json seed=12345`
-  
+
 while we can silence Sacred just by adding "-l ERROR" at the end of the line (not necessarily at the end).
 
   `$ python config.py with experiment_file.json seed=12345 -l ERROR`

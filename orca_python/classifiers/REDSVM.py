@@ -2,12 +2,12 @@
 
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
-
-# from .libsvmRank.python import svm
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 from orca_python.classifiers.libsvmRank.python import svm
+
+# from .libsvmRank.python import svm
 
 
 class REDSVM(BaseEstimator, ClassifierMixin):
@@ -21,7 +21,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
     ----------
     C : float, default=1
         Set the parameter C.
-    
+
     kernel : int, default=2
         Set type of kernel function.
         0 -- linear: u'*v
@@ -154,7 +154,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
         -------
         y_pred : array, shape (n_samples,)
             Class labels for samples in X.
-        
+
         Raises
         ------
         NotFittedError
