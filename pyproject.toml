@@ -37,7 +37,8 @@ dev = [
     "black",
     "pre-commit",
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
+    "pytest-xdist[psutil]"
 ]
 
 [project.urls]
