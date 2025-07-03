@@ -1,8 +1,7 @@
 """Tests for the metrics module."""
 
+import numpy as np
 import numpy.testing as npt
-import pytest
-from numpy import array
 
 from orca_python.metrics import (
     amae,
@@ -18,81 +17,203 @@ from orca_python.metrics import (
 )
 
 
-@pytest.fixture
-def real_y():
-    return array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3])
-
-
-@pytest.fixture
-def predicted_y():
-    return array([1, 3, 3, 1, 2, 3, 1, 2, 2, 1, 3, 1, 1, 2, 2, 2, 3, 3, 1, 3])
-
-
-def test_ccr(real_y, predicted_y):
+def test_ccr():
     """Test the Correctly Classified Ratio (CCR) metric."""
+    y_true = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3])
+    y_pred = np.array([1, 3, 3, 1, 2, 3, 1, 2, 2, 1, 3, 1, 1, 2, 2, 2, 3, 3, 1, 3])
     expected = 0.8000
-    actual = ccr(real_y, predicted_y)
+    actual = ccr(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=4)
 
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.5
+    actual = ccr(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
-def test_amae(real_y, predicted_y):
+
+def test_amae():
     """Test the Average Mean Absolute Error (AMAE) metric."""
-    expected = 0.2937
-    actual = amae(real_y, predicted_y)
-    npt.assert_almost_equal(expected, actual, decimal=4)
+    y_true = np.array([0, 0, 1, 1])
+    y_pred = np.array([0, 1, 0, 1])
+    expected = 0.5
+    actual = amae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    y_true = np.array([0, 0, 1, 1, 2, 2])
+    y_pred = np.array([0, 0, 1, 1, 2, 2])
+    expected = 0.0
+    actual = amae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    y_true = np.array([0, 0, 2, 1])
+    y_pred = np.array([0, 2, 0, 1])
+    expected = 1.0
+    actual = amae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    y_true = np.array([0, 0, 2, 1, 3])
+    y_pred = np.array([2, 2, 0, 3, 1])
+    expected = 2.0
+    actual = amae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.5
+    actual = amae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
 
-def test_gm(real_y, predicted_y):
+def test_gm():
     """Test the Geometric Mean (GM) metric."""
+    y_true = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3])
+    y_pred = np.array([1, 3, 3, 1, 2, 3, 1, 2, 2, 1, 3, 1, 1, 2, 2, 2, 3, 3, 1, 3])
     expected = 0.7991
-    actual = gm(real_y, predicted_y)
+    actual = gm(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=4)
 
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.5
+    actual = gm(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
-def test_mae(real_y, predicted_y):
+
+def test_mae():
     """Test the Mean Absolute Error (MAE) metric."""
+    y_true = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3])
+    y_pred = np.array([1, 3, 3, 1, 2, 3, 1, 2, 2, 1, 3, 1, 1, 2, 2, 2, 3, 3, 1, 3])
     expected = 0.3000
-    actual = mae(real_y, predicted_y)
+    actual = mae(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=4)
 
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.5
+    actual = mae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
-def test_mmae(real_y, predicted_y):
-    """Test the Mean Mean Absolute Error (MMAE) metric."""
-    expected = 0.4286
-    actual = mmae(real_y, predicted_y)
-    npt.assert_almost_equal(expected, actual, decimal=4)
+
+def test_mmae():
+    """Test the Maximum Mean Absolute Error (MMAE) metric."""
+    y_true = np.array([0, 0, 1, 1])
+    y_pred = np.array([0, 1, 0, 1])
+    expected = 0.5
+    actual = mmae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    y_true = np.array([0, 0, 1, 1, 2, 2])
+    y_pred = np.array([0, 0, 1, 1, 2, 2])
+    expected = 0.0
+    actual = mmae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    y_true = np.array([0, 0, 2, 1])
+    y_pred = np.array([0, 2, 0, 1])
+    expected = 2.0
+    actual = mmae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    y_true = np.array([0, 0, 2, 1, 3])
+    y_pred = np.array([2, 2, 0, 3, 1])
+    expected = 2.0
+    actual = mmae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.5
+    actual = mmae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
 
-def test_ms(real_y, predicted_y):
+def test_ms():
     """Test the Mean Sensitivity (MS) metric."""
-    expected = 0.7143
-    actual = ms(real_y, predicted_y)
-    npt.assert_almost_equal(expected, actual, decimal=4)
+    y_true = np.array([0, 0, 1, 1])
+    y_pred = np.array([0, 1, 0, 1])
+    expected = 0.5
+    actual = ms(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    y_true = np.array([0, 0, 1, 1, 2, 2])
+    y_pred = np.array([0, 0, 1, 1, 2, 2])
+    expected = 1.0
+    actual = ms(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.5
+    actual = ms(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
 
-def test_mze(real_y, predicted_y):
+def test_mze():
     """Test the Mean Zero-one Error (MZE) metric."""
+    y_true = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3])
+    y_pred = np.array([1, 3, 3, 1, 2, 3, 1, 2, 2, 1, 3, 1, 1, 2, 2, 2, 3, 3, 1, 3])
     expected = 0.2000
-    actual = mze(real_y, predicted_y)
+    actual = mze(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=4)
 
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.5
+    actual = mze(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
-def test_tkendall(real_y, predicted_y):
+
+def test_tkendall():
     """Test the Kendall's Tau metric."""
+    y_true = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3])
+    y_pred = np.array([1, 3, 3, 1, 2, 3, 1, 2, 2, 1, 3, 1, 1, 2, 2, 2, 3, 3, 1, 3])
     expected = 0.6240
-    actual = tkendall(real_y, predicted_y)
+    actual = tkendall(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=4)
 
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.0
+    actual = tkendall(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
-def test_wkappa(real_y, predicted_y):
+
+def test_wkappa():
     """Test the Weighted Kappa metric."""
+    y_true = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3])
+    y_pred = np.array([1, 3, 3, 1, 2, 3, 1, 2, 2, 1, 3, 1, 1, 2, 2, 2, 3, 3, 1, 3])
     expected = 0.6703
-    actual = wkappa(real_y, predicted_y)
+    actual = wkappa(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=4)
 
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.0
+    actual = wkappa(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
 
-def test_spearman(real_y, predicted_y):
+
+def test_spearman():
     """Test the Spearman's rank correlation coefficient metric."""
+    y_true = np.array([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3])
+    y_pred = np.array([1, 3, 3, 1, 2, 3, 1, 2, 2, 1, 3, 1, 1, 2, 2, 2, 3, 3, 1, 3])
     expected = 0.6429
-    actual = spearman(real_y, predicted_y)
+    actual = spearman(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=4)
+
+    # Test using one-hot and probabilities
+    y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
+    y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.0
+    actual = spearman(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
