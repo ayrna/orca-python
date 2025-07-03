@@ -4,10 +4,18 @@ import numpy.testing as npt
 import pytest
 from numpy import array
 
-# import metrics
-import orca_python.metrics as metrics
-
-# path.append('..')
+from orca_python.metrics import (
+    amae,
+    ccr,
+    gm,
+    mae,
+    mmae,
+    ms,
+    mze,
+    spearman,
+    tkendall,
+    wkappa,
+)
 
 
 @pytest.fixture
@@ -21,60 +29,70 @@ def predicted_y():
 
 
 def test_ccr(real_y, predicted_y):
-    real_ccr = 0.8000
-    predicted_ccr = metrics.ccr(real_y, predicted_y)
-    npt.assert_almost_equal(real_ccr, predicted_ccr, decimal=4)
+    """Test the Correctly Classified Ratio (CCR) metric."""
+    expected = 0.8000
+    actual = ccr(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_amae(real_y, predicted_y):
-    real_amae = 0.2937
-    predicted_amae = metrics.amae(real_y, predicted_y)
-    npt.assert_almost_equal(real_amae, predicted_amae, decimal=4)
+    """Test the Average Mean Absolute Error (AMAE) metric."""
+    expected = 0.2937
+    actual = amae(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_gm(real_y, predicted_y):
-    real_gm = 0.7991
-    predicted_gm = metrics.gm(real_y, predicted_y)
-    npt.assert_almost_equal(real_gm, predicted_gm, decimal=4)
+    """Test the Geometric Mean (GM) metric."""
+    expected = 0.7991
+    actual = gm(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_mae(real_y, predicted_y):
-    real_mae = 0.3000
-    predicted_mae = metrics.mae(real_y, predicted_y)
-    npt.assert_almost_equal(real_mae, predicted_mae, decimal=4)
+    """Test the Mean Absolute Error (MAE) metric."""
+    expected = 0.3000
+    actual = mae(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_mmae(real_y, predicted_y):
-    real_mmae = 0.4286
-    predicted_mmae = metrics.mmae(real_y, predicted_y)
-    npt.assert_almost_equal(real_mmae, predicted_mmae, decimal=4)
+    """Test the Mean Mean Absolute Error (MMAE) metric."""
+    expected = 0.4286
+    actual = mmae(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_ms(real_y, predicted_y):
-    real_ms = 0.7143
-    predicted_ms = metrics.ms(real_y, predicted_y)
-    npt.assert_almost_equal(real_ms, predicted_ms, decimal=4)
+    """Test the Mean Sensitivity (MS) metric."""
+    expected = 0.7143
+    actual = ms(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_mze(real_y, predicted_y):
-    real_mze = 0.2000
-    predicted_mze = metrics.mze(real_y, predicted_y)
-    npt.assert_almost_equal(real_mze, predicted_mze, decimal=4)
+    """Test the Mean Zero-one Error (MZE) metric."""
+    expected = 0.2000
+    actual = mze(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_tkendall(real_y, predicted_y):
-    real_tkendall = 0.6240
-    predicted_tkendall = metrics.tkendall(real_y, predicted_y)
-    npt.assert_almost_equal(real_tkendall, predicted_tkendall, decimal=4)
+    """Test the Kendall's Tau metric."""
+    expected = 0.6240
+    actual = tkendall(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_wkappa(real_y, predicted_y):
-    real_wkappa = 0.6703
-    predicted_wkappa = metrics.wkappa(real_y, predicted_y)
-    npt.assert_almost_equal(real_wkappa, predicted_wkappa, decimal=4)
+    """Test the Weighted Kappa metric."""
+    expected = 0.6703
+    actual = wkappa(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
 
 
 def test_spearman(real_y, predicted_y):
-    real_spearman = 0.6429
-    predicted_spearman = metrics.spearman(real_y, predicted_y)
-    npt.assert_almost_equal(real_spearman, predicted_spearman, decimal=4)
+    """Test the Spearman's rank correlation coefficient metric."""
+    expected = 0.6429
+    actual = spearman(real_y, predicted_y)
+    npt.assert_almost_equal(expected, actual, decimal=4)
