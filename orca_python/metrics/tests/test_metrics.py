@@ -81,6 +81,12 @@ def test_amae():
     actual = amae(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=6)
 
+    y_true = np.array([0, 1, 2, 3, 3])
+    y_pred = np.array([0, 1, 2, 3, 4])
+    expected = 0.125
+    actual = amae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
 
 def test_gm():
     """Test the Geometric Mean (GM) metric."""
@@ -143,6 +149,12 @@ def test_mmae():
     # Test using one-hot and probabilities
     y_true = np.array([[1, 0], [1, 0], [0, 1], [0, 1]])
     y_pred = np.array([[1, 0], [0, 1], [1, 0], [0, 1]])
+    expected = 0.5
+    actual = mmae(y_true, y_pred)
+    npt.assert_almost_equal(expected, actual, decimal=6)
+
+    y_true = np.array([0, 1, 2, 3, 3])
+    y_pred = np.array([0, 1, 2, 3, 4])
     expected = 0.5
     actual = mmae(y_true, y_pred)
     npt.assert_almost_equal(expected, actual, decimal=6)
