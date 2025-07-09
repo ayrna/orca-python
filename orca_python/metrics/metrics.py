@@ -121,8 +121,13 @@ def amae(y_true, y_pred):
     costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
     costs = np.abs(costs - np.transpose(costs))
     errors = costs * cm
+
+    # Remove rows with all zeros in the confusion matrix
+    non_zero_cm_rows = ~np.all(cm == 0, axis=1)
+    errors = errors[non_zero_cm_rows]
+    cm = cm[non_zero_cm_rows]
+
     per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
-    per_class_maes = per_class_maes[~np.isnan(per_class_maes)]
     return np.mean(per_class_maes)
 
 
@@ -249,8 +254,13 @@ def mmae(y_true, y_pred):
     costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
     costs = np.abs(costs - np.transpose(costs))
     errors = costs * cm
+
+    # Remove rows with all zeros in the confusion matrix
+    non_zero_cm_rows = ~np.all(cm == 0, axis=1)
+    errors = errors[non_zero_cm_rows]
+    cm = cm[non_zero_cm_rows]
+
     per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
-    per_class_maes = per_class_maes[~np.isnan(per_class_maes)]
     return per_class_maes.max()
 
 
