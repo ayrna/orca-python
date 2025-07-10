@@ -67,11 +67,8 @@ def test_file(dataset_path):
 # 		npt.assert_equal(predictions, expected_prediction, "The prediction doesnt match with the desired values")
 
 
-def test_nnpom_fit_not_valid_parameter(train_file):
+def test_nnpom_fit_not_valid_parameter(X, y):
     # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
-
     classifiers = [
         NNPOM(epsilon_init=0.5, n_hidden=-1, max_iter=1000, lambda_value=0.01),
         NNPOM(epsilon_init=0.5, n_hidden=10, max_iter=-1, lambda_value=0.01),
@@ -79,33 +76,31 @@ def test_nnpom_fit_not_valid_parameter(train_file):
 
     # Test execution and verification
     for classifier in classifiers:
-        model = classifier.fit(X_train, y_train)
+        model = classifier.fit(X, y)
         assert model is None, "The NNPOM fit method doesnt return Null on error"
 
 
-def test_nnpom_fit_not_valid_data(train_file):
+def test_nnpom_fit_not_valid_data(X, y):
     # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
-    X_train_broken = train_file[0:(-1), 0:(-2)]
-    y_train_broken = train_file[0:(-1), (-1)]
+    X_invalid = X[:-1, :-1]
+    y_invalid = y[:-1]
 
     # Test execution and verification
     classifier = NNPOM(epsilon_init=0.5, n_hidden=10, max_iter=1000, lambda_value=0.01)
     with pytest.raises(ValueError):
-        model = classifier.fit(X_train, y_train_broken)
+        model = classifier.fit(X, y_invalid)
         assert model is None, "The NNPOM fit method doesnt return Null on error"
 
     with pytest.raises(ValueError):
-        model = classifier.fit([], y_train)
+        model = classifier.fit([], y)
         assert model is None, "The NNPOM fit method doesnt return Null on error"
 
     with pytest.raises(ValueError):
-        model = classifier.fit(X_train, [])
+        model = classifier.fit(X, [])
         assert model is None, "The NNPOM fit method doesnt return Null on error"
 
     with pytest.raises(ValueError):
-        model = classifier.fit(X_train_broken, y_train)
+        model = classifier.fit(X_invalid, y)
         assert model is None, "The NNPOM fit method doesnt return Null on error"
 
 
@@ -128,13 +123,10 @@ def test_nnpom_fit_not_valid_data(train_file):
 # 			classifier.predict(X_test)
 
 
-def test_nnpom_predict_not_valid_data(train_file):
+def test_nnpom_predict_not_valid_data(X, y):
     # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
-
     classifier = NNPOM(epsilon_init=0.5, n_hidden=10, max_iter=500, lambda_value=0.01)
-    classifier.fit(X_train, y_train)
+    classifier.fit(X, y)
 
     # Test execution and verification
     with pytest.raises(ValueError):
