@@ -1,7 +1,5 @@
 """Tests for the REDSVM classifier."""
 
-from pathlib import Path
-
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -23,41 +21,21 @@ def y():
     return np.array([0, 1, 1, 0, 1])
 
 
-@pytest.fixture
-def dataset_path():
-    return Path(TEST_DATASETS_DIR) / "balance-scale"
-
-
-@pytest.fixture
-def predictions_path():
-    return Path(TEST_PREDICTIONS_DIR) / "REDSVM"
-
-
-@pytest.fixture
-def train_file(dataset_path):
-    return np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
-
-
-@pytest.fixture
-def test_file(dataset_path):
-    return np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
-
-
-def test_redsvm_fit_correct(predictions_path):
+def test_redsvm_fit_correct():
     # Test preparation
     X_train, y_train, X_test, _ = load_dataset(
         dataset_name="balance-scale", data_path=TEST_DATASETS_DIR
     )
 
     expected_predictions = [
-        predictions_path / "expectedPredictions.0",
-        predictions_path / "expectedPredictions.1",
-        predictions_path / "expectedPredictions.2",
-        predictions_path / "expectedPredictions.3",
-        predictions_path / "expectedPredictions.4",
-        predictions_path / "expectedPredictions.5",
-        predictions_path / "expectedPredictions.6",
-        predictions_path / "expectedPredictions.7",
+        TEST_PREDICTIONS_DIR / "REDSVM" / "expectedPredictions.0",
+        TEST_PREDICTIONS_DIR / "REDSVM" / "expectedPredictions.1",
+        TEST_PREDICTIONS_DIR / "REDSVM" / "expectedPredictions.2",
+        TEST_PREDICTIONS_DIR / "REDSVM" / "expectedPredictions.3",
+        TEST_PREDICTIONS_DIR / "REDSVM" / "expectedPredictions.4",
+        TEST_PREDICTIONS_DIR / "REDSVM" / "expectedPredictions.5",
+        TEST_PREDICTIONS_DIR / "REDSVM" / "expectedPredictions.6",
+        TEST_PREDICTIONS_DIR / "REDSVM" / "expectedPredictions.7",
     ]
 
     classifiers = [

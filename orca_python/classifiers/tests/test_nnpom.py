@@ -1,12 +1,9 @@
 """Tests for the NNPOM classifier."""
 
-from pathlib import Path
-
 import numpy as np
 import pytest
 
 from orca_python.classifiers.NNPOM import NNPOM
-from orca_python.testing import TEST_DATASETS_DIR
 
 
 @pytest.fixture
@@ -19,21 +16,6 @@ def X():
 def y():
     """Create sample target variables for testing."""
     return np.array([0, 1, 1, 0, 1])
-
-
-@pytest.fixture
-def dataset_path():
-    return Path(TEST_DATASETS_DIR) / "balance-scale"
-
-
-@pytest.fixture
-def train_file(dataset_path):
-    return np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
-
-
-@pytest.fixture
-def test_file(dataset_path):
-    return np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
 
 
 def test_nnpom_fit_not_valid_parameter(X, y):

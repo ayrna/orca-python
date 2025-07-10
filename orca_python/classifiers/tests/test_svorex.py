@@ -1,7 +1,5 @@
 """Tests for the SVOREX classifier."""
 
-from pathlib import Path
-
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -23,36 +21,16 @@ def y():
     return np.array([1, 2, 2, 1, 2])
 
 
-@pytest.fixture
-def dataset_path():
-    return Path(TEST_DATASETS_DIR) / "balance-scale"
-
-
-@pytest.fixture
-def predictions_path():
-    return Path(TEST_PREDICTIONS_DIR) / "SVOREX"
-
-
-@pytest.fixture
-def train_file(dataset_path):
-    return np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
-
-
-@pytest.fixture
-def test_file(dataset_path):
-    return np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
-
-
-def test_svorex_fit_correct(predictions_path):
+def test_svorex_fit_correct():
     # Test preparation
     X_train, y_train, X_test, _ = load_dataset(
         dataset_name="balance-scale", data_path=TEST_DATASETS_DIR
     )
 
     expected_predictions = [
-        predictions_path / "expectedPredictions.0",
-        predictions_path / "expectedPredictions.1",
-        predictions_path / "expectedPredictions.2",
+        TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.0",
+        TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.1",
+        TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.2",
     ]
 
     classifiers = [
