@@ -136,10 +136,11 @@ def test_redsvm_predict_matches_expected():
 def test_redsvm_fit_hyperparameters_validation(X, y):
     # Test preparation
     classifiers = [
-        REDSVM(gamma=0.1, C=1, kernel=-1),
-        REDSVM(gamma=0.1, C=1, cache_size=-1),
-        REDSVM(gamma=0.1, C=1, tol=-1),
-        REDSVM(gamma=0.1, C=1, shrinking=2),
+        REDSVM(kernel=-1),
+        REDSVM(cache_size=-1),
+        REDSVM(tol=-1),
+        REDSVM(shrinking=2),
+        REDSVM(kernel=8),
     ]
 
     error_msgs = [
@@ -147,6 +148,7 @@ def test_redsvm_fit_hyperparameters_validation(X, y):
         "cache_size <= 0",
         "eps <= 0",
         "shrinking != 0 and shrinking != 1",
+        "Wrong input format: sample_serial_number out of range",
     ]
 
     # Test execution and verification
@@ -162,14 +164,7 @@ def test_redsvm_fit_input_validation(X, y):
     y_invalid = y[:-1]
 
     # Test execution and verification
-    classifier = REDSVM(gamma=0.1, C=1, kernel=8)
-    with pytest.raises(
-        ValueError, match="Wrong input format: sample_serial_number out of range"
-    ):
-        model = classifier.fit(X, y)
-        assert model is None, "The REDSVM fit method doesnt return Null on error"
-
-    classifier = REDSVM(gamma=0.1, C=1)
+    classifier = REDSVM()
     with pytest.raises(ValueError):
         model = classifier.fit(X, y_invalid)
         assert model is None, "The REDSVM fit method doesnt return Null on error"
@@ -189,7 +184,7 @@ def test_redsvm_fit_input_validation(X, y):
 
 def test_redsvm_validates_internal_model_format(X, y):
     # Test preparation
-    classifier = REDSVM(gamma=0.1, C=1)
+    classifier = REDSVM()
     classifier.fit(X, y)
 
     # Test execution and verification
@@ -200,7 +195,7 @@ def test_redsvm_validates_internal_model_format(X, y):
 
 def test_redsvm_predict_invalid_input_raises_error(X, y):
     # Test preparation
-    classifier = REDSVM(gamma=0.1, C=1)
+    classifier = REDSVM()
     classifier.fit(X, y)
 
     # Test execution and verification

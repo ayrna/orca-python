@@ -54,11 +54,11 @@ def test_svorex_predict_matches_expected():
 def test_svorex_fit_hyperparameters_validation(X, y):
     # Test preparation
     classifiers = [
-        SVOREX(C=0.1, kappa=1, tol=0),
-        SVOREX(C=0, kappa=1),
-        SVOREX(C=0.1, kappa=0),
-        SVOREX(kernel=2, degree=0, C=0.1, kappa=1),
-        SVOREX(kernel=0, C=0.1, kappa=-1),
+        SVOREX(tol=0),
+        SVOREX(C=0),
+        SVOREX(kappa=0),
+        SVOREX(kernel=2, degree=0),
+        SVOREX(kappa=-1),
     ]
 
     error_msgs = [
@@ -82,7 +82,7 @@ def test_svorex_fit_input_validation(X, y):
     y_invalid = y[:-1]
 
     # Test execution and verification
-    classifier = SVOREX(kappa=0.1, C=1)
+    classifier = SVOREX()
     with pytest.raises(ValueError):
         model = classifier.fit(X, y_invalid)
         assert model is None, "The SVOREX fit method doesnt return Null on error"
@@ -102,7 +102,7 @@ def test_svorex_fit_input_validation(X, y):
 
 def test_svorex_validates_internal_model_format(X, y):
     # Test preparation
-    classifier = SVOREX(kappa=0.1, C=1)
+    classifier = SVOREX()
     classifier.fit(X, y)
 
     # Test execution and verification
@@ -113,7 +113,7 @@ def test_svorex_validates_internal_model_format(X, y):
 
 def test_svorex_predict_invalid_input_raises_error(X, y):
     # Test preparation
-    classifier = SVOREX(kappa=0.1, C=1)
+    classifier = SVOREX()
     classifier.fit(X, y)
 
     # Test execution and verification
