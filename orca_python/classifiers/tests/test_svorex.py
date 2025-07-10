@@ -11,6 +11,18 @@ from orca_python.testing import TEST_DATASETS_DIR, TEST_PREDICTIONS_DIR
 
 
 @pytest.fixture
+def X():
+    """Create sample feature patterns for testing."""
+    return np.array([[1, 2], [2, 1], [2, 2], [1, 1], [2, 3]])
+
+
+@pytest.fixture
+def y():
+    """Create sample target variables for testing."""
+    return np.array([1, 2, 2, 1, 2])
+
+
+@pytest.fixture
 def dataset_path():
     return Path(TEST_DATASETS_DIR) / "balance-scale"
 

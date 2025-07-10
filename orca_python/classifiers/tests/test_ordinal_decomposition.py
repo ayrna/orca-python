@@ -10,14 +10,15 @@ from orca_python.classifiers.OrdinalDecomposition import OrdinalDecomposition
 # syspath.append(ospath.join('..', 'classifiers'))
 
 
-# Data is just 6 separable points in the plane
 @pytest.fixture
 def X():
+    """Create sample feature patterns for testing."""
     return array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
 
 
 @pytest.fixture
 def y():
+    """Create sample target variables for testing."""
     return array([1, 1, 1, 2, 2, 2])
 
 
