@@ -7,6 +7,7 @@ import numpy.testing as npt
 import pytest
 
 from orca_python.classifiers.SVOREX import SVOREX
+from orca_python.datasets import load_dataset
 from orca_python.testing import TEST_DATASETS_DIR, TEST_PREDICTIONS_DIR
 
 
@@ -42,14 +43,11 @@ def test_file(dataset_path):
     return np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
 
 
-def test_svorex_fit_correct(dataset_path, train_file, test_file, predictions_path):
-    # Check if this algorithm can correctly classify a toy problem.
-
+def test_svorex_fit_correct(predictions_path):
     # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
-
-    X_test = test_file[:, 0:(-1)]
+    X_train, y_train, X_test, _ = load_dataset(
+        dataset_name="balance-scale", data_path=TEST_DATASETS_DIR
+    )
 
     expected_predictions = [
         predictions_path / "expectedPredictions.0",
