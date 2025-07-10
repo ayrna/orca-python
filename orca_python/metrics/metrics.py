@@ -33,7 +33,16 @@ def greater_is_better(metric_name):
     False
 
     """
-    greater_is_better_metrics = ["ccr", "ms", "gm", "tkendall", "wkappa", "spearman"]
+    greater_is_better_metrics = [
+        "ccr",
+        "ms",
+        "gm",
+        "gmsec",
+        "tkendall",
+        "wkappa",
+        "spearman",
+        "accuracy_off1",
+    ]
     if metric_name in greater_is_better_metrics:
         return True
     else:
@@ -171,6 +180,47 @@ def gm(y_true, y_pred):
     sensitivities[sum_by_class == 0] = 1
     gm = pow(np.prod(sensitivities), 1.0 / cm.shape[0])
     return gm
+
+
+def gmsec(y_true, y_pred):
+    """Compute the Geometric Mean of the Sensitivity of the Extreme Classes (GMSEC).
+
+    Proposed in (:footcite:t:`vargas2024improving`) to assess the classification
+    performance for the first and the last classes.
+
+    Parameters
+    ----------
+    y_true : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    y_pred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    gmsec : float
+        Geometric mean of the sensitivities of the extreme classes.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import gmsec
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
+    >>> gmsec(y_true, y_pred)
+    np.float64(0.7071067811865476)
+
+    """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+
+    sensitivities = recall_score(y_true, y_pred, average=None)
+    return np.sqrt(sensitivities[0] * sensitivities[-1])
 
 
 def mae(y_true, y_pred):
@@ -490,3 +540,102 @@ def spearman(y_true, y_pred):
         return 0
     else:
         return num / div
+
+
+def rps(y_true, y_proba):
+    """Compute the ranked probability score.
+
+    As presented in :footcite:t:`janitza2016random`.
+
+    Parameters
+    ----------
+    y_true : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    y_proba : np.ndarray, shape (n_samples, n_classes)
+        Predicted probability distribution across different classes.
+
+    Returns
+    -------
+    rps : float
+        The ranked probability score.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import rps
+    >>> y_true = np.array([0, 0, 3, 2])
+    >>> y_pred = np.array(
+    ...     [[0.2, 0.4, 0.2, 0.2],
+    ...      [0.7, 0.1, 0.1, 0.1],
+    ...      [0.5, 0.05, 0.1, 0.35],
+    ...      [0.1, 0.05, 0.65, 0.2]])
+    >>> rps(y_true, y_pred)
+    np.float64(0.5068750000000001)
+
+    """
+    y_true = np.array(y_true)
+    y_proba = np.array(y_proba)
+
+    y_oh = np.zeros(y_proba.shape)
+    y_oh[np.arange(len(y_true)), y_true] = 1
+
+    y_oh = y_oh.cumsum(axis=1)
+    y_proba = y_proba.cumsum(axis=1)
+
+    rps = 0
+    for i in range(len(y_true)):
+        if y_true[i] in np.arange(y_proba.shape[1]):
+            rps += np.power(y_proba[i] - y_oh[i], 2).sum()
+        else:
+            rps += 1
+    return rps / len(y_true)
+
+
+def accuracy_off1(y_true, y_pred, labels=None):
+    """Computes the accuracy of the predictions.
+
+    Allows errors if they occur in an adjacent class.
+
+    Parameters
+    ----------
+    y_true : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    y_pred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    labels : np.ndarray, shape (n_classes,) or None, default=None
+        Labels of the classes. If None, the labels are inferred from the data.
+
+    Returns
+    -------
+    acc : float
+        1-off accuracy.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from orca_python.metrics import accuracy_off1
+    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
+    >>> y_pred = np.array([0, 1, 1, 2, 0, 0, 1])
+    >>> accuracy_off1(y_true, y_pred)
+    np.float64(0.8571428571428571)
+
+    """
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+
+    if len(y_true.shape) > 1:
+        y_true = np.argmax(y_true, axis=1)
+    if len(y_pred.shape) > 1:
+        y_pred = np.argmax(y_pred, axis=1)
+    if labels is None:
+        labels = np.unique(y_true)
+
+    conf_mat = confusion_matrix(y_true, y_pred, labels=labels)
+    n = conf_mat.shape[0]
+    mask = np.eye(n, n) + np.eye(n, n, k=1), +np.eye(n, n, k=-1)
+    correct = mask * conf_mat
+
+    return 1.0 * np.sum(correct) / np.sum(conf_mat)
