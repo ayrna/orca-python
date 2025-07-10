@@ -18,7 +18,7 @@ def y():
     return np.array([0, 1, 1, 0, 1])
 
 
-def test_nnpom_fit_not_valid_parameter(X, y):
+def test_nnpom_fit_hyperparameters_validation(X, y):
     # Test preparation
     classifiers = [
         NNPOM(epsilon_init=0.5, n_hidden=-1, max_iter=1000, lambda_value=0.01),
@@ -31,7 +31,7 @@ def test_nnpom_fit_not_valid_parameter(X, y):
         assert model is None, "The NNPOM fit method doesnt return Null on error"
 
 
-def test_nnpom_fit_not_valid_data(X, y):
+def test_nnpom_fit_input_validation(X, y):
     # Test preparation
     X_invalid = X[:-1, :-1]
     y_invalid = y[:-1]
@@ -55,7 +55,7 @@ def test_nnpom_fit_not_valid_data(X, y):
         assert model is None, "The NNPOM fit method doesnt return Null on error"
 
 
-def test_nnpom_predict_not_valid_data(X, y):
+def test_nnpom_predict_invalid_input_raises_error(X, y):
     # Test preparation
     classifier = NNPOM(epsilon_init=0.5, n_hidden=10, max_iter=500, lambda_value=0.01)
     classifier.fit(X, y)

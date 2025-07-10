@@ -21,13 +21,13 @@ def y():
     return np.array([1, 2, 2, 1, 2])
 
 
-def test_svorex_fit_correct():
+def test_svorex_predict_matches_expected():
     # Test preparation
     X_train, y_train, X_test, _ = load_dataset(
         dataset_name="balance-scale", data_path=TEST_DATASETS_DIR
     )
 
-    expected_predictions = [
+    expected_files = [
         TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.0",
         TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.1",
         TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.2",
@@ -40,18 +40,18 @@ def test_svorex_fit_correct():
     ]
 
     # Test execution and verification
-    for expected_prediction, classifier in zip(expected_predictions, classifiers):
+    for expected_file, classifier in zip(expected_files, classifiers):
         classifier.fit(X_train, y_train)
-        predictions = classifier.predict(X_test)
-        expected_prediction = np.loadtxt(expected_prediction)
+        y_pred = classifier.predict(X_test)
+        y_expected = np.loadtxt(expected_file)
         npt.assert_equal(
-            predictions,
-            expected_prediction,
+            y_pred,
+            y_expected,
             "The prediction doesnt match with the desired values",
         )
 
 
-def test_svorex_fit_not_valid_parameter(X, y):
+def test_svorex_fit_hyperparameters_validation(X, y):
     # Test preparation
     classifiers = [
         SVOREX(C=0.1, kappa=1, tol=0),
@@ -76,7 +76,7 @@ def test_svorex_fit_not_valid_parameter(X, y):
             assert model is None, "The SVOREX fit method doesnt return Null on error"
 
 
-def test_svorex_fit_not_valid_data(X, y):
+def test_svorex_fit_input_validation(X, y):
     # Test preparation
     X_invalid = X[:-1, :-1]
     y_invalid = y[:-1]
@@ -100,7 +100,7 @@ def test_svorex_fit_not_valid_data(X, y):
         assert model is None, "The SVOREX fit method doesnt return Null on error"
 
 
-def test_svorex_model_is_not_a_dict(X, y):
+def test_svorex_validates_internal_model_format(X, y):
     # Test preparation
     classifier = SVOREX(kappa=0.1, C=1)
     classifier.fit(X, y)
@@ -111,7 +111,7 @@ def test_svorex_model_is_not_a_dict(X, y):
         classifier.predict(X)
 
 
-def test_svorex_predict_not_valid_data(X, y):
+def test_svorex_predict_invalid_input_raises_error(X, y):
     # Test preparation
     classifier = SVOREX(kappa=0.1, C=1)
     classifier.fit(X, y)

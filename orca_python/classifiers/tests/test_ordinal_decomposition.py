@@ -24,14 +24,14 @@ def y():
 
 def test_ordinal_decomposition(X, y):
     """Check if this algorithm can correctly classify a toy problem."""
-    od = OrdinalDecomposition(
+    classifier = OrdinalDecomposition(
         dtype="ordered_partitions",
         decision_method="frank_hall",
         base_classifier="sklearn.svm.SVC",
         parameters={"C": 1.0, "gamma": "scale", "probability": True},
     )
 
-    y_pred = od.fit(X, y).predict(X)
+    y_pred = classifier.fit(X, y).predict(X)
     npt.assert_array_equal(y_pred, y)
 
 
@@ -40,47 +40,47 @@ def test_coding_matrix():
     decomposition.
 
     """
-    od = OrdinalDecomposition()
+    classifier = OrdinalDecomposition()
 
     # Checking ordered_partitions (with a 5 class, 4 classifiers example)
-    od.dtype = "ordered_partitions"
+    classifier.dtype = "ordered_partitions"
     expected_cm = array(
         [[-1, -1, -1, -1], [1, -1, -1, -1], [1, 1, -1, -1], [1, 1, 1, -1], [1, 1, 1, 1]]
     )
 
-    actual_cm = od._coding_matrix(od.dtype, 5)
+    cm = classifier._coding_matrix(classifier.dtype, 5)
 
-    npt.assert_array_equal(actual_cm, expected_cm)
+    npt.assert_array_equal(cm, expected_cm)
 
     # Checking one_vs_next
-    od.dtype = "one_vs_next"
+    classifier.dtype = "one_vs_next"
     expected_cm = array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1], [0, 0, 0, 1]]
     )
 
-    actual_cm = od._coding_matrix(od.dtype, 5)
+    cm = classifier._coding_matrix(classifier.dtype, 5)
 
-    npt.assert_array_equal(actual_cm, expected_cm)
+    npt.assert_array_equal(cm, expected_cm)
 
     # Checking one_vs_followers
-    od.dtype = "one_vs_followers"
+    classifier.dtype = "one_vs_followers"
     expected_cm = array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [1, 1, -1, 0], [1, 1, 1, -1], [1, 1, 1, 1]]
     )
 
-    actual_cm = od._coding_matrix(od.dtype, 5)
+    cm = classifier._coding_matrix(classifier.dtype, 5)
 
-    npt.assert_array_equal(actual_cm, expected_cm)
+    npt.assert_array_equal(cm, expected_cm)
 
     # Checking one_vs_previous
-    od.dtype = "one_vs_previous"
+    classifier.dtype = "one_vs_previous"
     expected_cm = array(
         [[1, 1, 1, 1], [1, 1, 1, -1], [1, 1, -1, 0], [1, -1, 0, 0], [-1, 0, 0, 0]]
     )
 
-    actual_cm = od._coding_matrix(od.dtype, 5)
+    cm = classifier._coding_matrix(classifier.dtype, 5)
 
-    npt.assert_array_equal(actual_cm, expected_cm)
+    npt.assert_array_equal(cm, expected_cm)
 
 
 def test_frank_hall_method(X):
@@ -90,12 +90,12 @@ def test_frank_hall_method(X):
 
     """
     # Checking frank_hall cannot be used whitout ordered_partitions
-    od = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
+    classifier = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
     with pytest.raises(AttributeError):
-        od._frank_hall_method(X)
+        classifier._frank_hall_method(X)
 
-    od = OrdinalDecomposition(dtype="ordered_partitions")
-    od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+    classifier = OrdinalDecomposition(dtype="ordered_partitions")
+    classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
     predictions = array(
@@ -113,8 +113,8 @@ def test_frank_hall_method(X):
         ]
     )
 
-    actual_predicted_probabilities = od._frank_hall_method(predictions)
-    expected_predicted_probabilities = array(
+    y_prob = classifier._frank_hall_method(predictions)
+    expected_y_prob = array(
         [
             [0.92505, 0.07492, -0.06858, 0.06856, 0.00005],
             [0.99983, 0.00017, -0.03174, 0.03163, 0.00011],
@@ -131,8 +131,8 @@ def test_frank_hall_method(X):
 
     # Asserting similarity
     npt.assert_allclose(
-        actual_predicted_probabilities,
-        expected_predicted_probabilities,
+        y_prob,
+        expected_y_prob,
         rtol=1e-04,
         atol=0,
     )
@@ -144,8 +144,8 @@ def test_exponential_loss_method():
     classifier).
 
     """
-    od = OrdinalDecomposition(dtype="ordered_partitions")
-    od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+    classifier = OrdinalDecomposition(dtype="ordered_partitions")
+    classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
     predictions = array(
@@ -166,8 +166,8 @@ def test_exponential_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    actual_elosses = od._exponential_loss(predictions)
-    expected_elosses = array(
+    e_loss = classifier._exponential_loss(predictions)
+    expected_e_loss = array(
         [
             [1.5852, 3.49769, 5.8479, 7.79566, 10.14575],
             [1.49583, 3.84519, 6.19559, 8.35469, 10.70441],
@@ -183,7 +183,7 @@ def test_exponential_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(actual_elosses, expected_elosses, rtol=1e-04, atol=0)
+    npt.assert_allclose(e_loss, expected_e_loss, rtol=1e-04, atol=0)
 
 
 def test_logarithmic_loss_method():
@@ -192,8 +192,8 @@ def test_logarithmic_loss_method():
     classifier).
 
     """
-    od = OrdinalDecomposition(dtype="ordered_partitions")
-    od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+    classifier = OrdinalDecomposition(dtype="ordered_partitions")
+    classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
     predictions = array(
@@ -214,8 +214,8 @@ def test_logarithmic_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    actual_llosses = od._logarithmic_loss(predictions)
-    expected_llosses = array(
+    l_loss = classifier._logarithmic_loss(predictions)
+    expected_l_loss = array(
         [
             [0.58553, 2.28573, 4.28561, 6.01117, 8.01097],
             [0.52385, 2.52317, 4.52317, 6.39621, 8.39577],
@@ -231,7 +231,7 @@ def test_logarithmic_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(actual_llosses, expected_llosses, rtol=1e-04, atol=0)
+    npt.assert_allclose(l_loss, expected_l_loss, rtol=1e-04, atol=0)
 
 
 def test_hinge_loss_method():
@@ -240,8 +240,8 @@ def test_hinge_loss_method():
     classifier).
 
     """
-    od = OrdinalDecomposition(dtype="ordered_partitions")
-    od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+    classifier = OrdinalDecomposition(dtype="ordered_partitions")
+    classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
     predictions = array(
@@ -262,8 +262,8 @@ def test_hinge_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    actual_hlosses = od._hinge_loss(predictions)
-    expected_hlosses = array(
+    h_loss = classifier._hinge_loss(predictions)
+    expected_h_loss = array(
         [
             [0.28728, 1.98748, 3.98736, 5.71292, 7.71272],
             [0.06404, 2.06336, 4.06336, 5.9364, 7.93596],
@@ -279,4 +279,4 @@ def test_hinge_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(actual_hlosses, expected_hlosses, rtol=1e-04, atol=0)
+    npt.assert_allclose(h_loss, expected_h_loss, rtol=1e-04, atol=0)
