@@ -1,14 +1,17 @@
 """Metrics module."""
 
 from .metrics import (
+    accuracy_off1,
     amae,
     ccr,
     gm,
+    gmsec,
     greater_is_better,
     mae,
     mmae,
     ms,
     mze,
+    rps,
     spearman,
     tkendall,
     wkappa,
@@ -19,6 +22,7 @@ __all__ = [
     "ccr",
     "amae",
     "gm",
+    "gmsec",
     "mae",
     "mmae",
     "ms",
@@ -26,4 +30,6 @@ __all__ = [
     "tkendall",
     "wkappa",
     "spearman",
+    "rps",
+    "accuracy_off1",
 ]
