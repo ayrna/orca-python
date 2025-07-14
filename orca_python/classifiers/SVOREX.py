@@ -56,7 +56,7 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
     """
 
-    def __init__(self, C=1.0, kernel=0, degree=2, tol=0.001, kappa=1):
+    def __init__(self, C=1.0, kernel="gaussian", degree=2, tol=0.001, kappa=1):
         self.C = C
         self.kernel = kernel
         self.degree = degree
@@ -93,9 +93,9 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
         arg = ""
         # Prepare the kernel type arguments
-        if self.kernel == 1:
+        if self.kernel == "linear":
             arg = "-L"
-        elif self.kernel == 2:
+        elif self.kernel == "poly":
             arg = "-P {}".format(self.degree)
 
         # Fit the model

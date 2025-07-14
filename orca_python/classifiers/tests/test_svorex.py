@@ -24,9 +24,9 @@ def y():
 @pytest.mark.parametrize(
     "kernel, expected_file",
     [
-        (0, "predictions_gaussian_0.csv"),
-        (1, "predictions_linear_0.csv"),
-        (2, "predictions_poly_0.csv"),
+        ("gaussian", "predictions_gaussian_0.csv"),
+        ("linear", "predictions_linear_0.csv"),
+        ("poly", "predictions_poly_0.csv"),
     ],
 )
 def test_svorex_predict_matches_expected(kernel, expected_file):
@@ -53,7 +53,7 @@ def test_svorex_predict_matches_expected(kernel, expected_file):
         ({"tol": 0}, "- T is invalid"),
         ({"C": 0}, "- C is invalid"),
         ({"kappa": 0}, "- K is invalid"),
-        ({"kernel": 2, "degree": 0}, "- P is invalid"),
+        ({"kernel": "poly", "degree": 0}, "- P is invalid"),
         ({"kappa": -1}, "-1 is invalid"),
     ],
 )
