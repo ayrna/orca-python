@@ -1,8 +1,8 @@
 """Tests for the OrdinalDecomposition ensemble."""
 
+import numpy as np
 import numpy.testing as npt
 import pytest
-from numpy import array
 
 from orca_python.classifiers.OrdinalDecomposition import OrdinalDecomposition
 
@@ -10,13 +10,13 @@ from orca_python.classifiers.OrdinalDecomposition import OrdinalDecomposition
 @pytest.fixture
 def X():
     """Create sample feature patterns for testing."""
-    return array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
+    return np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
 
 
 @pytest.fixture
 def y():
     """Create sample target variables for testing."""
-    return array([1, 1, 1, 2, 2, 2])
+    return np.array([1, 1, 1, 2, 2, 2])
 
 
 def test_ordinal_decomposition(X, y):
@@ -62,7 +62,7 @@ def test_coding_matrix():
 
     # Checking ordered_partitions (with a 5 class, 4 classifiers example)
     classifier.dtype = "ordered_partitions"
-    expected_cm = array(
+    expected_cm = np.array(
         [[-1, -1, -1, -1], [1, -1, -1, -1], [1, 1, -1, -1], [1, 1, 1, -1], [1, 1, 1, 1]]
     )
 
@@ -72,7 +72,7 @@ def test_coding_matrix():
 
     # Checking one_vs_next
     classifier.dtype = "one_vs_next"
-    expected_cm = array(
+    expected_cm = np.array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1], [0, 0, 0, 1]]
     )
 
@@ -82,7 +82,7 @@ def test_coding_matrix():
 
     # Checking one_vs_followers
     classifier.dtype = "one_vs_followers"
-    expected_cm = array(
+    expected_cm = np.array(
         [[-1, 0, 0, 0], [1, -1, 0, 0], [1, 1, -1, 0], [1, 1, 1, -1], [1, 1, 1, 1]]
     )
 
@@ -92,7 +92,7 @@ def test_coding_matrix():
 
     # Checking one_vs_previous
     classifier.dtype = "one_vs_previous"
-    expected_cm = array(
+    expected_cm = np.array(
         [[1, 1, 1, 1], [1, 1, 1, -1], [1, 1, -1, 0], [1, -1, 0, 0], [-1, 0, 0, 0]]
     )
 
@@ -113,7 +113,7 @@ def test_frank_hall_method(X):
     classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
-    predictions = array(
+    predictions = np.array(
         [
             [0.07495, 0.00003, 0.06861, 0.00005],
             [0.00017, 0.0, 0.03174, 0.00011],
@@ -129,7 +129,7 @@ def test_frank_hall_method(X):
     )
 
     y_prob = classifier._frank_hall_method(predictions)
-    expected_y_prob = array(
+    expected_y_prob = np.array(
         [
             [0.92505, 0.07492, -0.06858, 0.06856, 0.00005],
             [0.99983, 0.00017, -0.03174, 0.03163, 0.00011],
@@ -160,7 +160,7 @@ def test_exponential_loss_method():
     classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
-    predictions = array(
+    predictions = np.array(
         [
             [0.07495, 0.00003, 0.06861, 0.00005],
             [0.00017, 0.0, 0.03174, 0.00011],
@@ -179,7 +179,7 @@ def test_exponential_loss_method():
     predictions = (2 * predictions) - 1
 
     e_loss = classifier._exponential_loss(predictions)
-    expected_e_loss = array(
+    expected_e_loss = np.array(
         [
             [1.5852, 3.49769, 5.8479, 7.79566, 10.14575],
             [1.49583, 3.84519, 6.19559, 8.35469, 10.70441],
@@ -205,7 +205,7 @@ def test_logarithmic_loss_method():
     classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
-    predictions = array(
+    predictions = np.array(
         [
             [0.07495, 0.00003, 0.06861, 0.00005],
             [0.00017, 0.0, 0.03174, 0.00011],
@@ -224,7 +224,7 @@ def test_logarithmic_loss_method():
     predictions = (2 * predictions) - 1
 
     l_loss = classifier._logarithmic_loss(predictions)
-    expected_l_loss = array(
+    expected_l_loss = np.array(
         [
             [0.58553, 2.28573, 4.28561, 6.01117, 8.01097],
             [0.52385, 2.52317, 4.52317, 6.39621, 8.39577],
@@ -250,7 +250,7 @@ def test_hinge_loss_method():
     classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
-    predictions = array(
+    predictions = np.array(
         [
             [0.07495, 0.00003, 0.06861, 0.00005],
             [0.00017, 0.0, 0.03174, 0.00011],
@@ -269,7 +269,7 @@ def test_hinge_loss_method():
     predictions = (2 * predictions) - 1
 
     h_loss = classifier._hinge_loss(predictions)
-    expected_h_loss = array(
+    expected_h_loss = np.array(
         [
             [0.28728, 1.98748, 3.98736, 5.71292, 7.71272],
             [0.06404, 2.06336, 4.06336, 5.9364, 7.93596],
