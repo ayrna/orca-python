@@ -1,234 +1,125 @@
 """Tests for the REDSVM classifier."""
 
-from pathlib import Path
-
 import numpy as np
 import numpy.testing as npt
 import pytest
 
 from orca_python.classifiers.REDSVM import REDSVM
+from orca_python.datasets import load_dataset
 from orca_python.testing import TEST_DATASETS_DIR, TEST_PREDICTIONS_DIR
 
 
 @pytest.fixture
-def dataset_path():
-    return Path(TEST_DATASETS_DIR) / "balance-scale"
+def X():
+    """Create sample feature patterns for testing."""
+    return np.array([[0, 1], [1, 0], [1, 1], [0, 0], [1, 2]])
 
 
 @pytest.fixture
-def predictions_path():
-    return Path(TEST_PREDICTIONS_DIR) / "REDSVM"
+def y():
+    """Create sample target variables for testing."""
+    return np.array([0, 1, 1, 0, 1])
 
 
-@pytest.fixture
-def train_file(dataset_path):
-    return np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
+@pytest.mark.parametrize(
+    "kernel, degree, gamma, coef0, C, cache_size, tol, shrinking, expected_file",
+    [
+        (0, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.0"),
+        (1, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.1"),
+        (2, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.2"),
+        (3, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.3"),
+        (4, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.4"),
+        (5, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.5"),
+        (6, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.6"),
+        (7, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.7"),
+    ],
+)
+def test_redsvm_predict_matches_expected(
+    kernel, degree, gamma, coef0, C, cache_size, tol, shrinking, expected_file
+):
+    """Test that predictions match expected values."""
+    X_train, y_train, X_test, _ = load_dataset(
+        dataset_name="balance-scale", data_path=TEST_DATASETS_DIR
+    )
 
+    classifier = REDSVM(
+        kernel=kernel,
+        degree=degree,
+        gamma=gamma,
+        coef0=coef0,
+        C=C,
+        cache_size=cache_size,
+        tol=tol,
+        shrinking=shrinking,
+    )
 
-@pytest.fixture
-def test_file(dataset_path):
-    return np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
-
-
-def test_redsvm_fit_correct(dataset_path, train_file, test_file, predictions_path):
-    # Check if this algorithm can correctly classify a toy problem.
-
-    # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
-
-    X_test = test_file[:, 0:(-1)]
-
-    expected_predictions = [
-        predictions_path / "expectedPredictions.0",
-        predictions_path / "expectedPredictions.1",
-        predictions_path / "expectedPredictions.2",
-        predictions_path / "expectedPredictions.3",
-        predictions_path / "expectedPredictions.4",
-        predictions_path / "expectedPredictions.5",
-        predictions_path / "expectedPredictions.6",
-        predictions_path / "expectedPredictions.7",
-    ]
-
-    classifiers = [
-        REDSVM(
-            kernel=0,
-            degree=2,
-            gamma=0.1,
-            coef0=0.5,
-            C=0.1,
-            cache_size=150,
-            tol=0.005,
-            shrinking=0,
-        ),
-        REDSVM(
-            kernel=1,
-            degree=2,
-            gamma=0.1,
-            coef0=0.5,
-            C=0.1,
-            cache_size=150,
-            tol=0.005,
-            shrinking=0,
-        ),
-        REDSVM(
-            kernel=2,
-            degree=2,
-            gamma=0.1,
-            coef0=0.5,
-            C=0.1,
-            cache_size=150,
-            tol=0.005,
-            shrinking=0,
-        ),
-        REDSVM(
-            kernel=3,
-            degree=2,
-            gamma=0.1,
-            coef0=0.5,
-            C=0.1,
-            cache_size=150,
-            tol=0.005,
-            shrinking=0,
-        ),
-        REDSVM(
-            kernel=4,
-            degree=2,
-            gamma=0.1,
-            coef0=0.5,
-            C=0.1,
-            cache_size=150,
-            tol=0.005,
-            shrinking=0,
-        ),
-        REDSVM(
-            kernel=5,
-            degree=2,
-            gamma=0.1,
-            coef0=0.5,
-            C=0.1,
-            cache_size=150,
-            tol=0.005,
-            shrinking=1,
-        ),
-        REDSVM(
-            kernel=6,
-            degree=2,
-            gamma=0.1,
-            coef0=0.5,
-            C=0.1,
-            cache_size=150,
-            tol=0.005,
-            shrinking=1,
-        ),
-        REDSVM(
-            kernel=7,
-            degree=2,
-            gamma=0.1,
-            coef0=0.5,
-            C=0.1,
-            cache_size=150,
-            tol=0.005,
-            shrinking=1,
-        ),
-    ]
-
-    # Test execution and verification
-    for expected_prediction, classifier in zip(expected_predictions, classifiers):
-        classifier.fit(X_train, y_train)
-        predictions = classifier.predict(X_test)
-        expected_prediction = np.loadtxt(expected_prediction)
-        npt.assert_equal(
-            predictions,
-            expected_prediction,
-            "The prediction doesnt match with the desired values",
-        )
-
-
-def test_redsvm_fit_not_valid_parameter(train_file):
-
-    # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
-
-    classifiers = [
-        REDSVM(gamma=0.1, C=1, kernel=-1),
-        REDSVM(gamma=0.1, C=1, cache_size=-1),
-        REDSVM(gamma=0.1, C=1, tol=-1),
-        REDSVM(gamma=0.1, C=1, shrinking=2),
-    ]
-
-    error_msgs = [
-        "unknown kernel type",
-        "cache_size <= 0",
-        "eps <= 0",
-        "shrinking != 0 and shrinking != 1",
-    ]
-
-    # Test execution and verification
-    for classifier, error_msg in zip(classifiers, error_msgs):
-        with pytest.raises(ValueError, match=error_msg):
-            model = classifier.fit(X_train, y_train)
-            assert model is None, "The REDSVM fit method doesnt return Null on error"
-
-
-def test_redsvm_fit_not_valid_data(train_file):
-    # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
-    X_train_broken = train_file[:(-1), 0:(-1)]
-    y_train_broken = train_file[0:(-1), (-1)]
-
-    # Test execution and verification
-    classifier = REDSVM(gamma=0.1, C=1, kernel=8)
-    with pytest.raises(
-        ValueError, match="Wrong input format: sample_serial_number out of range"
-    ):
-        model = classifier.fit(X_train, y_train)
-        assert model is None, "The REDSVM fit method doesnt return Null on error"
-
-    classifier = REDSVM(gamma=0.1, C=1)
-    with pytest.raises(ValueError):
-        model = classifier.fit(X_train, y_train_broken)
-        assert model is None, "The REDSVM fit method doesnt return Null on error"
-
-    with pytest.raises(ValueError):
-        model = classifier.fit([], y_train)
-        assert model is None, "The REDSVM fit method doesnt return Null on error"
-
-    with pytest.raises(ValueError):
-        model = classifier.fit(X_train, [])
-        assert model is None, "The REDSVM fit method doesnt return Null on error"
-
-    with pytest.raises(ValueError):
-        model = classifier.fit(X_train_broken, y_train)
-        assert model is None, "The REDSVM fit method doesnt return Null on error"
-
-
-def test_redsvm_model_is_not_a_dict(train_file, test_file):
-    # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
-
-    X_test = test_file[:, 0:(-1)]
-
-    classifier = REDSVM(gamma=0.1, C=1)
     classifier.fit(X_train, y_train)
+    y_pred = classifier.predict(X_test)
+    y_expected = np.loadtxt(TEST_PREDICTIONS_DIR / "REDSVM" / expected_file)
 
-    # Test execution and verification
+    npt.assert_equal(
+        y_pred, y_expected, "The prediction doesnt match with the desired values"
+    )
+
+
+@pytest.mark.parametrize(
+    "param_name, invalid_value, error_msg",
+    [
+        ("kernel", -1, "unknown kernel type"),
+        ("cache_size", -1, "cache_size <= 0"),
+        ("tol", -1, "eps <= 0"),
+        ("shrinking", 2, "shrinking != 0 and shrinking != 1"),
+        ("kernel", 8, "Wrong input format: sample_serial_number out of range"),
+    ],
+)
+def test_redsvm_fit_hyperparameters_validation(
+    X, y, param_name, invalid_value, error_msg
+):
+    """Test that hyperparameters are validated."""
+    classifier = REDSVM(**{param_name: invalid_value})
+
+    with pytest.raises(ValueError, match=error_msg):
+        model = classifier.fit(X, y)
+        assert model is None, "The REDSVM fit method doesnt return Null on error"
+
+
+def test_redsvm_fit_input_validation(X, y):
+    """Test that input data is validated."""
+    X_invalid = X[:-1, :-1]
+    y_invalid = y[:-1]
+
+    classifier = REDSVM()
+    with pytest.raises(ValueError):
+        model = classifier.fit(X, y_invalid)
+        assert model is None, "The REDSVM fit method doesnt return Null on error"
+
+    with pytest.raises(ValueError):
+        model = classifier.fit([], y)
+        assert model is None, "The REDSVM fit method doesnt return Null on error"
+
+    with pytest.raises(ValueError):
+        model = classifier.fit(X, [])
+        assert model is None, "The REDSVM fit method doesnt return Null on error"
+
+    with pytest.raises(ValueError):
+        model = classifier.fit(X_invalid, y)
+        assert model is None, "The REDSVM fit method doesnt return Null on error"
+
+
+def test_redsvm_validates_internal_model_format(X, y):
+    """Test that internal model format is validated."""
+    classifier = REDSVM()
+    classifier.fit(X, y)
+
     with pytest.raises(TypeError, match="Model should be a dictionary!"):
         classifier.model_ = 1
-        classifier.predict(X_test)
+        classifier.predict(X)
 
 
-def test_redsvm_predict_not_valid_data(train_file):
-    # Test preparation
-    X_train = train_file[:, 0:(-1)]
-    y_train = train_file[:, (-1)]
+def test_redsvm_predict_invalid_input_raises_error(X, y):
+    """Test that invalid input raises an error."""
+    classifier = REDSVM()
+    classifier.fit(X, y)
 
-    classifier = REDSVM(gamma=0.1, C=1)
-    classifier.fit(X_train, y_train)
-
-    # Test execution and verification
     with pytest.raises(ValueError):
         classifier.predict([])

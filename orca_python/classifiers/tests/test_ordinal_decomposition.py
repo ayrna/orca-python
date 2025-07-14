@@ -1,103 +1,136 @@
 """Tests for the OrdinalDecomposition ensemble."""
 
+import numpy as np
 import numpy.testing as npt
 import pytest
-from numpy import array
 
-# from OrdinalDecomposition import OrdinalDecomposition
 from orca_python.classifiers.OrdinalDecomposition import OrdinalDecomposition
 
-# syspath.append(ospath.join('..', 'classifiers'))
 
-
-# Data is just 6 separable points in the plane
 @pytest.fixture
 def X():
-    return array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
+    """Create sample feature patterns for testing."""
+    return np.array([[-2, -1], [-1, -1], [-1, -2], [1, 1], [1, 2], [2, 1]])
 
 
 @pytest.fixture
 def y():
-    return array([1, 1, 1, 2, 2, 2])
+    """Create sample target variables for testing."""
+    return np.array([1, 1, 1, 2, 2, 2])
 
 
 def test_ordinal_decomposition(X, y):
     """Check if this algorithm can correctly classify a toy problem."""
-    od = OrdinalDecomposition(
+    classifier = OrdinalDecomposition(
         dtype="ordered_partitions",
         decision_method="frank_hall",
         base_classifier="sklearn.svm.SVC",
         parameters={"C": 1.0, "gamma": "scale", "probability": True},
     )
 
-    y_pred = od.fit(X, y).predict(X)
+    y_pred = classifier.fit(X, y).predict(X)
     npt.assert_array_equal(y_pred, y)
 
 
-def test_coding_matrix():
-    """Checking if the coding matrix is built properly for each type of ordinal
-    decomposition.
+def test_ordinal_decomposition_fit_input_validation(X, y):
+    """Test that input data is validated."""
+    X_invalid = X[:-1, :-1]
+    y_invalid = y[:-1]
 
-    """
-    od = OrdinalDecomposition()
+    classifier = OrdinalDecomposition()
+    with pytest.raises(ValueError):
+        model = classifier.fit(X, y_invalid)
+        assert model is None, "The fit method doesnt return Null on error"
 
-    # Checking ordered_partitions (with a 5 class, 4 classifiers example)
-    od.dtype = "ordered_partitions"
-    expected_cm = array(
-        [[-1, -1, -1, -1], [1, -1, -1, -1], [1, 1, -1, -1], [1, 1, 1, -1], [1, 1, 1, 1]]
-    )
+    with pytest.raises(ValueError):
+        model = classifier.fit([], y)
+        assert model is None, "The fit method doesnt return Null on error"
 
-    actual_cm = od._coding_matrix(od.dtype, 5)
+    with pytest.raises(ValueError):
+        model = classifier.fit(X, [])
+        assert model is None, "The fit method doesnt return Null on error"
 
-    npt.assert_array_equal(actual_cm, expected_cm)
+    with pytest.raises(ValueError):
+        model = classifier.fit(X_invalid, y)
+        assert model is None, "The fit method doesnt return Null on error"
 
-    # Checking one_vs_next
-    od.dtype = "one_vs_next"
-    expected_cm = array(
-        [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1], [0, 0, 0, 1]]
-    )
 
-    actual_cm = od._coding_matrix(od.dtype, 5)
+@pytest.mark.parametrize(
+    "dtype, expected_cm",
+    [
+        (
+            "ordered_partitions",
+            np.array(
+                [
+                    [-1, -1, -1, -1],
+                    [1, -1, -1, -1],
+                    [1, 1, -1, -1],
+                    [1, 1, 1, -1],
+                    [1, 1, 1, 1],
+                ]
+            ),
+        ),
+        (
+            "one_vs_next",
+            np.array(
+                [
+                    [-1, 0, 0, 0],
+                    [1, -1, 0, 0],
+                    [0, 1, -1, 0],
+                    [0, 0, 1, -1],
+                    [0, 0, 0, 1],
+                ]
+            ),
+        ),
+        (
+            "one_vs_followers",
+            np.array(
+                [
+                    [-1, 0, 0, 0],
+                    [1, -1, 0, 0],
+                    [1, 1, -1, 0],
+                    [1, 1, 1, -1],
+                    [1, 1, 1, 1],
+                ]
+            ),
+        ),
+        (
+            "one_vs_previous",
+            np.array(
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, -1],
+                    [1, 1, -1, 0],
+                    [1, -1, 0, 0],
+                    [-1, 0, 0, 0],
+                ]
+            ),
+        ),
+    ],
+)
+def test_coding_matrix(dtype, expected_cm):
+    """Test that the coding matrix is built properly for each type of ordinal
+    decomposition."""
+    classifier = OrdinalDecomposition()
+    classifier.dtype = dtype
+    cm = classifier._coding_matrix(classifier.dtype, 5)
 
-    npt.assert_array_equal(actual_cm, expected_cm)
-
-    # Checking one_vs_followers
-    od.dtype = "one_vs_followers"
-    expected_cm = array(
-        [[-1, 0, 0, 0], [1, -1, 0, 0], [1, 1, -1, 0], [1, 1, 1, -1], [1, 1, 1, 1]]
-    )
-
-    actual_cm = od._coding_matrix(od.dtype, 5)
-
-    npt.assert_array_equal(actual_cm, expected_cm)
-
-    # Checking one_vs_previous
-    od.dtype = "one_vs_previous"
-    expected_cm = array(
-        [[1, 1, 1, 1], [1, 1, 1, -1], [1, 1, -1, 0], [1, -1, 0, 0], [-1, 0, 0, 0]]
-    )
-
-    actual_cm = od._coding_matrix(od.dtype, 5)
-
-    npt.assert_array_equal(actual_cm, expected_cm)
+    npt.assert_array_equal(cm, expected_cm)
 
 
 def test_frank_hall_method(X):
-    """Check that frank and hall method returns expected values for one toy
-    problem (starting off predicted probabilities given by each binary
-    classifier).
-
-    """
+    """Test that frank and hall method returns expected values for one toy problem
+    (starting off predicted probabilities given by each binary classifier)."""
     # Checking frank_hall cannot be used whitout ordered_partitions
-    od = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
+    classifier = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
     with pytest.raises(AttributeError):
-        od._frank_hall_method(X)
+        classifier._frank_hall_method(X)
 
-    od = OrdinalDecomposition(dtype="ordered_partitions")
-    od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+    classifier = OrdinalDecomposition(dtype="ordered_partitions")
+    classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
-    predictions = array(
+    predictions = np.array(
         [
             [0.07495, 0.00003, 0.06861, 0.00005],
             [0.00017, 0.0, 0.03174, 0.00011],
@@ -112,8 +145,8 @@ def test_frank_hall_method(X):
         ]
     )
 
-    actual_predicted_probabilities = od._frank_hall_method(predictions)
-    expected_predicted_probabilities = array(
+    y_proba = classifier._frank_hall_method(predictions)
+    expected_y_proba = np.array(
         [
             [0.92505, 0.07492, -0.06858, 0.06856, 0.00005],
             [0.99983, 0.00017, -0.03174, 0.03163, 0.00011],
@@ -130,24 +163,21 @@ def test_frank_hall_method(X):
 
     # Asserting similarity
     npt.assert_allclose(
-        actual_predicted_probabilities,
-        expected_predicted_probabilities,
+        y_proba,
+        expected_y_proba,
         rtol=1e-04,
         atol=0,
     )
 
 
 def test_exponential_loss_method():
-    """Check that exponential loss method returns expected values for one toy
-    problem (starting off predicted probabilities given by each binary
-    classifier).
-
-    """
-    od = OrdinalDecomposition(dtype="ordered_partitions")
-    od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+    """Test that exponential loss method returns expected values for one toy problem
+    (starting off predicted probabilities given by each binary classifier)."""
+    classifier = OrdinalDecomposition(dtype="ordered_partitions")
+    classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
-    predictions = array(
+    predictions = np.array(
         [
             [0.07495, 0.00003, 0.06861, 0.00005],
             [0.00017, 0.0, 0.03174, 0.00011],
@@ -165,8 +195,8 @@ def test_exponential_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    actual_elosses = od._exponential_loss(predictions)
-    expected_elosses = array(
+    e_losses = classifier._exponential_loss(predictions)
+    expected_e_losses = np.array(
         [
             [1.5852, 3.49769, 5.8479, 7.79566, 10.14575],
             [1.49583, 3.84519, 6.19559, 8.35469, 10.70441],
@@ -182,20 +212,17 @@ def test_exponential_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(actual_elosses, expected_elosses, rtol=1e-04, atol=0)
+    npt.assert_allclose(e_losses, expected_e_losses, rtol=1e-04, atol=0)
 
 
 def test_logarithmic_loss_method():
-    """Check that exponential loss method returns expected values for one toy
-    problem (starting off predicted probabilities given by each binary
-    classifier).
-
-    """
-    od = OrdinalDecomposition(dtype="ordered_partitions")
-    od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+    """Test that logarithmic loss method returns expected values for one toy problem
+    (starting off predicted probabilities given by each binary classifier)."""
+    classifier = OrdinalDecomposition(dtype="ordered_partitions")
+    classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
-    predictions = array(
+    predictions = np.array(
         [
             [0.07495, 0.00003, 0.06861, 0.00005],
             [0.00017, 0.0, 0.03174, 0.00011],
@@ -213,8 +240,8 @@ def test_logarithmic_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    actual_llosses = od._logarithmic_loss(predictions)
-    expected_llosses = array(
+    l_losses = classifier._logarithmic_loss(predictions)
+    expected_l_losses = np.array(
         [
             [0.58553, 2.28573, 4.28561, 6.01117, 8.01097],
             [0.52385, 2.52317, 4.52317, 6.39621, 8.39577],
@@ -230,20 +257,17 @@ def test_logarithmic_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(actual_llosses, expected_llosses, rtol=1e-04, atol=0)
+    npt.assert_allclose(l_losses, expected_l_losses, rtol=1e-04, atol=0)
 
 
 def test_hinge_loss_method():
-    """Check that exponential loss method returns expected values for one toy
-    problem (starting off predicted probabilities given by each binary
-    classifier).
-
-    """
-    od = OrdinalDecomposition(dtype="ordered_partitions")
-    od.coding_matrix_ = od._coding_matrix(od.dtype, 5)
+    """Test that hinge loss method returns expected values for one toy problem
+    (starting off predicted probabilities given by each binary classifier)."""
+    classifier = OrdinalDecomposition(dtype="ordered_partitions")
+    classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
     # Predicted probabilities from a 5 class ordinal dataset (positive class)
-    predictions = array(
+    predictions = np.array(
         [
             [0.07495, 0.00003, 0.06861, 0.00005],
             [0.00017, 0.0, 0.03174, 0.00011],
@@ -261,8 +285,8 @@ def test_hinge_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    actual_hlosses = od._hinge_loss(predictions)
-    expected_hlosses = array(
+    h_losses = classifier._hinge_loss(predictions)
+    expected_h_losses = np.array(
         [
             [0.28728, 1.98748, 3.98736, 5.71292, 7.71272],
             [0.06404, 2.06336, 4.06336, 5.9364, 7.93596],
@@ -278,4 +302,13 @@ def test_hinge_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(actual_hlosses, expected_hlosses, rtol=1e-04, atol=0)
+    npt.assert_allclose(h_losses, expected_h_losses, rtol=1e-04, atol=0)
+
+
+def test_ordinal_decomposition_predict_invalid_input_raises_error(X, y):
+    """Test that invalid input raises an error."""
+    classifier = OrdinalDecomposition()
+    classifier.fit(X, y)
+
+    with pytest.raises(ValueError):
+        classifier.predict([])
