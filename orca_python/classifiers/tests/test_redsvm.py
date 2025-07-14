@@ -22,7 +22,7 @@ def y():
 
 
 def test_redsvm_predict_matches_expected():
-    # Test preparation
+    """Test that predictions match expected values."""
     X_train, y_train, X_test, _ = load_dataset(
         dataset_name="balance-scale", data_path=TEST_DATASETS_DIR
     )
@@ -121,7 +121,6 @@ def test_redsvm_predict_matches_expected():
         ),
     ]
 
-    # Test execution and verification
     for expected_file, classifier in zip(expected_files, classifiers):
         classifier.fit(X_train, y_train)
         y_pred = classifier.predict(X_test)
@@ -134,7 +133,7 @@ def test_redsvm_predict_matches_expected():
 
 
 def test_redsvm_fit_hyperparameters_validation(X, y):
-    # Test preparation
+    """Test that hyperparameters are validated."""
     classifiers = [
         REDSVM(kernel=-1),
         REDSVM(cache_size=-1),
@@ -151,7 +150,6 @@ def test_redsvm_fit_hyperparameters_validation(X, y):
         "Wrong input format: sample_serial_number out of range",
     ]
 
-    # Test execution and verification
     for classifier, error_msg in zip(classifiers, error_msgs):
         with pytest.raises(ValueError, match=error_msg):
             model = classifier.fit(X, y)
@@ -159,11 +157,10 @@ def test_redsvm_fit_hyperparameters_validation(X, y):
 
 
 def test_redsvm_fit_input_validation(X, y):
-    # Test preparation
+    """Test that input data is validated."""
     X_invalid = X[:-1, :-1]
     y_invalid = y[:-1]
 
-    # Test execution and verification
     classifier = REDSVM()
     with pytest.raises(ValueError):
         model = classifier.fit(X, y_invalid)
@@ -183,21 +180,19 @@ def test_redsvm_fit_input_validation(X, y):
 
 
 def test_redsvm_validates_internal_model_format(X, y):
-    # Test preparation
+    """Test that internal model format is validated."""
     classifier = REDSVM()
     classifier.fit(X, y)
 
-    # Test execution and verification
     with pytest.raises(TypeError, match="Model should be a dictionary!"):
         classifier.model_ = 1
         classifier.predict(X)
 
 
 def test_redsvm_predict_invalid_input_raises_error(X, y):
-    # Test preparation
+    """Test that invalid input raises an error."""
     classifier = REDSVM()
     classifier.fit(X, y)
 
-    # Test execution and verification
     with pytest.raises(ValueError):
         classifier.predict([])

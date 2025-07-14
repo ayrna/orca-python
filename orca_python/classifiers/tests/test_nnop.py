@@ -19,24 +19,22 @@ def y():
 
 
 def test_nnop_fit_hyperparameters_validation(X, y):
-    # Test preparation
+    """Test that hyperparameters are validated."""
     classifiers = [
         NNOP(n_hidden=-1),
         NNOP(max_iter=-1),
     ]
 
-    # Test execution and verification
     for classifier in classifiers:
         model = classifier.fit(X, y)
         assert model is None, "The NNOP fit method doesnt return Null on error"
 
 
 def test_nnop_fit_input_validation(X, y):
-    # Test preparation
+    """Test that input data is validated."""
     X_invalid = X[:-1, :-1]
     y_invalid = y[:-1]
 
-    # Test execution and verification
     classifier = NNOP()
     with pytest.raises(ValueError):
         model = classifier.fit(X, y_invalid)
@@ -56,10 +54,9 @@ def test_nnop_fit_input_validation(X, y):
 
 
 def test_nnop_predict_invalid_input_raises_error(X, y):
-    # Test preparation
+    """Test that invalid input raises an error."""
     classifier = NNOP()
     classifier.fit(X, y)
 
-    # Test execution and verification
     with pytest.raises(ValueError):
         classifier.predict([])

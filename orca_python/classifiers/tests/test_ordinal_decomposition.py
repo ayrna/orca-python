@@ -4,10 +4,7 @@ import numpy.testing as npt
 import pytest
 from numpy import array
 
-# from OrdinalDecomposition import OrdinalDecomposition
 from orca_python.classifiers.OrdinalDecomposition import OrdinalDecomposition
-
-# syspath.append(ospath.join('..', 'classifiers'))
 
 
 @pytest.fixture
@@ -23,7 +20,7 @@ def y():
 
 
 def test_ordinal_decomposition(X, y):
-    """Check if this algorithm can correctly classify a toy problem."""
+    """Test that the algorithm can correctly classify a toy problem."""
     classifier = OrdinalDecomposition(
         dtype="ordered_partitions",
         decision_method="frank_hall",
@@ -36,10 +33,8 @@ def test_ordinal_decomposition(X, y):
 
 
 def test_coding_matrix():
-    """Checking if the coding matrix is built properly for each type of ordinal
-    decomposition.
-
-    """
+    """Test that the coding matrix is built properly for each type of ordinal
+    decomposition."""
     classifier = OrdinalDecomposition()
 
     # Checking ordered_partitions (with a 5 class, 4 classifiers example)
@@ -84,11 +79,8 @@ def test_coding_matrix():
 
 
 def test_frank_hall_method(X):
-    """Check that frank and hall method returns expected values for one toy
-    problem (starting off predicted probabilities given by each binary
-    classifier).
-
-    """
+    """Test that frank and hall method returns expected values for one toy problem
+    (starting off predicted probabilities given by each binary classifier)."""
     # Checking frank_hall cannot be used whitout ordered_partitions
     classifier = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
     with pytest.raises(AttributeError):
@@ -139,11 +131,8 @@ def test_frank_hall_method(X):
 
 
 def test_exponential_loss_method():
-    """Check that exponential loss method returns expected values for one toy
-    problem (starting off predicted probabilities given by each binary
-    classifier).
-
-    """
+    """Test that exponential loss method returns expected values for one toy problem
+    (starting off predicted probabilities given by each binary classifier)."""
     classifier = OrdinalDecomposition(dtype="ordered_partitions")
     classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
@@ -187,11 +176,8 @@ def test_exponential_loss_method():
 
 
 def test_logarithmic_loss_method():
-    """Check that exponential loss method returns expected values for one toy
-    problem (starting off predicted probabilities given by each binary
-    classifier).
-
-    """
+    """Test that logarithmic loss method returns expected values for one toy problem
+    (starting off predicted probabilities given by each binary classifier)."""
     classifier = OrdinalDecomposition(dtype="ordered_partitions")
     classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
@@ -235,11 +221,8 @@ def test_logarithmic_loss_method():
 
 
 def test_hinge_loss_method():
-    """Check that exponential loss method returns expected values for one toy
-    problem (starting off predicted probabilities given by each binary
-    classifier).
-
-    """
+    """Test that hinge loss method returns expected values for one toy problem
+    (starting off predicted probabilities given by each binary classifier)."""
     classifier = OrdinalDecomposition(dtype="ordered_partitions")
     classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
