@@ -32,6 +32,29 @@ def test_ordinal_decomposition(X, y):
     npt.assert_array_equal(y_pred, y)
 
 
+def test_ordinal_decomposition_fit_input_validation(X, y):
+    """Test that input data is validated."""
+    X_invalid = X[:-1, :-1]
+    y_invalid = y[:-1]
+
+    classifier = OrdinalDecomposition()
+    with pytest.raises(ValueError):
+        model = classifier.fit(X, y_invalid)
+        assert model is None, "The fit method doesnt return Null on error"
+
+    with pytest.raises(ValueError):
+        model = classifier.fit([], y)
+        assert model is None, "The fit method doesnt return Null on error"
+
+    with pytest.raises(ValueError):
+        model = classifier.fit(X, [])
+        assert model is None, "The fit method doesnt return Null on error"
+
+    with pytest.raises(ValueError):
+        model = classifier.fit(X_invalid, y)
+        assert model is None, "The fit method doesnt return Null on error"
+
+
 def test_coding_matrix():
     """Test that the coding matrix is built properly for each type of ordinal
     decomposition."""
@@ -263,3 +286,12 @@ def test_hinge_loss_method():
 
     # Asserting similarity
     npt.assert_allclose(h_loss, expected_h_loss, rtol=1e-04, atol=0)
+
+
+def test_ordinal_decomposition_predict_invalid_input_raises_error(X, y):
+    """Test that invalid input raises an error."""
+    classifier = OrdinalDecomposition()
+    classifier.fit(X, y)
+
+    with pytest.raises(ValueError):
+        classifier.predict([])
