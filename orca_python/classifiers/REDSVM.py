@@ -77,7 +77,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
     def __init__(
         self,
         C=1,
-        kernel=2,
+        kernel="rbf",
         degree=3,
         gamma=None,
         coef0=0,
@@ -126,9 +126,23 @@ class REDSVM(BaseEstimator, ClassifierMixin):
         if self.gamma is None:
             self.gamma = 1 / np.size(X, 1)
 
+        # Map kernel type
+        kernel_type_mapping = {
+            "linear": 0,
+            "poly": 1,
+            "rbf": 2,
+            "sigmoid": 3,
+            "stump": 4,
+            "perceptron": 5,
+            "laplacian": 6,
+            "exponential": 7,
+            "precomputed": 8,
+        }
+        kernel_type = kernel_type_mapping.get(self.kernel, -1)
+
         # Fit the model
         options = "-s 5 -t {} -d {} -g {} -r {} -c {} -m {} -e {} -h {} -q".format(
-            str(self.kernel),
+            str(kernel_type),
             str(self.degree),
             str(self.gamma),
             str(self.coef0),
