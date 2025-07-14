@@ -18,16 +18,19 @@ def y():
     return np.array([0, 1, 1, 0, 1])
 
 
-def test_nnop_fit_hyperparameters_validation(X, y):
+@pytest.mark.parametrize(
+    "param_name, invalid_value",
+    [
+        ("n_hidden", -1),
+        ("max_iter", -1),
+    ],
+)
+def test_nnop_fit_hyperparameters_validation(X, y, param_name, invalid_value):
     """Test that hyperparameters are validated."""
-    classifiers = [
-        NNOP(n_hidden=-1),
-        NNOP(max_iter=-1),
-    ]
+    classifier = NNOP(**{param_name: invalid_value})
+    model = classifier.fit(X, y)
 
-    for classifier in classifiers:
-        model = classifier.fit(X, y)
-        assert model is None, "The NNOP fit method doesnt return Null on error"
+    assert model is None, "The NNOP fit method doesnt return Null on error"
 
 
 def test_nnop_fit_input_validation(X, y):

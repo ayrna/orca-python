@@ -21,57 +21,47 @@ def y():
     return np.array([1, 2, 2, 1, 2])
 
 
-def test_svorex_predict_matches_expected():
+@pytest.mark.parametrize(
+    "kernel, tol, C, kappa, degree, expected_file",
+    [
+        (0, 0.002, 0.5, 0.1, 0, "expectedPredictions.0"),
+        (1, 0.002, 0.5, 0.1, 0, "expectedPredictions.1"),
+        (2, 0.002, 0.5, 0.1, 4, "expectedPredictions.2"),
+    ],
+)
+def test_svorex_predict_matches_expected(kernel, tol, C, kappa, degree, expected_file):
     """Test that predictions match expected values."""
     X_train, y_train, X_test, _ = load_dataset(
         dataset_name="balance-scale", data_path=TEST_DATASETS_DIR
     )
 
-    expected_files = [
-        TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.0",
-        TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.1",
-        TEST_PREDICTIONS_DIR / "SVOREX" / "expectedPredictions.2",
-    ]
+    classifier = SVOREX(kernel=kernel, tol=tol, C=C, kappa=kappa, degree=degree)
+    classifier.fit(X_train, y_train)
+    y_pred = classifier.predict(X_test)
+    y_expected = np.loadtxt(TEST_PREDICTIONS_DIR / "SVOREX" / expected_file)
 
-    classifiers = [
-        SVOREX(kernel=0, tol=0.002, C=0.5, kappa=0.1),
-        SVOREX(kernel=1, tol=0.002, C=0.5, kappa=0.1),
-        SVOREX(kernel=2, degree=4, tol=0.002, C=0.5, kappa=0.1),
-    ]
-
-    for expected_file, classifier in zip(expected_files, classifiers):
-        classifier.fit(X_train, y_train)
-        y_pred = classifier.predict(X_test)
-        y_expected = np.loadtxt(expected_file)
-        npt.assert_equal(
-            y_pred,
-            y_expected,
-            "The prediction doesnt match with the desired values",
-        )
+    npt.assert_equal(
+        y_pred, y_expected, "The prediction doesnt match with the desired values"
+    )
 
 
-def test_svorex_fit_hyperparameters_validation(X, y):
+@pytest.mark.parametrize(
+    "params, error_msg",
+    [
+        ({"tol": 0}, "- T is invalid"),
+        ({"C": 0}, "- C is invalid"),
+        ({"kappa": 0}, "- K is invalid"),
+        ({"kernel": 2, "degree": 0}, "- P is invalid"),
+        ({"kappa": -1}, "-1 is invalid"),
+    ],
+)
+def test_svorex_fit_hyperparameters_validation(X, y, params, error_msg):
     """Test that hyperparameters are validated."""
-    classifiers = [
-        SVOREX(tol=0),
-        SVOREX(C=0),
-        SVOREX(kappa=0),
-        SVOREX(kernel=2, degree=0),
-        SVOREX(kappa=-1),
-    ]
+    classifier = SVOREX(**params)
 
-    error_msgs = [
-        "- T is invalid",
-        "- C is invalid",
-        "- K is invalid",
-        "- P is invalid",
-        "-1 is invalid",
-    ]
-
-    for classifier, error_msg in zip(classifiers, error_msgs):
-        with pytest.raises(ValueError, match=error_msg):
-            model = classifier.fit(X, y)
-            assert model is None, "The SVOREX fit method doesnt return Null on error"
+    with pytest.raises(ValueError, match=error_msg):
+        model = classifier.fit(X, y)
+        assert model is None, "The SVOREX fit method doesnt return Null on error"
 
 
 def test_svorex_fit_input_validation(X, y):

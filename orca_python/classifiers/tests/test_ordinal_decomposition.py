@@ -20,7 +20,7 @@ def y():
 
 
 def test_ordinal_decomposition(X, y):
-    """Test that the algorithm can correctly classify a toy problem."""
+    """Check if this algorithm can correctly classify a toy problem."""
     classifier = OrdinalDecomposition(
         dtype="ordered_partitions",
         decision_method="frank_hall",
@@ -55,47 +55,64 @@ def test_ordinal_decomposition_fit_input_validation(X, y):
         assert model is None, "The fit method doesnt return Null on error"
 
 
-def test_coding_matrix():
+@pytest.mark.parametrize(
+    "dtype, expected_cm",
+    [
+        (
+            "ordered_partitions",
+            np.array(
+                [
+                    [-1, -1, -1, -1],
+                    [1, -1, -1, -1],
+                    [1, 1, -1, -1],
+                    [1, 1, 1, -1],
+                    [1, 1, 1, 1],
+                ]
+            ),
+        ),
+        (
+            "one_vs_next",
+            np.array(
+                [
+                    [-1, 0, 0, 0],
+                    [1, -1, 0, 0],
+                    [0, 1, -1, 0],
+                    [0, 0, 1, -1],
+                    [0, 0, 0, 1],
+                ]
+            ),
+        ),
+        (
+            "one_vs_followers",
+            np.array(
+                [
+                    [-1, 0, 0, 0],
+                    [1, -1, 0, 0],
+                    [1, 1, -1, 0],
+                    [1, 1, 1, -1],
+                    [1, 1, 1, 1],
+                ]
+            ),
+        ),
+        (
+            "one_vs_previous",
+            np.array(
+                [
+                    [1, 1, 1, 1],
+                    [1, 1, 1, -1],
+                    [1, 1, -1, 0],
+                    [1, -1, 0, 0],
+                    [-1, 0, 0, 0],
+                ]
+            ),
+        ),
+    ],
+)
+def test_coding_matrix(dtype, expected_cm):
     """Test that the coding matrix is built properly for each type of ordinal
     decomposition."""
     classifier = OrdinalDecomposition()
-
-    # Checking ordered_partitions (with a 5 class, 4 classifiers example)
-    classifier.dtype = "ordered_partitions"
-    expected_cm = np.array(
-        [[-1, -1, -1, -1], [1, -1, -1, -1], [1, 1, -1, -1], [1, 1, 1, -1], [1, 1, 1, 1]]
-    )
-
-    cm = classifier._coding_matrix(classifier.dtype, 5)
-
-    npt.assert_array_equal(cm, expected_cm)
-
-    # Checking one_vs_next
-    classifier.dtype = "one_vs_next"
-    expected_cm = np.array(
-        [[-1, 0, 0, 0], [1, -1, 0, 0], [0, 1, -1, 0], [0, 0, 1, -1], [0, 0, 0, 1]]
-    )
-
-    cm = classifier._coding_matrix(classifier.dtype, 5)
-
-    npt.assert_array_equal(cm, expected_cm)
-
-    # Checking one_vs_followers
-    classifier.dtype = "one_vs_followers"
-    expected_cm = np.array(
-        [[-1, 0, 0, 0], [1, -1, 0, 0], [1, 1, -1, 0], [1, 1, 1, -1], [1, 1, 1, 1]]
-    )
-
-    cm = classifier._coding_matrix(classifier.dtype, 5)
-
-    npt.assert_array_equal(cm, expected_cm)
-
-    # Checking one_vs_previous
-    classifier.dtype = "one_vs_previous"
-    expected_cm = np.array(
-        [[1, 1, 1, 1], [1, 1, 1, -1], [1, 1, -1, 0], [1, -1, 0, 0], [-1, 0, 0, 0]]
-    )
-
+    classifier.dtype = dtype
     cm = classifier._coding_matrix(classifier.dtype, 5)
 
     npt.assert_array_equal(cm, expected_cm)
@@ -128,8 +145,8 @@ def test_frank_hall_method(X):
         ]
     )
 
-    y_prob = classifier._frank_hall_method(predictions)
-    expected_y_prob = np.array(
+    y_proba = classifier._frank_hall_method(predictions)
+    expected_y_proba = np.array(
         [
             [0.92505, 0.07492, -0.06858, 0.06856, 0.00005],
             [0.99983, 0.00017, -0.03174, 0.03163, 0.00011],
@@ -146,8 +163,8 @@ def test_frank_hall_method(X):
 
     # Asserting similarity
     npt.assert_allclose(
-        y_prob,
-        expected_y_prob,
+        y_proba,
+        expected_y_proba,
         rtol=1e-04,
         atol=0,
     )
@@ -178,8 +195,8 @@ def test_exponential_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    e_loss = classifier._exponential_loss(predictions)
-    expected_e_loss = np.array(
+    e_losses = classifier._exponential_loss(predictions)
+    expected_e_losses = np.array(
         [
             [1.5852, 3.49769, 5.8479, 7.79566, 10.14575],
             [1.49583, 3.84519, 6.19559, 8.35469, 10.70441],
@@ -195,7 +212,7 @@ def test_exponential_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(e_loss, expected_e_loss, rtol=1e-04, atol=0)
+    npt.assert_allclose(e_losses, expected_e_losses, rtol=1e-04, atol=0)
 
 
 def test_logarithmic_loss_method():
@@ -223,8 +240,8 @@ def test_logarithmic_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    l_loss = classifier._logarithmic_loss(predictions)
-    expected_l_loss = np.array(
+    l_losses = classifier._logarithmic_loss(predictions)
+    expected_l_losses = np.array(
         [
             [0.58553, 2.28573, 4.28561, 6.01117, 8.01097],
             [0.52385, 2.52317, 4.52317, 6.39621, 8.39577],
@@ -240,7 +257,7 @@ def test_logarithmic_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(l_loss, expected_l_loss, rtol=1e-04, atol=0)
+    npt.assert_allclose(l_losses, expected_l_losses, rtol=1e-04, atol=0)
 
 
 def test_hinge_loss_method():
@@ -268,8 +285,8 @@ def test_hinge_loss_method():
     # Interpoling values from [0, 1] range to [-1, 1]
     predictions = (2 * predictions) - 1
 
-    h_loss = classifier._hinge_loss(predictions)
-    expected_h_loss = np.array(
+    h_losses = classifier._hinge_loss(predictions)
+    expected_h_losses = np.array(
         [
             [0.28728, 1.98748, 3.98736, 5.71292, 7.71272],
             [0.06404, 2.06336, 4.06336, 5.9364, 7.93596],
@@ -285,7 +302,7 @@ def test_hinge_loss_method():
     )
 
     # Asserting similarity
-    npt.assert_allclose(h_loss, expected_h_loss, rtol=1e-04, atol=0)
+    npt.assert_allclose(h_losses, expected_h_losses, rtol=1e-04, atol=0)
 
 
 def test_ordinal_decomposition_predict_invalid_input_raises_error(X, y):
