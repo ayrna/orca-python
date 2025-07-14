@@ -22,35 +22,33 @@ def y():
 
 
 @pytest.mark.parametrize(
-    "kernel, degree, gamma, coef0, C, cache_size, tol, shrinking, expected_file",
+    "kernel, expected_file",
     [
-        (0, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.0"),
-        (1, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.1"),
-        (2, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.2"),
-        (3, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.3"),
-        (4, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.4"),
-        (5, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.5"),
-        (6, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.6"),
-        (7, 2, 0.1, 0.5, 0.1, 150, 0.005, 0, "expectedPredictions.7"),
+        (0, "expectedPredictions.0"),
+        (1, "expectedPredictions.1"),
+        (2, "expectedPredictions.2"),
+        (3, "expectedPredictions.3"),
+        (4, "expectedPredictions.4"),
+        (5, "expectedPredictions.5"),
+        (6, "expectedPredictions.6"),
+        (7, "expectedPredictions.7"),
     ],
 )
-def test_redsvm_predict_matches_expected(
-    kernel, degree, gamma, coef0, C, cache_size, tol, shrinking, expected_file
-):
+def test_redsvm_predict_matches_expected(kernel, expected_file):
     """Test that predictions match expected values."""
     X_train, y_train, X_test, _ = load_dataset(
         dataset_name="balance-scale", data_path=TEST_DATASETS_DIR
     )
 
     classifier = REDSVM(
+        C=0.1,
         kernel=kernel,
-        degree=degree,
-        gamma=gamma,
-        coef0=coef0,
-        C=C,
-        cache_size=cache_size,
-        tol=tol,
-        shrinking=shrinking,
+        degree=2,
+        gamma=0.1,
+        coef0=0.5,
+        shrinking=0,
+        tol=0.005,
+        cache_size=150,
     )
 
     classifier.fit(X_train, y_train)
