@@ -24,9 +24,9 @@ def y():
 @pytest.mark.parametrize(
     "kernel, expected_file",
     [
-        (0, "expectedPredictions.0"),
-        (1, "expectedPredictions.1"),
-        (2, "expectedPredictions.2"),
+        (0, "predictions_gaussian_0.csv"),
+        (1, "predictions_linear_0.csv"),
+        (2, "predictions_poly_0.csv"),
     ],
 )
 def test_svorex_predict_matches_expected(kernel, expected_file):
@@ -38,7 +38,9 @@ def test_svorex_predict_matches_expected(kernel, expected_file):
     classifier = SVOREX(C=0.5, kernel=kernel, degree=4, tol=0.002, kappa=0.1)
     classifier.fit(X_train, y_train)
     y_pred = classifier.predict(X_test)
-    y_expected = np.loadtxt(TEST_PREDICTIONS_DIR / "SVOREX" / expected_file)
+    y_expected = np.loadtxt(
+        TEST_PREDICTIONS_DIR / "SVOREX" / expected_file, delimiter=",", usecols=1
+    )
 
     npt.assert_equal(
         y_pred, y_expected, "The prediction doesnt match with the desired values"

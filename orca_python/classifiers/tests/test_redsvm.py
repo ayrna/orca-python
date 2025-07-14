@@ -24,14 +24,14 @@ def y():
 @pytest.mark.parametrize(
     "kernel, expected_file",
     [
-        (0, "expectedPredictions.0"),
-        (1, "expectedPredictions.1"),
-        (2, "expectedPredictions.2"),
-        (3, "expectedPredictions.3"),
-        (4, "expectedPredictions.4"),
-        (5, "expectedPredictions.5"),
-        (6, "expectedPredictions.6"),
-        (7, "expectedPredictions.7"),
+        (0, "predictions_linear_0.csv"),
+        (1, "predictions_poly_0.csv"),
+        (2, "predictions_rbf_0.csv"),
+        (3, "predictions_sigmoid_0.csv"),
+        (4, "predictions_stump_0.csv"),
+        (5, "predictions_perceptron_0.csv"),
+        (6, "predictions_laplacian_0.csv"),
+        (7, "predictions_exponential_0.csv"),
     ],
 )
 def test_redsvm_predict_matches_expected(kernel, expected_file):
@@ -53,7 +53,9 @@ def test_redsvm_predict_matches_expected(kernel, expected_file):
 
     classifier.fit(X_train, y_train)
     y_pred = classifier.predict(X_test)
-    y_expected = np.loadtxt(TEST_PREDICTIONS_DIR / "REDSVM" / expected_file)
+    y_expected = np.loadtxt(
+        TEST_PREDICTIONS_DIR / "REDSVM" / expected_file, delimiter=",", usecols=1
+    )
 
     npt.assert_equal(
         y_pred, y_expected, "The prediction doesnt match with the desired values"
