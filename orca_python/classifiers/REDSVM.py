@@ -22,17 +22,17 @@ class REDSVM(BaseEstimator, ClassifierMixin):
     C : float, default=1
         Set the parameter C.
 
-    kernel : int, default=2
+    kernel : str, default="rbf"
         Set type of kernel function.
-        0 -- linear: u'*v
-        1 -- polynomial: (gamma*u'*v + coef0)^degree
-        2 -- radial basis function: exp(-gamma*|u-v|^2)
-        3 -- sigmoid: tanh(gamma*u'*v + coef0)
-        4 -- stump: -|u-v|_1 + coef0
-        5 -- perceptron: -|u-v|_2 + coef0
-        6 -- laplacian: exp(-gamma*|u-v|_1)
-        7 -- exponential: exp(-gamma*|u-v|_2)
-        8 -- precomputed kernel (kernel values in training_instance_matrix)
+        - linear: u'*v
+        - polynomial: (gamma*u'*v + coef0)^degree
+        - rbf: exp(-gamma*|u-v|^2)
+        - sigmoid: tanh(gamma*u'*v + coef0)
+        - stump: -|u-v|_1 + coef0
+        - perceptron: -|u-v|_2 + coef0
+        - laplacian: exp(-gamma*|u-v|_1)
+        - exponential: exp(-gamma*|u-v|_2)
+        - precomputed: kernel values in training_instance_matrix
 
     degree : int, default=3
         Set degree in kernel function.
@@ -77,7 +77,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
     def __init__(
         self,
         C=1,
-        kernel=2,
+        kernel="rbf",
         degree=3,
         gamma=None,
         coef0=0,
@@ -126,9 +126,23 @@ class REDSVM(BaseEstimator, ClassifierMixin):
         if self.gamma is None:
             self.gamma = 1 / np.size(X, 1)
 
+        # Map kernel type
+        kernel_type_mapping = {
+            "linear": 0,
+            "poly": 1,
+            "rbf": 2,
+            "sigmoid": 3,
+            "stump": 4,
+            "perceptron": 5,
+            "laplacian": 6,
+            "exponential": 7,
+            "precomputed": 8,
+        }
+        kernel_type = kernel_type_mapping.get(self.kernel, -1)
+
         # Fit the model
         options = "-s 5 -t {} -d {} -g {} -r {} -c {} -m {} -e {} -h {} -q".format(
-            str(self.kernel),
+            str(kernel_type),
             str(self.degree),
             str(self.gamma),
             str(self.coef0),

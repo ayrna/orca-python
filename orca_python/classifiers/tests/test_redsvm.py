@@ -24,14 +24,14 @@ def y():
 @pytest.mark.parametrize(
     "kernel, expected_file",
     [
-        (0, "predictions_linear_0.csv"),
-        (1, "predictions_poly_0.csv"),
-        (2, "predictions_rbf_0.csv"),
-        (3, "predictions_sigmoid_0.csv"),
-        (4, "predictions_stump_0.csv"),
-        (5, "predictions_perceptron_0.csv"),
-        (6, "predictions_laplacian_0.csv"),
-        (7, "predictions_exponential_0.csv"),
+        ("linear", "predictions_linear_0.csv"),
+        ("poly", "predictions_poly_0.csv"),
+        ("rbf", "predictions_rbf_0.csv"),
+        ("sigmoid", "predictions_sigmoid_0.csv"),
+        ("stump", "predictions_stump_0.csv"),
+        ("perceptron", "predictions_perceptron_0.csv"),
+        ("laplacian", "predictions_laplacian_0.csv"),
+        ("exponential", "predictions_exponential_0.csv"),
     ],
 )
 def test_redsvm_predict_matches_expected(kernel, expected_file):
@@ -65,11 +65,15 @@ def test_redsvm_predict_matches_expected(kernel, expected_file):
 @pytest.mark.parametrize(
     "param_name, invalid_value, error_msg",
     [
-        ("kernel", -1, "unknown kernel type"),
+        ("kernel", "unknown", "unknown kernel type"),
         ("cache_size", -1, "cache_size <= 0"),
         ("tol", -1, "eps <= 0"),
         ("shrinking", 2, "shrinking != 0 and shrinking != 1"),
-        ("kernel", 8, "Wrong input format: sample_serial_number out of range"),
+        (
+            "kernel",
+            "precomputed",
+            "Wrong input format: sample_serial_number out of range",
+        ),
     ],
 )
 def test_redsvm_fit_hyperparameters_validation(
