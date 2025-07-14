@@ -20,11 +20,11 @@ class SVOREX(BaseEstimator, ClassifierMixin):
     C : float, default=1
         Set the parameter C.
 
-    kernel : int, default=0
+    kernel : str, default="gaussian"
         Set type of kernel function.
-        0 -- gaussian: use gaussian kernel
-        1 -- linear: use imbalanced Linear kernel
-        2 -- polynomial: use Polynomial kernel with order p
+        - gaussian: use gaussian kernel
+        - linear: use imbalanced Linear kernel
+        - poly: use Polynomial kernel with order p
 
     degree : int, default=2
         Set degree in kernel function.
