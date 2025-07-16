@@ -1,34 +1,30 @@
 {
-
     "general_conf": {
-
-		"basedir": "datasets",
-		"datasets": ["balance-scale", "contact-lenses", "tae", "car", "winequality-red", "ERA"],
-		"hyperparam_cv_nfolds": 5,
-		"jobs": 10,
-		"input_preprocessing": "std",
-		"output_folder": "my_runs/",
-		"metrics": ["ccr", "mae", "mze"],
-		"cv_metric": "mae"
-
-	},
-
-
-	"configurations": {
-
-		"nnop-mae": {
-
-			"classifier": "NNOP",
-			"parameters": {
+        "basedir": "datasets",
+        "datasets": [
+            "balance-scale",
+            "car",
+            "contact-lenses",
+            "ERA",
+            "tae",
+            "winequality-red"
+        ],
+        "hyperparam_cv_nfolds": 5,
+        "jobs": 10,
+        "input_preprocessing": "std",
+        "output_folder": "my_runs/",
+        "metrics": ["ccr", "mae", "mze"],
+        "cv_metric": "mae"
+    },
+    "configurations": {
+        "nnop-mae": {
+            "classifier": "NNOP",
+            "parameters": {
                 "epsilon_init": 0.5,
-                "n_hidden": [5,10,20,30,40,50],
+                "n_hidden": [5, 10, 20, 30, 40, 50],
                 "max_iter": [250, 500],
-				"lambda_value": [0, 0.01, 1]
-
+                "lambda_value": [0, 0.01, 1]
             }
-
-		}
-
-	}
-
+        }
+    }
 }

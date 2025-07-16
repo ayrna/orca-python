@@ -1,92 +1,69 @@
 {
+    "general_conf": {
+        "basedir": "orca_python/datasets/data",
+        "datasets": ["balance-scale", "contact-lenses", "tae"],
+        "hyperparam_cv_nfolds": 3,
+        "jobs": 10,
+        "input_preprocessing": "std",
+        "output_folder": "my_runs/",
+        "metrics": ["ccr", "mae", "amae", "mze"],
+        "cv_metric": "mae"
+    },
+    "configurations": {
+        "SVM": {
+            "classifier": "sklearn.svm.SVC",
+            "parameters": {
+                "C": [0.001, 0.1, 1, 10, 100],
+                "gamma": [0.1, 1, 10]
+            }
+        },
+        "SVMOP": {
+            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "parameters": {
+                "dtype": "ordered_partitions",
+                "decision_method": "frank_hall",
+                "base_classifier": "sklearn.svm.SVC",
+                "parameters": {
+                    "C": [0.01, 0.1, 1, 10],
+                    "gamma": [0.01, 0.1, 1, 10],
+                    "probability": ["True"]
+                }
+            }
+        },
+        "LR": {
+            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "parameters": {
+                "dtype": ["ordered_partitions", "one_vs_next"],
+                "decision_method": "exponential_loss",
+                "base_classifier": "sklearn.linear_model.LogisticRegression",
+                "parameters": {
+                    "solver": ["liblinear"],
+                    "C": [0.01, 0.1, 1, 10],
+                    "penalty": ["l1","l2"]
+                }
 
-
-	"general_conf": {
-
-		"basedir": "orca_python/datasets/data",
-		"datasets": ["tae", "balance-scale", "contact-lenses"],
-		"hyperparam_cv_nfolds": 3,
-		"jobs": 10,
-		"input_preprocessing": "std",
-		"output_folder": "my_runs/",
-		"metrics": ["ccr", "mae", "amae", "mze"],
-		"cv_metric": "mae"
-	},
-
-
-	"configurations": {
-
-		"SVM": {
-
-			"classifier": "sklearn.svm.SVC",
-			"parameters": {
-				"C": [0.001, 0.1, 1, 10, 100],
-				"gamma": [0.1, 1, 10]
-			}
-		},
-
-
-		"SVMOP": {
-
-			"classifier": "orca_python.classifiers.OrdinalDecomposition",
-			"parameters": {
-				"dtype": "ordered_partitions",
-				"decision_method": "frank_hall",
-				"base_classifier": "sklearn.svm.SVC",
-				"parameters": {
-					"C": [0.01, 0.1, 1, 10],
-					"gamma": [0.01, 0.1, 1, 10],
-					"probability": ["True"]
-				}
-
-			}
-		},
-
-
-		"LR": {
-
-			"classifier": "orca_python.classifiers.OrdinalDecomposition",
-			"parameters": {
-				"dtype": ["ordered_partitions", "one_vs_next"],
-				"decision_method": "exponential_loss",
-				"base_classifier": "sklearn.linear_model.LogisticRegression",
-				"parameters": {
-					"solver": ["liblinear"],
-					"C": [0.01, 0.1, 1, 10],
-					"penalty": ["l1","l2"]
-				}
-
-			}
-		},
-
-		"REDSVM": {
-
-			"classifier": "orca_python.classifiers.REDSVM",
-			"parameters": {
-			    "kernel": 2,
-				"degree": 3,
-				"gamma": 0.1,
-				"coef0": 0,
-				"C": 1,
-				"tol": 0.001,
-				"shrinking": 1
-			}
-
-		},
-
-		"SVOREX": {
-
-			"classifier": "orca_python.classifiers.SVOREX",
-			"parameters": {
-				"kernel": 0,
-				"C": [0.1, 1, 10],
-				"kappa": [0.1, 1, 10],
-				"tol": 0.001
-			}
-
-		}
-
-	}
-
-
+            }
+        },
+        "REDSVM": {
+            "classifier": "orca_python.classifiers.REDSVM",
+            "parameters": {
+                "kernel": 2,
+                "degree": 3,
+                "gamma": 0.1,
+                "coef0": 0,
+                "C": 1,
+                "tol": 0.001,
+                "shrinking": 1
+            }
+        },
+        "SVOREX": {
+            "classifier": "orca_python.classifiers.SVOREX",
+            "parameters": {
+                "kernel": 0,
+                "C": [0.1, 1, 10],
+                "kappa": [0.1, 1, 10],
+                "tol": 0.001
+            }
+        }
+    }
 }

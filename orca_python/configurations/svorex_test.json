@@ -1,34 +1,22 @@
 {
-
-
-	"general_conf": {
-
-		"basedir": "datasets/",
-		"datasets": ["tae", "balance-scale", "contact-lenses"],
-		"input_preprocessing": "std",
-		"hyperparam_cv_nfolds": 3,
-		"jobs": 10,
-		"output_folder": "my_runs/",
-		"metrics": ["ccr", "mae", "mze"],
-		"cv_metric": "mae"
-
-	},
-
-
-	"configurations": {
-
-		"svorex": {
-
-			"classifier": "SVOREX",
-			"parameters": {
-				"kernel": 0,
-				"C": [0.1, 1, 10],
-				"kappa": [0.1, 1, 10]
-			}
-
-		}
-
-	}
-
-
+    "general_conf": {
+        "basedir": "datasets/",
+        "datasets": ["balance-scale", "contact-lenses", "tae"],
+        "hyperparam_cv_nfolds": 3,
+        "jobs": 10,
+        "input_preprocessing": "std",
+        "output_folder": "my_runs/",
+        "metrics": ["ccr", "mae", "mze"],
+        "cv_metric": "mae"
+    },
+    "configurations": {
+        "svorex": {
+            "classifier": "SVOREX",
+            "parameters": {
+                "kernel": 0,
+                "C": [0.1, 1, 10],
+                "kappa": [0.1, 1, 10]
+            }
+        }
+    }
 }
