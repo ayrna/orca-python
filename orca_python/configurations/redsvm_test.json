@@ -10,7 +10,7 @@
         "cv_metric": "mae"
     },
     "configurations": {
-        "redsvm": {
+        "REDSVM": {
             "classifier": "REDSVM",
             "parameters": {
                 "kernel": "rbf",

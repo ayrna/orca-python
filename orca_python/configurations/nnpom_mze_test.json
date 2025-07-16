@@ -10,7 +10,7 @@
         "cv_metric": "mze"
     },
     "configurations": {
-        "nnpom-mze": {
+        "NNPOM-MZE": {
             "classifier": "NNPOM",
             "parameters": {
                 "epsilon_init": 0.5,

@@ -10,7 +10,7 @@
         "cv_metric": "mae"
     },
     "configurations": {
-        "nnop-mae": {
+        "NNOP-MAE": {
             "classifier": "NNOP",
             "parameters": {
                 "epsilon_init": 0.5,

@@ -10,7 +10,7 @@
         "cv_metric": "mae"
     },
     "configurations": {
-        "svorex": {
+        "SVOREX": {
             "classifier": "SVOREX",
             "parameters": {
                 "kernel": "gaussian",
