@@ -1,13 +1,9 @@
 {
     "general_conf": {
-        "basedir": "datasets/",
+        "basedir": "orca_python/datasets/data",
         "datasets": [
             "balance-scale",
-            "calhousing-5",
-            "calhousing-10",
             "car",
-            "census2-5",
-            "census2-10",
             "contact-lenses",
             "ERA",
             "tae",

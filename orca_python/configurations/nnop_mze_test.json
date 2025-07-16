@@ -1,14 +1,7 @@
 {
     "general_conf": {
-		"basedir": "datasets",
-		"datasets": [
-			"balance-scale",
-			"car",
-			"contact-lenses",
-			"ERA",
-			"tae",
-			"winequality-red"
-		],
+		"basedir": "orca_python/datasets/data",
+		"datasets": ["balance-scale"],
 		"hyperparam_cv_nfolds": 5,
 		"jobs": 10,
 		"input_preprocessing": "std",

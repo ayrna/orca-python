@@ -1,7 +1,7 @@
 {
     "general_conf": {
-		"basedir": "tests/test_datasets/test_nnpom_nnop_load_dataset",
-		"datasets": ["toy"],
+		"basedir": "orca_python/datasets/data",
+		"datasets": ["balance-scale"],
 		"hyperparam_cv_nfolds": 5,
 		"jobs": 10,
 		"output_folder": "my_runs/",
