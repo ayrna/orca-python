@@ -6,10 +6,10 @@
 		"jobs": 10,
 		"output_folder": "my_runs/",
 		"metrics": ["ccr", "mae", "mze"],
-		"cv_metric": "ccr"
+		"cv_metric": "mae"
 	},
 	"configurations": {
-		"expectedPredictions0": {
+		"nnpom-mae": {
 			"classifier": "NNPOM",
 			"parameters": {
                 "epsilon_init": 0.5,
