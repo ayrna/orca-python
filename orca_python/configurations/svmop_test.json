@@ -1,0 +1,26 @@
+{
+    "general_conf": {
+        "basedir": "orca_python/datasets/data",
+        "datasets": ["balance-scale"],
+        "hyperparam_cv_nfolds": 3,
+        "jobs": 10,
+        "output_folder": "my_runs/",
+        "metrics": ["ccr", "mae", "mze"],
+        "cv_metric": "mae"
+    },
+    "configurations": {
+        "SVMOP": {
+            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "parameters": {
+                "dtype": "ordered_partitions",
+                "decision_method": "frank_hall",
+                "base_classifier": "sklearn.svm.SVC",
+                "parameters": {
+                    "C": [0.1, 1, 10],
+                    "gamma": [0.1, 1, 10],
+                    "probability": ["True"]
+                }
+            }
+        }
+    }
+}
