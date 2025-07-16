@@ -11,7 +11,7 @@
     },
     "configurations": {
         "NNOP-MAE": {
-            "classifier": "NNOP",
+            "classifier": "orca_python.classifiers.NNOP",
             "parameters": {
                 "epsilon_init": 0.5,
                 "n_hidden": [5, 10, 20, 30, 40, 50],

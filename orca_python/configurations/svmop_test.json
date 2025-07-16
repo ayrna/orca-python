@@ -10,7 +10,7 @@
     },
     "configurations": {
         "SVMOP": {
-            "classifier": "OrdinalDecomposition",
+            "classifier": "orca_python.classifiers.OrdinalDecomposition",
             "parameters": {
                 "dtype": "ordered_partitions",
                 "decision_method": "frank_hall",

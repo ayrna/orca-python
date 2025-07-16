@@ -11,7 +11,7 @@
     },
     "configurations": {
         "SVOREX": {
-            "classifier": "SVOREX",
+            "classifier": "orca_python.classifiers.SVOREX",
             "parameters": {
                 "kernel": "gaussian",
                 "C": [0.001, 0.01, 0.1, 1, 10, 100, 1000],
