@@ -2,9 +2,9 @@
     "general_conf": {
         "basedir": "orca_python/datasets/data",
         "datasets": ["balance-scale"],
-        "input_preprocessing": "std",
         "hyperparam_cv_nfolds": 3,
         "jobs": 10,
+        "input_preprocessing": "std",
         "output_folder": "my_runs/",
         "metrics": ["ccr", "mae", "mze"],
         "cv_metric": "mae"
@@ -13,8 +13,9 @@
         "redsvm": {
             "classifier": "REDSVM",
             "parameters": {
-                "C": [0.1, 1, 10],
-                "gamma": [0.1, 1, 10]
+                "kernel": "rbf",
+                "C": [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+                "gamma": [0.001, 0.01, 0.1, 1, 10, 100, 1000]
             }
         }
     }

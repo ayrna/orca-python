@@ -2,8 +2,9 @@
     "general_conf": {
 		"basedir": "orca_python/datasets/data",
 		"datasets": ["balance-scale"],
-		"hyperparam_cv_nfolds": 5,
+		"hyperparam_cv_nfolds": 3,
 		"jobs": 10,
+		"input_preprocessing": "std",
 		"output_folder": "my_runs/",
 		"metrics": ["ccr", "mae", "mze"],
 		"cv_metric": "mae"
@@ -13,9 +14,9 @@
 			"classifier": "NNPOM",
 			"parameters": {
                 "epsilon_init": 0.5,
-                "n_hidden": 10,
-                "max_iter": 500,
-				"lambda_value": 0.01
+                "n_hidden": [5, 10, 20, 30, 40, 50],
+                "max_iter": [250, 500],
+                "lambda_value": [0, 0.01, 1]
             }
 		}
 	}

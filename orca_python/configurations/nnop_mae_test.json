@@ -2,7 +2,7 @@
     "general_conf": {
         "basedir": "orca_python/datasets/data",
         "datasets": ["balance-scale"],
-        "hyperparam_cv_nfolds": 5,
+        "hyperparam_cv_nfolds": 3,
         "jobs": 10,
         "input_preprocessing": "std",
         "output_folder": "my_runs/",
