@@ -1,5 +1,11 @@
 # ORCA-python
 
+| Overview  |                                                                                                                                          |
+|-----------|------------------------------------------------------------------------------------------------------------------------------------------|
+| **CI/CD** | [![Run Tests](https://github.com/ayrna/orca-python/actions/workflows/pr_pytest.yml/badge.svg?branch=main)](https://github.com/ayrna/orca-python/actions/workflows/pr_pytest.yml) [![!python](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)](https://www.python.org/) |
+| **Code**  | [![!black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Linter: Ruff](https://img.shields.io/badge/Linter-Ruff-brightgreen?style=flat-square)](https://github.com/charliermarsh/ruff) [![License - BSD 3-Clause](https://img.shields.io/pypi/l/pandas.svg)](https://github.com/ayrna/orca-python/blob/main/LICENSE) |
+
+
 ## What is ORCA-python?
 
 **ORCA-python** is an experimental framework built on Python that seamlessly integrates with scikit-learn and sacred modules to automate machine learning experiments through simple JSON configuration files. Initially designed for ordinal classification, it supports regular classification algorithms as long as they are compatible with scikit-learn, making it easy to run reproducible experiments across multiple datasets and classification methods.
