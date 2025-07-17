@@ -1,19 +1,4 @@
-<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:1 -->
-
-1. [What is ORCA-python?](#what-is-orca-python)
-2. [Installing ORCA-python](#installing-orca-python)
-    1. [Installation Requirements](#installation-requirements)
-    2. [Download ORCA-Python](#download-orca-python)
-    3. [Algorithms Compilation](#algorithms-compilation)
-    4. [Installation in Python Environnement](#installation-in-python-environnement)
-    5. [Installation Testing](#installation-testing)
-3. [How to use ORCA-python](#how-to-use-orca-python)
-    1. [Configuration Files](#configuration-files)
-        1. [general-conf](#general-conf)
-        2. [configurations](#configurations)
-    2. [Running an Experiment](#running-an-experiment)
-
-<!-- /TOC -->
+# ORCA-python
 
 ## What is ORCA-python?
 
@@ -25,12 +10,25 @@ as long as they are implemented in scikit-learn, or self-implemented following c
 
 In this README, we will explain how to use ORCA-python, and what you need to install in order to run it. A Jupyter notebook is also avaible in [spanish](https://github.com/ayrna/orca-python/blob/master/doc/spanish_user_manual.md).
 
+## Table of Contents
 
-# Installing ORCA-python
+- [Installation](#installation)
+    - [Requirements](#requirements)
+	- [Download ORCA-Python](#download-orca-python)
+    - [Setup](#setup)
+    - [Testing Installation](#testing-installation)
+- [Quick Start](#quick-start)
+    - [Configuration Files](#configuration-files)
+        - [general-conf](#general-conf)
+        - [configurations](#configurations)
+    - [Running Experiments](#running-experiments)
+
+
+## Installation
 
 ORCA-python has been developed and tested in GNU/Linux systems. It has been tested with Python 3.8.
 
-## Installation Requirements
+### Requirements
 
 Besides the need for the aforementioned Python interpreter, you will need to install the next Python modules
 in order to run an experiment (needs recent versions of scikit-learn >=1.0.0):
@@ -46,7 +44,7 @@ For the installation of the modules, you may follow this [Python's Official Guid
 
 All dependencies and build configurations are managed through `pyproject.toml` file. This simplifies the setup process by allowing you to install the framework and its dependencies.
 
-## Download ORCA-Python
+### Download ORCA-Python
 
 To download ORCA-python you can simply clone this GitHub repository by using the following commands:
 
@@ -54,7 +52,7 @@ To download ORCA-python you can simply clone this GitHub repository by using the
 
 All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
 
-## Installation in Python Environnement
+### Setup
 
 Inside the ORCA-python root, execute the following command to install the framework along with its dependencies: `pip install .`
 
@@ -64,7 +62,7 @@ Additionally. optional dependencies for development (e.g., black) can be install
 
 Note: The editable mode is required for running tests due to automatic dependency resolution.
 
-## Installation Testing
+### Testing Installation
 
 We provide a pre-made experiment (dataset and configuration file) to test if everything has been correctly installed.\
 The way to run this test (and all experiments) is the following:
@@ -74,14 +72,12 @@ The way to run this test (and all experiments) is the following:
   $ python config.py with orca_python/configurations/full_functionality_test.json -l ERROR
   ```
 
-
-# How to use ORCA-python
-
+## Quick Start
 
 This tutorial uses three small datasets (balance-scale, contact-lenses and tae) contained in "datasets" folder.
 The datasets are already partitioned with a 30-holdout experimental design (train and test pairs for each partition).
 
-## Configuration Files
+### Configuration Files
 
 All experiments are run through configuration files, which are written in JSON format, and consist of two well differentiated
 sections:
@@ -93,7 +89,7 @@ Each one of this sections will be inside a dictionary, having the said section n
 
 For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/ayrna/orca-python/blob/master/configurations/full_functionality_test.json).
 
-### general-conf
+#### general-conf
 
 ```
 "general_conf": {
@@ -122,7 +118,7 @@ For a better understanding of the way this files works, it's better to follow an
 Most of this variables do have default values (specified in [config.py](https://github.com/ayrna/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
 
 
-### configurations
+#### configurations
 
 this dictionary will contain, at the same time, one dictionary for each configuration to try over the datasets during the experiment. This is, a classifier with some specific hyper-parameters to tune. (Keep in mind, that if two or more configurations share the same name, the later ones will be omitted)
 
@@ -204,8 +200,7 @@ Each configuration has a name (whatever you want), and consists of:
 *In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the base classifier, which doesn't have a configuration name), with it's respective parameters to tune.*
 
 
-
-## Running an Experiment
+### Running Experiments
 
 As viewed in [Installation Testing](#installation-testing), running an experiment is as simple as executing Config.py
 with the python interpreter, and tell what configuration file to use for this experiment, resulting in the next command:
