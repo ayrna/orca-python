@@ -18,6 +18,7 @@
     - [Basic Usage](#basic-usage)
     - [Recommended Usage](#recommended-usage)
     - [Example Output](#example-output)
+- [License](#license)
 
 ## Installation
 
@@ -163,3 +164,10 @@ python config.py with experiment_file.json seed=12345 -l ERROR
 ### Example Output
 
 Results are stored in the specified output folder with detailed performance metrics and hyperparameter information for each dataset and configuration combination.
+
+## License
+[BSD 3](LICENSE)
+
+<hr>
+
+[Go to Top](#table-of-contents)
