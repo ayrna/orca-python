@@ -8,7 +8,6 @@
 
 - [Installation](#installation)
     - [Requirements](#requirements)
-	- [Download ORCA-Python](#download-orca-python)
     - [Setup](#setup)
     - [Testing Installation](#testing-installation)
 - [Quick Start](#quick-start)
@@ -20,51 +19,49 @@
 
 ## Installation
 
-ORCA-python has been developed and tested in GNU/Linux systems. It has been tested with Python 3.8.
-
 ### Requirements
 
-Besides the need for the aforementioned Python interpreter, you will need to install the next Python modules
-in order to run an experiment (needs recent versions of scikit-learn >=1.0.0):
+ORCA-python requires Python 3.8 or higher and is tested on Python 3.8, 3.9, 3.10, and 3.11.
 
-- numpy (tested with version 2.2.2)
-- pandas (tested with version 2.2.3)
-- sacred (tested with version 0.8.7)
-- scikit-learn (tested with version 1.6.1)
-- scipy (tested with version 1.15.1)
-
-To install Python, you can use the package management system you like the most.\
-For the installation of the modules, you may follow this [Python's Official Guide](https://docs.python.org/2/installing/index.html).
-
-All dependencies and build configurations are managed through `pyproject.toml` file. This simplifies the setup process by allowing you to install the framework and its dependencies.
-
-### Download ORCA-Python
-
-To download ORCA-python you can simply clone this GitHub repository by using the following commands:
-
-  `$ git clone https://github.com/ayrna/orca-python`
-
-All the contents of the repository can also be downloaded from the GitHub site by using the "Download ZIP" button.
+All dependencies are managed through `pyproject.toml` and include:
+- numpy (>=1.24.4)
+- pandas (>=2.0.3)
+- sacred (>=0.8.7)
+- scikit-learn (>=1.3.2)
+- scipy (>=1.10.1)
 
 ### Setup
 
-Inside the ORCA-python root, execute the following command to install the framework along with its dependencies: `pip install .`
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/ayrna/orca-python
+   cd orca-python
+   ```
 
-All dependencies and build configurations are managed through the `pyproject.toml` file, simplifying the installation process. FOr development or testing purposes, you can use the `--editable` option to allow modifications without reinstalling: `pip install --editable .`
+2. **Install the framework**:
+   ```bash
+   pip install .
+   ```
 
-Additionally. optional dependencies for development (e.g., black) can be installed using the corresponding groups defined in the `pyproject.toml` file. For example: `pip install -e .[dev]`
+   For development purposes, use editable installation:
+   ```bash
+   pip install -e .
+   ```
 
-Note: The editable mode is required for running tests due to automatic dependency resolution.
+   Optional dependencies for development:
+   ```bash
+   pip install -e .[dev]
+   ```
+
+> **Note:** The editable mode is required for running tests due to automatic dependency resolution.
 
 ### Testing Installation
 
-We provide a pre-made experiment (dataset and configuration file) to test if everything has been correctly installed.\
-The way to run this test (and all experiments) is the following:
+Test your installation with the provided example:
 
-  ```
-  # Go to framework main folder
-  $ python config.py with orca_python/configurations/full_functionality_test.json -l ERROR
-  ```
+```bash
+python config.py with orca_python/configurations/full_functionality_test.json -l ERROR
+```
 
 ## Quick Start
 
