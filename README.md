@@ -65,8 +65,51 @@ python config.py with orca_python/configurations/full_functionality_test.json -l
 
 ## Quick Start
 
-This tutorial uses three small datasets (balance-scale, contact-lenses and tae) contained in "datasets" folder.
-The datasets are already partitioned with a 30-holdout experimental design (train and test pairs for each partition).
+ORCA-python includes sample datasets with pre-partitioned train/test splits using a 30-holdout experimental design.
+
+**Basic experiment configuration:**
+
+```json
+{
+    "general_conf": {
+        "basedir": "orca_python/datasets/data",
+        "datasets": ["balance-scale", "contact-lenses", "tae"],
+        "hyperparam_cv_nfolds": 3,
+        "output_folder": "results/",
+        "metrics": ["ccr", "mae", "amae"],
+        "cv_metric": "mae"
+    },
+    "configurations": {
+        "SVM": {
+            "classifier": "sklearn.svm.SVC",
+            "parameters": {
+                "C": [0.001, 0.1, 1, 10, 100],
+                "gamma": [0.1, 1, 10]
+            }
+        },
+        "SVMOP": {
+            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "parameters": {
+                "dtype": "ordered_partitions",
+                "decision_method": "frank_hall",
+                "base_classifier": "sklearn.svm.SVC",
+                "parameters": {
+                    "C": [0.01, 0.1, 1, 10],
+                    "gamma": [0.01, 0.1, 1, 10],
+                    "probability": ["True"]
+                }
+            }
+        }
+    }
+}
+```
+
+**Run the experiment:**
+```bash
+python config.py with my_experiment.json -l ERROR
+```
+
+Results are saved in `results/` folder with performance metrics for each dataset-classifier combination. The framework automatically performs cross-validation, hyperparameter tuning, and evaluation on test sets.
 
 ### Configuration Files
 
