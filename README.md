@@ -11,10 +11,10 @@
     - [Setup](#setup)
     - [Testing Installation](#testing-installation)
 - [Quick Start](#quick-start)
-    - [Configuration Files](#configuration-files)
-        - [general-conf](#general-conf)
-        - [configurations](#configurations)
-    - [Running Experiments](#running-experiments)
+- [Configuration Files](#configuration-files)
+    - [general-conf](#general-conf)
+    - [configurations](#configurations)
+- [Running Experiments](#running-experiments)
 
 
 ## Installation
@@ -111,130 +111,34 @@ python config.py with my_experiment.json -l ERROR
 
 Results are saved in `results/` folder with performance metrics for each dataset-classifier combination. The framework automatically performs cross-validation, hyperparameter tuning, and evaluation on test sets.
 
-### Configuration Files
+## Configuration Files
 
-All experiments are run through configuration files, which are written in JSON format, and consist of two well differentiated
-sections:
+Experiments are defined using JSON configuration files with two main sections: general_conf for experiment settings and configurations for classifier definitions.
 
-  - **`general-conf`**: indicates basic information to run the experiment, such as the location to datasets, the names of the different datasets to run, etc.
-  - **`configurations`**: tells the framework what classification algorithms to apply over all the datasets, with the collection of hyper-parameters to tune.
+### general-conf
 
-Each one of this sections will be inside a dictionary, having the said section names as keys.
+Controls global experiment parameters.
 
-For a better understanding of the way this files works, it's better to follow an example, that can be found in: [configurations/full_functionality_test.json](https://github.com/ayrna/orca-python/blob/master/configurations/full_functionality_test.json).
-
-#### general-conf
-
-```
-"general_conf": {
-
-    "basedir": "ordinal-datasets/ordinal-regression/",
-    "datasets": ["tae", "balance-scale", "contact-lenses"],
-    "hyperparam_cv_folds": 3,
-    "jobs": 10,
-    "input_preprocessing": "std",
-    "output_folder": "my_runs/",
-    "metrics": ["ccr", "mae", "amae", "mze"],
-    "cv_metric": "mae"
-}
-```
-*note that all the keys (variable names) must be strings, while all pair: value elements are separated by commas.*
-
+**Required parameters:**
 - **`basedir`**: folder containing all dataset subfolders, it doesn't allow more than one folder at a time. It can be indicated using a full path, or a relative one to the framework folder.
 - **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist inside `basedir`.
+
+**Optional parameters:**
 - **`hyperparam_cv_folds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
-- **`input_preprocessing`**: type of preprocessing to apply to the data, **`std`** for standardization and **`norm`** for normalization. Assigning an empty srtring will omit the preprocessing process.
+- **`input_preprocessing`**: data preprocessing (`"std"` for standardization, `"norm"` for normalization, `""` for none)
 - **`output_folder`**: name of the folder where all experiment results will be stored.
 - **`metrics`**: name of the accuracy metrics to measure the train and test performance of the classifier.
 - **`cv_metric`**: error measure used for GridSearchCV to find the best set of hyper-parameters.
 
-Most of this variables do have default values (specified in [config.py](https://github.com/ayrna/orca-python/blob/master/config.py)), but "basedir" and "datasets" must always be written for the experiment to be run. Take into account, that all variable names in "general-conf" cannot be modified, otherwise the experiment will fail.
+### configurations
 
+Defines classifiers and their hyperparameters for GridSearchCV. Each configuration has a name and consists of:
 
-#### configurations
+- **`classifier`**: scikit-learn path or built-in ORCA-python classifier
+- **`parameters`**: hyperparameters for grid search (nested for ensemble methods)
 
-this dictionary will contain, at the same time, one dictionary for each configuration to try over the datasets during the experiment. This is, a classifier with some specific hyper-parameters to tune. (Keep in mind, that if two or more configurations share the same name, the later ones will be omitted)
-
-```
-"configurations": {
-	"SVM": {
-
-		"classifier": "sklearn.svm.SVC",
-		"parameters": {
-			"C": [0.001, 0.1, 1, 10, 100],
-			"gamma": [0.1, 1, 10]
-		}
-	},
-	"SVMOP": {
-
-		"classifier": "orca_python.classifiers.OrdinalDecomposition",
-		"parameters": {
-			"dtype": "ordered_partitions",
-			"decision_method": "frank_hall",
-			"base_classifier": "sklearn.svm.SVC",
-			"parameters": {
-				"C": [0.01, 0.1, 1, 10],
-				"gamma": [0.01, 0.1, 1, 10],
-				"probability": ["True"]
-			}
-
-		}
-	},
-	"LR": {
-
-		"classifier": "orca_python.classifiers.OrdinalDecomposition",
-		"parameters": {
-			"dtype": ["ordered_partitions", "one_vs_next"],
-			"decision_method": "exponential_loss",
-			"base_classifier": "sklearn.linear_model.LogisticRegression",
-			"parameters": {
-				"solver": ["liblinear"],
-				"C": [0.01, 0.1, 1, 10],
-				"penalty": ["l1","l2"]
-			}
-
-		}
-	},
-	"REDSVM": {
-
-		"classifier": "orca_python.classifiers.REDSVM",
-		"parameters": {
-		    "t": 2,
-			"c": [0.1, 1, 10],
-			"g": [0.1, 1, 10],
-			"r": 0,
-			"m": 100,
-			"e": 0.001,
-			"h": 1
-		}
-
-	},
-	"SVOREX": {
-
-		"classifier": "orca_python.classifiers.SVOREX",
-		"parameters": {
-			"kernel_type": 0,
-			"c": [0.1, 1, 10],
-			"k": [0.1, 1, 10],
-			"t": 0.001
-		}
-
-	}
-}
-```
-
-Each configuration has a name (whatever you want), and consists of:
-
-- **`classifier`**: tells the framework which classifier to use. Can be specified in two different ways:
-    - A relative path to the classifier in sklearn module.
-    - The name of a built-in class in Classifiers folder (found in the main folder of the project).
-- **`parameters`**: hyper-parameters to tune, having each one of them a list of values to cross-validate (not really necessary, can be just one value).
-
-*In ensemble methods, as `OrdinalDecomposition`, you must nest another classifier (the base classifier, which doesn't have a configuration name), with it's respective parameters to tune.*
-
-
-### Running Experiments
+## Running Experiments
 
 As viewed in [Installation Testing](#installation-testing), running an experiment is as simple as executing Config.py
 with the python interpreter, and tell what configuration file to use for this experiment, resulting in the next command:
