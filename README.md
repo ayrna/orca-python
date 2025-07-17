@@ -2,13 +2,7 @@
 
 ## What is ORCA-python?
 
-ORCA-python is an experimental framework, completely built on Python (integrated with scikit-learn and sacred modules),
-that seeks to automatize the run of machine learning experiments through simple-to-understand configuration files.
-
-ORCA-python has been initially created to test ordinal classification, but it can handle regular classification algorithms,
-as long as they are implemented in scikit-learn, or self-implemented following compatibility guidelines form scikit-learn.
-
-In this README, we will explain how to use ORCA-python, and what you need to install in order to run it. A Jupyter notebook is also avaible in [spanish](https://github.com/ayrna/orca-python/blob/master/doc/spanish_user_manual.md).
+**ORCA-python** is an experimental framework built on Python that seamlessly integrates with scikit-learn and sacred modules to automate machine learning experiments through simple JSON configuration files. Initially designed for ordinal classification, it supports regular classification algorithms as long as they are compatible with scikit-learn, making it easy to run reproducible experiments across multiple datasets and classification methods.
 
 ## Table of Contents
 
