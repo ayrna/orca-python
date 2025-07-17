@@ -15,7 +15,9 @@
     - [general-conf](#general-conf)
     - [configurations](#configurations)
 - [Running Experiments](#running-experiments)
-
+    - [Basic Usage](#basic-usage)
+    - [Recommended Usage](#recommended-usage)
+    - [Example Output](#example-output)
 
 ## Installation
 
@@ -140,18 +142,24 @@ Defines classifiers and their hyperparameters for GridSearchCV. Each configurati
 
 ## Running Experiments
 
-As viewed in [Installation Testing](#installation-testing), running an experiment is as simple as executing Config.py
-with the python interpreter, and tell what configuration file to use for this experiment, resulting in the next command:
+### Basic Usage
 
-  `$ python config.py with experiment_file.json`
+```bash
+python config.py with experiment_file.json
+```
 
-Running an experiment this way has two problems though, one of them being an excessive verbosity from Sacred,
-while the other consists of the non-reproducibility of the results of the experiment, due to the lack of a fixed seed.
+### Recommended Usage
 
-Both problems can be easily fixed. The seed can be specified after "with" in the command:
+For reproducible results with minimal output:
 
-  `$ python config.py with experiment_file.json seed=12345`
+```bash
+python config.py with experiment_file.json seed=12345 -l ERROR
+```
 
-while we can silence Sacred just by adding "-l ERROR" at the end of the line (not necessarily at the end).
+**Parameters:**
+- `seed`: fixed random seed for reproducibility
+- `-l ERROR`: reduces Sacred framework verbosity
 
-  `$ python config.py with experiment_file.json seed=12345 -l ERROR`
+### Example Output
+
+Results are stored in the specified output folder with detailed performance metrics and hyperparameter information for each dataset and configuration combination.
