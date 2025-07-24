@@ -1,13 +1,11 @@
 """OrdinalDecomposition ensemble."""
 
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
+from sklearn.utils._param_validation import StrOptions
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 from orca_python.utilities import load_classifier
-
-# from sys import path
-# path.append('..')
 
 
 class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
@@ -88,6 +86,26 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
     """
 
+    _parameter_constraints: dict = {
+        "dtype": [
+            StrOptions(
+                {
+                    "ordered_partitions",
+                    "one_vs_next",
+                    "one_vs_followers",
+                    "one_vs_previous",
+                }
+            )
+        ],
+        "decision_method": [
+            StrOptions(
+                {"exponential_loss", "hinge_loss", "logarithmic_loss", "frank_hall"}
+            )
+        ],
+        "base_classifier": [str],
+        "parameters": [dict],
+    }
+
     def __init__(
         self,
         dtype="ordered_partitions",
@@ -100,6 +118,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         self.base_classifier = base_classifier
         self.parameters = parameters
 
+    @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
         """Fit the model with the training data.
 
