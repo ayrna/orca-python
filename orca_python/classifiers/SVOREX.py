@@ -1,10 +1,13 @@
 """Support Vector for Ordinal Regression (Explicit constraints) (SVOREX)."""
 
-from sklearn.base import BaseEstimator, ClassifierMixin
+from numbers import Integral, Real
+
+import numpy as np
+from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
+from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
-# from .svorex import svorex
 from orca_python.classifiers.svorex import svorex
 
 
@@ -56,6 +59,22 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
     """
 
+    _parameter_constraints: dict = {
+        "C": [Interval(Real, 0.0, None, closed="neither")],
+        "kernel": [
+            StrOptions(
+                {
+                    "gaussian",
+                    "linear",
+                    "poly",
+                }
+            )
+        ],
+        "degree": [Interval(Integral, 0, None, closed="left")],
+        "tol": [Interval(Real, 0.0, None, closed="neither")],
+        "kappa": [Interval(Real, 0.0, None, closed="neither")],
+    }
+
     def __init__(self, C=1.0, kernel="gaussian", degree=2, tol=0.001, kappa=1):
         self.C = C
         self.kernel = kernel
@@ -63,6 +82,7 @@ class SVOREX(BaseEstimator, ClassifierMixin):
         self.tol = tol
         self.kappa = kappa
 
+    @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
         """Fit the model with the training data.
 
@@ -135,6 +155,6 @@ class SVOREX(BaseEstimator, ClassifierMixin):
         # Input validation
         X = check_array(X)
 
-        y_pred = svorex.predict(X.tolist(), self.model_)
+        y_pred = np.array(svorex.predict(X.tolist(), self.model_))
 
         return y_pred
