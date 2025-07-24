@@ -33,6 +33,23 @@ _METRICS = {
     "wkappa": wkappa,
 }
 
+# Indicates whether a higher score means better performance
+_GREATER_IS_BETTER = {
+    "accuracy_off1": True,
+    "amae": False,
+    "ccr": True,
+    "gm": True,
+    "gmsec": True,
+    "mae": False,
+    "mmae": False,
+    "ms": True,
+    "mze": False,
+    "rps": False,
+    "spearman": True,
+    "tkendall": True,
+    "wkappa": True,
+}
+
 
 def get_metric_names():
     """Get the names of all available metrics.
@@ -58,3 +75,40 @@ def get_metric_names():
 
     """
     return sorted(_METRICS.keys())
+
+
+def greater_is_better(metric_name):
+    """Determine if greater values indicate better classification performance.
+
+    Needed when declaring a new scorer through make_scorer from sklearn.
+
+    Parameters
+    ----------
+    metric_name : str
+        Name of the metric.
+
+    Returns
+    -------
+    greater_is_better : bool
+        True if greater values are better, False otherwise.
+
+    Raises
+    ------
+    KeyError
+        If the metric name is not recognized.
+
+    Examples
+    --------
+    >>> from orca_python.metrics import greater_is_better
+    >>> greater_is_better("ccr")
+    True
+    >>> greater_is_better("mze")
+    False
+    >>> greater_is_better("mae")
+    False
+
+    """
+    try:
+        return _GREATER_IS_BETTER[metric_name.lower().strip()]
+    except KeyError:
+        raise KeyError(f"Unrecognized metric name: '{metric_name}'.")

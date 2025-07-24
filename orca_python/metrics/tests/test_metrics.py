@@ -10,7 +10,6 @@ from orca_python.metrics import (
     ccr,
     gm,
     gmsec,
-    greater_is_better,
     mae,
     mmae,
     ms,
@@ -20,23 +19,6 @@ from orca_python.metrics import (
     tkendall,
     wkappa,
 )
-
-
-def test_greater_is_better():
-    """Test the greater_is_better function."""
-    assert greater_is_better("accuracy_off1")
-    assert greater_is_better("ccr")
-    assert greater_is_better("gm")
-    assert greater_is_better("gmsec")
-    assert not greater_is_better("mae")
-    assert not greater_is_better("mmae")
-    assert not greater_is_better("amae")
-    assert greater_is_better("ms")
-    assert not greater_is_better("mze")
-    assert not greater_is_better("rps")
-    assert greater_is_better("tkendall")
-    assert greater_is_better("wkappa")
-    assert greater_is_better("spearman")
 
 
 def test_accuracy_off1():
