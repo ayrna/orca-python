@@ -48,22 +48,41 @@ def test_svorex_predict_matches_expected(kernel, expected_file):
 
 
 @pytest.mark.parametrize(
-    "params, error_msg",
+    "param_name, invalid_value",
     [
-        ({"tol": 0}, "- T is invalid"),
-        ({"C": 0}, "- C is invalid"),
-        ({"kappa": 0}, "- K is invalid"),
-        ({"kernel": "poly", "degree": 0}, "- P is invalid"),
-        ({"kappa": -1}, "-1 is invalid"),
+        ("C", 0),
+        ("C", -1),
+        ("degree", -1),
+        ("tol", 0),
+        ("tol", -1e-5),
+        ("kernel", "unknown"),
+        ("kappa", -1),
     ],
 )
-def test_svorex_fit_hyperparameters_validation(X, y, params, error_msg):
-    """Test that hyperparameters are validated."""
-    classifier = SVOREX(**params)
+def test_svorex_hyperparameter_value_validation(X, y, param_name, invalid_value):
+    """Test that SVOREX raises ValueError for invalid of hyperparameters."""
+    classifier = SVOREX(**{param_name: invalid_value})
 
-    with pytest.raises(ValueError, match=error_msg):
-        model = classifier.fit(X, y)
-        assert model is None, "The SVOREX fit method doesnt return Null on error"
+    with pytest.raises(ValueError, match=rf"The '{param_name}' parameter.*"):
+        classifier.fit(X, y)
+
+
+@pytest.mark.parametrize(
+    "param_name, invalid_value",
+    [
+        ("C", "high"),
+        ("kernel", 5),
+        ("degree", 2.5),
+        ("tol", "tight"),
+        ("kappa", "low"),
+    ],
+)
+def test_svorex_hyperparameter_type_validation(X, y, param_name, invalid_value):
+    """Test that SVOREX raises ValueError for invalid types of hyperparameters."""
+    classifier = SVOREX(**{param_name: invalid_value})
+
+    with pytest.raises(ValueError, match=rf"The '{param_name}' parameter.*"):
+        classifier.fit(X, y)
 
 
 def test_svorex_fit_input_validation(X, y):

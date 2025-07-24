@@ -32,6 +32,46 @@ def test_ordinal_decomposition(X, y):
     npt.assert_array_equal(y_pred, y)
 
 
+@pytest.mark.parametrize(
+    "param_name, invalid_value",
+    [
+        ("dtype", "one_vs_all"),
+        ("dtype", "frank_hall"),
+        ("decision_method", "invalid"),
+        ("decision_method", "one_vs_next"),
+    ],
+)
+def test_ordinal_decomposition_hyperparameter_value_validation(
+    X, y, param_name, invalid_value
+):
+    """Test that OrdinalDecomposition raises ValueError for invalid of
+    hyperparameters."""
+    classifier = OrdinalDecomposition(**{param_name: invalid_value})
+
+    with pytest.raises(ValueError, match=rf"The '{param_name}' parameter.*"):
+        classifier.fit(X, y)
+
+
+@pytest.mark.parametrize(
+    "param_name, invalid_value",
+    [
+        ("dtype", ["ordered_partitions"]),
+        ("decision_method", 0),
+        ("base_classifier", 3),
+        ("parameters", "tol"),
+        ("parameters", []),
+    ],
+)
+def test_ordinal_decomposition_hyperparameter_type_validation(
+    X, y, param_name, invalid_value
+):
+    """Test that OrdinalDecomposition raises ValueError for invalid types of hyperparameters."""
+    classifier = OrdinalDecomposition(**{param_name: invalid_value})
+
+    with pytest.raises(ValueError, match=rf"The '{param_name}' parameter.*"):
+        classifier.fit(X, y)
+
+
 def test_ordinal_decomposition_fit_input_validation(X, y):
     """Test that input data is validated."""
     X_invalid = X[:-1, :-1]

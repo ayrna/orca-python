@@ -46,7 +46,7 @@ def test_redsvm_predict_matches_expected(kernel, expected_file):
         degree=2,
         gamma=0.1,
         coef0=0.5,
-        shrinking=0,
+        shrinking=False,
         tol=0.005,
         cache_size=150,
     )
@@ -63,28 +63,45 @@ def test_redsvm_predict_matches_expected(kernel, expected_file):
 
 
 @pytest.mark.parametrize(
-    "param_name, invalid_value, error_msg",
+    "param_name, invalid_value",
     [
-        ("kernel", "unknown", "unknown kernel type"),
-        ("cache_size", -1, "cache_size <= 0"),
-        ("tol", -1, "eps <= 0"),
-        ("shrinking", 2, "shrinking != 0 and shrinking != 1"),
-        (
-            "kernel",
-            "precomputed",
-            "Wrong input format: sample_serial_number out of range",
-        ),
+        ("C", 0),
+        ("C", -1),
+        ("degree", -1),
+        ("gamma", -0.5),
+        ("shrinking", 2),
+        ("tol", -1e-5),
+        ("cache_size", 0),
+        ("kernel", "unknown"),
+        ("gamma", "invalid_string"),
     ],
 )
-def test_redsvm_fit_hyperparameters_validation(
-    X, y, param_name, invalid_value, error_msg
-):
-    """Test that hyperparameters are validated."""
+def test_redsvm_hyperparameter_value_validation(X, y, param_name, invalid_value):
+    """Test that REDSVM raises ValueError for invalid of hyperparameters."""
     classifier = REDSVM(**{param_name: invalid_value})
 
-    with pytest.raises(ValueError, match=error_msg):
-        model = classifier.fit(X, y)
-        assert model is None, "The REDSVM fit method doesnt return Null on error"
+    with pytest.raises(ValueError, match=rf"The '{param_name}' parameter.*"):
+        classifier.fit(X, y)
+
+
+@pytest.mark.parametrize(
+    "param_name, invalid_value",
+    [
+        ("C", "high"),
+        ("kernel", 5),
+        ("degree", 2.5),
+        ("coef0", "bias"),
+        ("shrinking", "yes"),
+        ("tol", "tight"),
+        ("cache_size", "big"),
+    ],
+)
+def test_redsvm_hyperparameter_type_validation(X, y, param_name, invalid_value):
+    """Test that REDSVM raises ValueError for invalid types of hyperparameters."""
+    classifier = REDSVM(**{param_name: invalid_value})
+
+    with pytest.raises(ValueError, match=rf"The '{param_name}' parameter.*"):
+        classifier.fit(X, y)
 
 
 def test_redsvm_fit_input_validation(X, y):

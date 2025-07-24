@@ -1,10 +1,12 @@
 """Neural Network with Ordered Partitions (NNOP)."""
 
 import math as math
+from numbers import Integral, Real
 
 import numpy as np
 import scipy
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
+from sklearn.utils._param_validation import Interval
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
@@ -89,12 +91,20 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
     """
 
+    _parameter_constraints: dict = {
+        "epsilon_init": [Interval(Real, 0.0, None, closed="neither")],
+        "n_hidden": [Interval(Integral, 1, None, closed="left")],
+        "max_iter": [Interval(Integral, 1, None, closed="left")],
+        "lambda_value": [Interval(Real, 0.0, None, closed="neither")],
+    }
+
     def __init__(self, epsilon_init=0.5, n_hidden=50, max_iter=500, lambda_value=0.01):
         self.epsilon_init = epsilon_init
         self.n_hidden = n_hidden
         self.max_iter = max_iter
         self.lambda_value = lambda_value
 
+    @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
         """Fit the model with the training data.
 

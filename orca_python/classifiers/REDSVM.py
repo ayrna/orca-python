@@ -1,13 +1,14 @@
 """Reduction from ordinal regression to binary SVM (REDSVM)."""
 
+from numbers import Integral, Real
+
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
+from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 from orca_python.classifiers.libsvmRank.python import svm
-
-# from .libsvmRank.python import svm
 
 
 class REDSVM(BaseEstimator, ClassifierMixin):
@@ -37,13 +38,16 @@ class REDSVM(BaseEstimator, ClassifierMixin):
     degree : int, default=3
         Set degree in kernel function.
 
-    gamma : float, default=1/n_features
-        Set gamma in kernel function.
+    gamma : {'scale', 'auto'} or float, default=1.0
+        Kernel coefficient determining the influence of individual training samples:
+        - 'scale': 1 / (n_features * X.var())
+        - 'auto': 1 / n_features
+        - float: Must be non-negative.
 
     coef0 : float, default=0
         Set coef0 in kernel function.
 
-    shrinking : int, default=1
+    shrinking : bool, default=True
         Set whether to use the shrinking heuristics.
 
     tol : float, default=0.001
@@ -74,14 +78,42 @@ class REDSVM(BaseEstimator, ClassifierMixin):
 
     """
 
+    _parameter_constraints: dict = {
+        "C": [Interval(Real, 0.0, None, closed="neither")],
+        "kernel": [
+            StrOptions(
+                {
+                    "linear",
+                    "poly",
+                    "rbf",
+                    "sigmoid",
+                    "stump",
+                    "perceptron",
+                    "laplacian",
+                    "exponential",
+                    "precomputed",
+                }
+            )
+        ],
+        "degree": [Interval(Integral, 0, None, closed="left")],
+        "gamma": [
+            StrOptions({"scale", "auto"}),
+            Interval(Real, 0.0, None, closed="neither"),
+        ],
+        "coef0": [Interval(Real, None, None, closed="neither")],
+        "shrinking": ["boolean"],
+        "tol": [Interval(Real, 0.0, None, closed="neither")],
+        "cache_size": [Interval(Real, 0.0, None, closed="neither")],
+    }
+
     def __init__(
         self,
         C=1,
         kernel="rbf",
         degree=3,
-        gamma=None,
+        gamma="auto",
         coef0=0,
-        shrinking=1,
+        shrinking=True,
         tol=0.001,
         cache_size=100,
     ):
@@ -94,6 +126,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
         self.tol = tol
         self.cache_size = cache_size
 
+    @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
         """Fit the model with the training data.
 
@@ -117,14 +150,24 @@ class REDSVM(BaseEstimator, ClassifierMixin):
             If parameters are invalid or data has wrong format.
 
         """
+        # Additional strict validation for boolean parameters
+        if not isinstance(self.shrinking, bool):
+            raise ValueError(
+                f"The 'shrinking' parameter must be of type bool. "
+                f"Got {type(self.shrinking).__name__} instead."
+            )
+
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
         self.classes_ = unique_labels(y)
 
-        # Set the default g value if necessary
-        if self.gamma is None:
-            self.gamma = 1 / np.size(X, 1)
+        # Set default gamma value if not specified
+        gamma_value = self.gamma
+        if self.gamma == "auto":
+            gamma_value = 1.0 / X.shape[1]
+        elif self.gamma == "scale":
+            gamma_value = 1.0 / (X.shape[1] * X.var())
 
         # Map kernel type
         kernel_type_mapping = {
@@ -138,18 +181,18 @@ class REDSVM(BaseEstimator, ClassifierMixin):
             "exponential": 7,
             "precomputed": 8,
         }
-        kernel_type = kernel_type_mapping.get(self.kernel, -1)
+        kernel_type = kernel_type_mapping[self.kernel]
 
         # Fit the model
         options = "-s 5 -t {} -d {} -g {} -r {} -c {} -m {} -e {} -h {} -q".format(
             str(kernel_type),
             str(self.degree),
-            str(self.gamma),
+            str(gamma_value),
             str(self.coef0),
             str(self.C),
             str(self.cache_size),
             str(self.tol),
-            str(self.shrinking),
+            str(1 if self.shrinking else 0),
         )
         self.model_ = svm.fit(y.tolist(), X.tolist(), options)
 
@@ -184,6 +227,6 @@ class REDSVM(BaseEstimator, ClassifierMixin):
         # Input validation
         X = check_array(X)
 
-        y_pred = svm.predict(X.tolist(), self.model_)
+        y_pred = np.array(svm.predict(X.tolist(), self.model_))
 
         return y_pred
