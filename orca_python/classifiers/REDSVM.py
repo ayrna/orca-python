@@ -150,6 +150,13 @@ class REDSVM(BaseEstimator, ClassifierMixin):
             If parameters are invalid or data has wrong format.
 
         """
+        # Additional strict validation for boolean parameters
+        if not isinstance(self.shrinking, bool):
+            raise ValueError(
+                f"The 'shrinking' parameter must be of type bool. "
+                f"Got {type(self.shrinking).__name__} instead."
+            )
+
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
