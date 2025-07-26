@@ -7,48 +7,6 @@ import scipy.stats
 from sklearn.metrics import confusion_matrix, recall_score
 
 
-def greater_is_better(metric_name):
-    """Determine if greater values indicate better classification performance.
-
-    Needed when declaring a new scorer through make_scorer from sklearn.
-
-    Parameters
-    ----------
-    metric_name : str
-        Name of the metric.
-
-    Returns
-    -------
-    greater_is_better : bool
-        True if greater values indicate better classification performance, False otherwise.
-
-    Examples
-    --------
-    >>> from orca_python.metrics.metrics import greater_is_better
-    >>> greater_is_better("ccr")
-    True
-    >>> greater_is_better("mze")
-    False
-    >>> greater_is_better("mae")
-    False
-
-    """
-    greater_is_better_metrics = [
-        "ccr",
-        "ms",
-        "gm",
-        "gmsec",
-        "tkendall",
-        "wkappa",
-        "spearman",
-        "accuracy_off1",
-    ]
-    if metric_name in greater_is_better_metrics:
-        return True
-    else:
-        return False
-
-
 def ccr(y_true, y_pred):
     """Calculate the Correctly Classified Ratio.
 
