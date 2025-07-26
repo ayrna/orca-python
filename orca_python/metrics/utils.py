@@ -1,5 +1,7 @@
 """Utility functions for accessing and using classification metrics by name."""
 
+from sklearn.metrics import make_scorer
+
 from orca_python.metrics import (
     accuracy_off1,
     amae,
@@ -112,3 +114,94 @@ def greater_is_better(metric_name):
         return _GREATER_IS_BETTER[metric_name.lower().strip()]
     except KeyError:
         raise KeyError(f"Unrecognized metric name: '{metric_name}'.")
+
+
+def load_metric_as_scorer(metric_name):
+    """Load a metric function by name and return a scorer compatible with
+    sklearn.
+
+    Parameters
+    ----------
+    metric_name : str
+        Name of the metric.
+
+    Returns
+    -------
+    callable
+        A scikit-learn compatible scorer.
+
+    Raises
+    ------
+    TypeError
+        If metric_name is not a string.
+
+    ValueError
+        If the metric name is not implemented.
+
+    Examples
+    --------
+    >>> from orca_python.metrics import load_metric_as_scorer
+    >>> scorer = load_metric_as_scorer("ccr")
+    >>> type(scorer)
+    <class 'sklearn.metrics._scorer._Scorer'>
+    >>> load_metric_as_scorer("mae")
+    make_scorer(mae, greater_is_better=False, response_method='predict')
+
+    """
+    if not isinstance(metric_name, str):
+        raise TypeError("metric_name must be a string.")
+
+    metric_name = metric_name.lower().strip()
+
+    try:
+        metric_func = _METRICS[metric_name]
+    except KeyError:
+        raise KeyError(f"Unrecognized metric name: '{metric_name}'.")
+
+    gib = greater_is_better(metric_name)
+    scorer = make_scorer(metric_func, greater_is_better=gib)
+    scorer.metric_name = metric_name
+    return scorer
+
+
+def compute_metric(metric_name, y_true, y_pred):
+    """Compute the value of a metric from true and predicted labels.
+
+    Parameters
+    ----------
+    metric_name : str
+        Name of the metric.
+
+    y_true : np.ndarray, shape (n_samples,)
+        Ground truth labels.
+
+    y_pred : np.ndarray, shape (n_samples,)
+        Predicted labels.
+
+    Returns
+    -------
+    float
+        Numeric value of the classification metric.
+
+    Raises
+    ------
+    KeyError
+        If the metric name is not recognized.
+
+    Examples
+    --------
+    >>> from orca_python.metrics import compute_metric
+    >>> y_true = [0, 1, 2, 1, 0]
+    >>> y_pred = [0, 1, 1, 1, 0]
+    >>> compute_metric("ccr", y_true, y_pred)
+    0.8
+    >>> compute_metric("mae", y_true, y_pred)
+    0.2
+
+    """
+    try:
+        metric_func = _METRICS[metric_name]
+    except KeyError:
+        raise KeyError(f"Unrecognized metric name: '{metric_name}'.")
+
+    return metric_func(y_true, y_pred)
