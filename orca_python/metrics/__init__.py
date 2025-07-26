@@ -15,7 +15,12 @@ from .metrics import (
     tkendall,
     wkappa,
 )
-from .utils import get_metric_names, greater_is_better
+from .utils import (
+    compute_metric,
+    get_metric_names,
+    greater_is_better,
+    load_metric_as_scorer,
+)
 
 __all__ = [
     "ccr",
@@ -33,4 +38,6 @@ __all__ = [
     "accuracy_off1",
     "get_metric_names",
     "greater_is_better",
+    "load_metric_as_scorer",
+    "compute_metric",
 ]
