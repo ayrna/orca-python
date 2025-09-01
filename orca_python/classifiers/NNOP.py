@@ -47,12 +47,6 @@ class NNOP(BaseEstimator, ClassifierMixin):
     classes_ : ndarray of shape (n_classes,)
         Array that contains all different class labels found in the original dataset.
 
-    n_classes_ : int
-        Number of labels in the problem.
-
-    n_samples_ : int
-        Number of samples of X (train patterns array).
-
     theta1_ : ndarray of shape (n_hidden, n_features + 1)
         Hidden layer weights (with bias).
 
@@ -144,7 +138,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
         # Aux variables
         y = y[:, np.newaxis]
         n_features = X.shape[1]
-        n_classes = np.size(np.unique(y))
+        n_classes = len(self.classes_)
         n_samples = X.shape[0]
 
         # Recode y to Y using ordinalPartitions coding
@@ -181,8 +175,6 @@ class NNOP(BaseEstimator, ClassifierMixin):
         )
         self.theta1_ = theta1
         self.theta2_ = theta2
-        self.n_classes_ = n_classes
-        self.n_samples_ = n_samples
 
         return self
 
@@ -215,6 +207,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
         # Input validation
         X = check_array(X)
         n_samples = X.shape[0]
+        n_classes = len(self.classes_)
 
         a1 = np.append(np.ones((n_samples, 1)), X, axis=1)
         z2 = np.append(np.ones((n_samples, 1)), np.matmul(a1, self.theta1_.T), axis=1)
@@ -225,9 +218,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         a3 = np.multiply(
             np.where(np.append(projected, np.ones((n_samples, 1)), axis=1) > 0.5, 1, 0),
-            np.tile(np.arange(1, self.n_classes_ + 1), (n_samples, 1)),
+            np.tile(np.arange(1, n_classes + 1), (n_samples, 1)),
         )
-        a3[np.where(a3 == 0)] = self.n_classes_ + 1
+        a3[np.where(a3 == 0)] = n_classes + 1
         y_pred = a3.min(axis=1)
 
         return y_pred

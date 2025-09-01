@@ -46,12 +46,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
     classes_ : ndarray of shape (n_classes,)
         Array that contains all different class labels found in the original dataset.
 
-    n_classes_ : int
-        Number of labels in the problem
-
-    n_samples_ : int
-        Number of samples of X (train patterns array).
-
     theta1_ : ndarray of shape (n_hidden, n_features + 1)
         Hidden layer weigths (with bias)
 
@@ -145,7 +139,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         # Aux variables
         y = y[:, np.newaxis]
         n_features = X.shape[1]
-        n_classes = np.size(np.unique(y))
+        n_classes = len(self.classes_)
         n_samples = X.shape[0]
 
         # Recode y to Y using nominal coding
@@ -191,8 +185,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         self.theta1_ = theta1
         self.theta2_ = theta2
         self.thresholds_ = self._convert_thresholds(thresholds_param, n_classes)
-        self.n_classes_ = n_classes
-        self.n_samples_ = n_samples
 
         return self
 
@@ -226,6 +218,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         X = check_array(X)
 
         n_samples = X.shape[0]
+        n_classes = len(self.classes_)
 
         a1 = np.append(np.ones((n_samples, 1)), X, axis=1)
         z2 = np.matmul(a1, self.theta1_.T)
@@ -233,7 +226,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         projected = np.matmul(a2, self.theta2_.T)
 
         z3 = np.tile(self.thresholds_, (n_samples, 1)) - np.tile(
-            projected, (1, self.n_classes_ - 1)
+            projected, (1, n_classes - 1)
         )
         a3T = 1.0 / (1.0 + np.exp(-z3))
         a3 = np.append(a3T, np.ones((n_samples, 1)), axis=1)
