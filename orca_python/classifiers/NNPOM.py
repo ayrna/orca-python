@@ -155,11 +155,9 @@ class NNPOM(BaseEstimator, ClassifierMixin):
         )
 
         # Hidden layer weigths (with bias)
-        initial_theta1 = self._rand_initialize_weights(
-            n_features + 1, self.get_n_hidden()
-        )
+        initial_theta1 = self._rand_initialize_weights(n_features + 1, self.n_hidden)
         # Output layer weigths (without bias, the biases will be the thresholds)
-        initial_theta2 = self._rand_initialize_weights(self.get_n_hidden(), 1)
+        initial_theta2 = self._rand_initialize_weights(self.n_hidden, 1)
         # Class thresholds parameters
         initial_thresholds = self._rand_initialize_weights((n_classes - 1), 1)
 
@@ -244,206 +242,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
 
         return y_pred
 
-    def get_epsilon_init(self):
-        """Return the value of the variable self.epsilon_init.
-
-        Returns
-        -------
-        epsilon_init : float
-            The initialization range of the weights.
-
-        """
-        return self.epsilon_init
-
-    def set_epsilon_init(self, epsilon_init):
-        """Modify the value of the variable self.epsilon_init.
-
-        Parameters
-        ----------
-        epsilon_init : float
-            The initialization range of the weights.
-
-        """
-        self.epsilon_init = epsilon_init
-
-    def get_n_hidden(self):
-        """Return the value of the variable self.n_hidden.
-
-        Returns
-        -------
-        n_hidden : int
-            Number of nodes/neurons in the hidden layer.
-
-        """
-        return self.n_hidden
-
-    def set_n_hidden(self, n_hidden):
-        """Modify the value of the variable self.n_hidden.
-
-        Parameters
-        ----------
-        n_hidden : int
-            Number of nodes/neurons in the hidden layer.
-
-        """
-        self.n_hidden = n_hidden
-
-    def get_max_iter(self):
-        """Return the value of the variable self.max_iter.
-
-        Returns
-        -------
-        max_iter : int
-            Number of iterations.
-
-        """
-        return self.max_iter
-
-    def set_max_iter(self, max_iter):
-        """Modify the value of the variable self.max_iter.
-
-        Parameters
-        ----------
-        max_iter : int
-            Number of iterations.
-
-        """
-        self.max_iter = max_iter
-
-    def get_lambda_value(self):
-        """Return the value of the variable self.lambda_value.
-
-        Returns
-        -------
-        lambda_value : float
-            The regularization parameter.
-
-        """
-        return self.lambda_value
-
-    def set_lambda_value(self, lambda_value):
-        """Modify the value of the variable self.lambda_value.
-
-        Parameters
-        ----------
-        lambda_value : float
-            The regularization parameter.
-
-        """
-        self.lambda_value = lambda_value
-
-    def get_theta1(self):
-        """Return the value of the variable self.theta1_.
-
-        Returns
-        -------
-        theta1_ : ndarray of shape (n_hidden, n_features + 1)
-            The weights of the hidden layer (with biases included).
-
-        """
-        return self.theta1_
-
-    def set_theta1(self, theta1):
-        """Modify the value of the variable self.theta1_.
-
-        Parameters
-        ----------
-        theta1 : ndarray of shape (n_hidden, n_features + 1)
-            The weights of the hidden layer (with biases included).
-
-        """
-        self.theta1_ = theta1
-
-    def get_theta2(self):
-        """Return the value of the variable self.theta2_.
-
-        Returns
-        -------
-        theta2_ : ndarray of shape (1, n_hidden)
-            The weights of the output layer (without bias, the biases will be the
-            thresholds).
-
-        """
-        return self.theta2_
-
-    def set_theta2(self, theta2):
-        """Modify the value of the variable self.theta2_.
-
-        Parameters
-        ----------
-        theta2 : ndarray of shape (1, n_hidden)
-            The weights of the output layer (without bias, the biases will be the
-            thresholds).
-
-        """
-        self.theta2_ = theta2
-
-    def get_thresholds(self):
-        """Return the value of the variable self.thresholds_.
-
-        Returns
-        -------
-        thresholds_ : ndarray of shape (n_classes - 1, 1)
-            The class thresholds parameters.
-
-        """
-        return self.thresholds_
-
-    def set_thresholds(self, thresholds):
-        """Modify the value of the variable self.thresholds_.
-
-        Parameters
-        ----------
-        thresholds : ndarray of shape (n_classes - 1, 1)
-            The class thresholds parameters.
-
-        """
-        self.thresholds_ = thresholds
-
-    def get_n_classes(self):
-        """Return the value of the variable self.n_classes_.
-
-        Returns
-        -------
-        n_classes_ : int
-            Number of labels in the problem.
-
-        """
-        return self.n_classes_
-
-    def set_n_classes(self, n_classes):
-        """Modify the value of the variable self.n_classes_.
-
-        Parameters
-        ----------
-        n_classes : int
-            Number of labels in the problem.
-
-        """
-        self.n_classes_ = n_classes
-
-    def get_n_samples(self):
-        """Return the value of the variable self.n_samples_.
-
-        Returns
-        -------
-        n_samples_ : int
-            Number of samples of X (train patterns array).
-
-        """
-        return self.n_samples_
-
-    def set_n_samples(self, n_samples):
-        """Modify the value of the variable self.n_samples_.
-
-        Parameters
-        ----------
-        n_samples : int
-            Number of samples of X (train patterns array).
-
-        """
-        self.n_samples_ = n_samples
-
     def _unpack_parameters(self, nn_params, n_features, n_hidden, n_classes):
         """Get theta1, theta2 and thresholds_param from nn_params.
 
@@ -513,10 +311,7 @@ class NNPOM(BaseEstimator, ClassifierMixin):
             Array with the weights of each synaptic relationship between nodes.
 
         """
-        W = (
-            np.random.rand(L_out, L_in) * 2 * self.get_epsilon_init()
-            - self.get_epsilon_init()
-        )
+        W = np.random.rand(L_out, L_in) * 2 * self.epsilon_init - self.epsilon_init
 
         return W
 
