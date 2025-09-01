@@ -141,14 +141,6 @@ class NNPOM(BaseEstimator, ClassifierMixin):
             If parameters are invalid or data has wrong format.
 
         """
-        if (
-            self.epsilon_init < 0
-            or self.n_hidden < 1
-            or self.max_iter < 1
-            or self.lambda_value < 0
-        ):
-            return None
-
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
