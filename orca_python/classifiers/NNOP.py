@@ -227,7 +227,7 @@ class NNOP(ClassifierMixin, BaseEstimator):
 
         """
         # Check is fit had been called
-        check_is_fitted(self)
+        check_is_fitted(self, attributes=["theta1_", "theta2_", "classes_"])
 
         # Input validation
         X = check_array(X)
