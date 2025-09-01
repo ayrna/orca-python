@@ -11,14 +11,14 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
-class NNOP(BaseEstimator, ClassifierMixin):
+class NNOP(ClassifierMixin, BaseEstimator):
     """Neural Network with Ordered Partitions (NNOP).
 
     This model considers the OrderedPartitions coding scheme for the labels and a rule
     for decisions based on the first node whose output is higher than a predefined
-    threshold (T=0.5, in our experiments). The model has one hidden layer with hiddenN
-    neurons and one output layer with as many neurons as the number of classes minus
-    one.
+    threshold (T=0.5, in our experiments). The model has one hidden layer with
+    "n_hidden" neurons and one output layer with as many neurons as the number of
+    classes minus one.
 
     The learning is based on iRProp+ algorithm and the implementation provided by
     Roberto Calandra in his toolbox Rprop Toolbox for MATLAB:
@@ -37,7 +37,8 @@ class NNOP(BaseEstimator, ClassifierMixin):
         Number of hidden neurons of the model.
 
     max_iter : int, default=500
-        Number of iterations for fmin_l_bfgs_b algorithm.
+        Maximum number of iterations. The solver iterates until convergence or this
+        number of iterations.
 
     lambda_value : float, default=0.01
         Regularization parameter.
@@ -45,13 +46,25 @@ class NNOP(BaseEstimator, ClassifierMixin):
     Attributes
     ----------
     classes_ : ndarray of shape (n_classes,)
-        Array that contains all different class labels found in the original dataset.
+        Class labels for each output.
 
-    n_classes_ : int
-        Number of labels in the problem.
+    loss_ : float
+        The current loss computed with the loss function.
 
-    n_samples_ : int
-        Number of samples of X (train patterns array).
+    n_features_in_ : int
+        Number of features seen during fit.
+
+    n_iter_ : int
+        The number of iterations the solver has run.
+
+    n_layers_ : int
+        Number of layers.
+
+    n_outputs_ : int
+        Number of outputs.
+
+    out_activation_ : str
+        Name of the output activation function.
 
     theta1_ : ndarray of shape (n_hidden, n_features + 1)
         Hidden layer weights (with bias).
@@ -106,16 +119,15 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
-        """Fit the model with the training data.
+        """Fit the model to data matrix X and target(s) y.
 
         Parameters
         ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            Training patterns array, where n_samples is the number of samples
-            and n_features is the number of features.
+        X : ndarray or sparse matrix of shape (n_samples, n_features)
+            The input data.
 
-        y : array-like of shape (n_samples,)
-            Target vector relative to X.
+        y : ndarray of shape (n_samples,)
+            The target values.
 
         Returns
         -------
@@ -128,14 +140,6 @@ class NNOP(BaseEstimator, ClassifierMixin):
             If parameters are invalid or data has wrong format.
 
         """
-        if (
-            self.epsilon_init < 0
-            or self.n_hidden < 1
-            or self.max_iter < 1
-            or self.lambda_value < 0
-        ):
-            return None
-
         # Check that X and y have correct shape
         X, y = check_X_y(X, y)
         # Store the classes seen during fit
@@ -143,9 +147,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         # Aux variables
         y = y[:, np.newaxis]
-        n_features = X.shape[1]
-        n_classes = np.size(np.unique(y))
+        n_classes = len(self.classes_)
         n_samples = X.shape[0]
+        self.n_features_in_ = X.shape[1]
 
         # Recode y to Y using ordinalPartitions coding
         Y = 1 * (
@@ -154,7 +158,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
         )
 
         # Hidden layer weights (with bias)
-        initial_theta1 = self._rand_initialize_weights(n_features + 1, self.n_hidden)
+        initial_theta1 = self._rand_initialize_weights(
+            self.n_features_in_ + 1, self.n_hidden
+        )
         # Output layer weights
         initial_theta2 = self._rand_initialize_weights(self.n_hidden + 1, n_classes - 1)
 
@@ -167,22 +173,34 @@ class NNOP(BaseEstimator, ClassifierMixin):
         results_optimization = scipy.optimize.fmin_l_bfgs_b(
             func=self._nnop_cost_function,
             x0=initial_nn_params.ravel(),
-            args=(n_features, self.n_hidden, n_classes, X, Y, self.lambda_value),
+            args=(
+                self.n_features_in_,
+                self.n_hidden,
+                n_classes,
+                X,
+                Y,
+                self.lambda_value,
+            ),
             fprime=None,
             factr=1e3,
             maxiter=self.max_iter,
-            iprint=-1,
         )
 
-        self.nn_params = results_optimization[0]
+        nn_params = results_optimization[0]
+        self.loss_ = float(results_optimization[1])
+        self.n_iter_ = int(results_optimization[2].get("nit", 0))
+
         # Unpack the parameters
         theta1, theta2 = self._unpack_parameters(
-            self.nn_params, n_features, self.n_hidden, n_classes
+            nn_params, self.n_features_in_, self.n_hidden, n_classes
         )
         self.theta1_ = theta1
         self.theta2_ = theta2
-        self.n_classes_ = n_classes
-        self.n_samples_ = n_samples
+
+        # Scikit-learn compatibility
+        self.n_layers_ = 3
+        self.n_outputs_ = n_classes - 1
+        self.out_activation_ = "logistic"
 
         return self
 
@@ -192,13 +210,12 @@ class NNOP(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            Test patterns array, where n_samples is the number of samples and n_features
-            is the number of features.
+            The input data.
 
         Returns
         -------
         y_pred : ndarray of shape (n_samples,)
-            Class labels for samples in X.
+            The predicted classes.
 
         Raises
         ------
@@ -210,11 +227,12 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         """
         # Check is fit had been called
-        check_is_fitted(self)
+        check_is_fitted(self, attributes=["theta1_", "theta2_", "classes_"])
 
         # Input validation
         X = check_array(X)
         n_samples = X.shape[0]
+        n_classes = len(self.classes_)
 
         a1 = np.append(np.ones((n_samples, 1)), X, axis=1)
         z2 = np.append(np.ones((n_samples, 1)), np.matmul(a1, self.theta1_.T), axis=1)
@@ -225,188 +243,12 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         a3 = np.multiply(
             np.where(np.append(projected, np.ones((n_samples, 1)), axis=1) > 0.5, 1, 0),
-            np.tile(np.arange(1, self.n_classes_ + 1), (n_samples, 1)),
+            np.tile(np.arange(1, n_classes + 1), (n_samples, 1)),
         )
-        a3[np.where(a3 == 0)] = self.n_classes_ + 1
+        a3[np.where(a3 == 0)] = n_classes + 1
         y_pred = a3.min(axis=1)
 
         return y_pred
-
-    def get_epsilon_init(self):
-        """Return the value of the variable self.epsilon_init.
-
-        Returns
-        -------
-        epsilon_init : float
-            The initialization range of the weights.
-
-        """
-        return self.epsilon_init
-
-    def set_epsilon_init(self, epsilon_init):
-        """Modify the value of the variable self.epsilon_init.
-
-        Parameters
-        ----------
-        epsilon_init : float
-            The initialization range of the weights.
-
-        """
-        self.epsilon_init = epsilon_init
-
-    def get_n_hidden(self):
-        """Return the value of the variable self.n_hidden.
-
-        Returns
-        -------
-        n_hidden : int
-            Number of nodes/neurons in the hidden layer.
-
-        """
-        return self.n_hidden
-
-    def set_n_hidden(self, n_hidden):
-        """Modify the value of the variable self.n_hidden.
-
-        Parameters
-        ----------
-        n_hidden : int
-            Number of nodes/neurons in the hidden layer.
-
-        """
-        self.n_hidden = n_hidden
-
-    def get_max_iter(self):
-        """Return the value of the variable self.max_iter.
-
-        Returns
-        -------
-        max_iter : int
-            Number of iterations.
-
-        """
-        return self.max_iter
-
-    def set_max_iter(self, max_iter):
-        """Modify the value of the variable self.max_iter.
-
-        Parameters
-        ----------
-        max_iter : int
-            Number of iterations.
-
-        """
-        self.max_iter = max_iter
-
-    def get_lambda_value(self):
-        """Return the value of the variable self.lambda_value.
-
-        Returns
-        -------
-        lambda_value : float
-            Lambda parameter used in regularization.
-
-        """
-        return self.lambda_value
-
-    def set_lambda_value(self, lambda_value):
-        """Modify the value of the variable self.lambda_value.
-
-        Parameters
-        ----------
-        lambda_value : float
-            Lambda parameter used in regularization.
-
-        """
-        self.lambda_value = lambda_value
-
-    def get_theta1(self):
-        """Return the value of the variable self.theta1_.
-
-        Returns
-        -------
-        theta1_ : ndarray of shape (n_hidden, n_features + 1)
-            Array with the weights of the hidden layer (with biases included).
-
-        """
-        return self.theta1_
-
-    def set_theta1(self, theta1):
-        """Modify the value of the variable self.theta1_.
-
-        Parameters
-        ----------
-        theta1 : ndarray of shape (n_hidden, n_features + 1)
-            Array with the weights of the hidden layer (with biases included).
-
-        """
-        self.theta1_ = theta1
-
-    def get_theta2(self):
-        """Return the value of the variable self.theta2_.
-
-        Returns
-        -------
-        theta2_ : ndarray of shape (n_classes - 1, n_hidden + 1)
-            Array with the weights of the output layer.
-
-        """
-        return self.theta2_
-
-    def set_theta2(self, theta2):
-        """Modify the value of the variable self.theta2_.
-
-        Parameters
-        ----------
-        theta2 : ndarray of shape (n_classes - 1, n_hidden + 1)
-            Array with the weights of the output layer.
-
-        """
-        self.theta2_ = theta2
-
-    def get_n_classes(self):
-        """Return the value of the variable self.n_classes_.
-
-        Returns
-        -------
-        n_classes_ : int
-            Number of labels in the problem.
-
-        """
-        return self.n_classes_
-
-    def set_n_classes(self, n_classes):
-        """Modify the value of the variable self.n_classes_.
-
-        Parameters
-        ----------
-        n_classes : int
-            Number of labels in the problem.
-
-        """
-        self.n_classes_ = n_classes
-
-    def get_n_samples(self):
-        """Return the value of the variable self.n_samples_.
-
-        Returns
-        -------
-        n_samples_ : int
-            Number of samples of X (train patterns array).
-
-        """
-        return self.n_samples_
-
-    def set_n_samples(self, n_samples):
-        """Modify the value of the variable self.n_samples_.
-
-        Parameters
-        ----------
-        n_samples : int
-            Number of samples of X (train patterns array).
-
-        """
-        self.n_samples_ = n_samples
 
     def _unpack_parameters(self, nn_params, n_features, n_hidden, n_classes):
         """Get theta1 and theta2 back from nn_params.
@@ -468,10 +310,7 @@ class NNOP(BaseEstimator, ClassifierMixin):
             Array with the weights of each synaptic relationship between nodes.
 
         """
-        W = (
-            np.random.rand(L_out, L_in) * 2 * self.get_epsilon_init()
-            - self.get_epsilon_init()
-        )
+        W = np.random.rand(L_out, L_in) * 2 * self.epsilon_init - self.epsilon_init
 
         return W
 

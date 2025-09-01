@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from sklearn.exceptions import NotFittedError
 
 from orca_python.classifiers.NNPOM import NNPOM
 
@@ -53,6 +54,13 @@ def test_nnpom_hyperparameter_type_validation(X, y, param_name, invalid_value):
         classifier.fit(X, y)
 
 
+def test_nnpom_fit_returns_self(X, y):
+    """fit should return self for sklearn compatibility."""
+    classifier = NNPOM()
+    model = classifier.fit(X, y)
+    assert model is classifier
+
+
 def test_nnpom_fit_input_validation(X, y):
     """Test that input data is validated."""
     X_invalid = X[:-1, :-1]
@@ -60,20 +68,45 @@ def test_nnpom_fit_input_validation(X, y):
 
     classifier = NNPOM()
     with pytest.raises(ValueError):
-        model = classifier.fit(X, y_invalid)
-        assert model is None, "The NNPOM fit method doesnt return Null on error"
+        classifier.fit(X, y_invalid)
 
     with pytest.raises(ValueError):
-        model = classifier.fit([], y)
-        assert model is None, "The NNPOM fit method doesnt return Null on error"
+        classifier.fit([], y)
 
     with pytest.raises(ValueError):
-        model = classifier.fit(X, [])
-        assert model is None, "The NNPOM fit method doesnt return Null on error"
+        classifier.fit(X, [])
 
     with pytest.raises(ValueError):
-        model = classifier.fit(X_invalid, y)
-        assert model is None, "The NNPOM fit method doesnt return Null on error"
+        classifier.fit(X_invalid, y)
+
+
+def test_nnpom_sets_fitted_attributes_after_fit(X, y):
+    """Test than NNPOM exposes fitted attributes aligned con sklearn-style."""
+    clf = NNPOM(n_hidden=4, max_iter=5)
+    clf.fit(X, y)
+
+    for attr in [
+        "classes_",
+        "n_features_in_",
+        "theta1_",
+        "theta2_",
+        "loss_",
+        "n_iter_",
+        "n_layers_",
+        "n_outputs_",
+        "out_activation_",
+    ]:
+        assert hasattr(clf, attr), f"Missing fitted attribute: {attr}"
+
+    assert isinstance(clf.classes_, np.ndarray) and np.array_equal(
+        clf.classes_, np.unique(y)
+    )
+    assert isinstance(clf.n_features_in_, int) and clf.n_features_in_ == X.shape[1]
+    assert isinstance(clf.loss_, (float, np.floating)) and clf.loss_ >= 0
+    assert isinstance(clf.n_iter_, int) and 1 <= clf.n_iter_ <= 5
+    assert isinstance(clf.n_layers_, int) and clf.n_layers_ == 3
+    assert isinstance(clf.n_outputs_, int) and clf.n_outputs_ == len(np.unique(y)) - 1
+    assert isinstance(clf.out_activation_, str) and clf.out_activation_ == "logistic"
 
 
 def test_nnpom_predict_invalid_input_raises_error(X, y):
@@ -83,3 +116,10 @@ def test_nnpom_predict_invalid_input_raises_error(X, y):
 
     with pytest.raises(ValueError):
         classifier.predict([])
+
+
+def test_nnpom_predict_raises_if_not_fitted(X):
+    """Test that predict raises NotFittedError if called before fit."""
+    classifier = NNPOM()
+    with pytest.raises(NotFittedError):
+        classifier.predict(X)
