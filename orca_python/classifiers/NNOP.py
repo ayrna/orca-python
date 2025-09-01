@@ -16,9 +16,9 @@ class NNOP(ClassifierMixin, BaseEstimator):
 
     This model considers the OrderedPartitions coding scheme for the labels and a rule
     for decisions based on the first node whose output is higher than a predefined
-    threshold (T=0.5, in our experiments). The model has one hidden layer with hiddenN
-    neurons and one output layer with as many neurons as the number of classes minus
-    one.
+    threshold (T=0.5, in our experiments). The model has one hidden layer with
+    "n_hidden" neurons and one output layer with as many neurons as the number of
+    classes minus one.
 
     The learning is based on iRProp+ algorithm and the implementation provided by
     Roberto Calandra in his toolbox Rprop Toolbox for MATLAB:
@@ -37,7 +37,8 @@ class NNOP(ClassifierMixin, BaseEstimator):
         Number of hidden neurons of the model.
 
     max_iter : int, default=500
-        Number of iterations for fmin_l_bfgs_b algorithm.
+        Maximum number of iterations. The solver iterates until convergence or this
+        number of iterations.
 
     lambda_value : float, default=0.01
         Regularization parameter.
@@ -45,7 +46,7 @@ class NNOP(ClassifierMixin, BaseEstimator):
     Attributes
     ----------
     classes_ : ndarray of shape (n_classes,)
-        Array that contains all different class labels found in the original dataset.
+        Class labels for each output.
 
     loss_ : float
         The current loss computed with the loss function.
@@ -118,16 +119,15 @@ class NNOP(ClassifierMixin, BaseEstimator):
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
-        """Fit the model with the training data.
+        """Fit the model to data matrix X and target(s) y.
 
         Parameters
         ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            Training patterns array, where n_samples is the number of samples
-            and n_features is the number of features.
+        X : ndarray or sparse matrix of shape (n_samples, n_features)
+            The input data.
 
-        y : array-like of shape (n_samples,)
-            Target vector relative to X.
+        y : ndarray of shape (n_samples,)
+            The target values.
 
         Returns
         -------
@@ -210,13 +210,12 @@ class NNOP(ClassifierMixin, BaseEstimator):
         Parameters
         ----------
         X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            Test patterns array, where n_samples is the number of samples and n_features
-            is the number of features.
+            The input data.
 
         Returns
         -------
         y_pred : ndarray of shape (n_samples,)
-            Class labels for samples in X.
+            The predicted classes.
 
         Raises
         ------
