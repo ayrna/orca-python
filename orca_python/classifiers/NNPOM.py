@@ -11,7 +11,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
-class NNPOM(BaseEstimator, ClassifierMixin):
+class NNPOM(ClassifierMixin, BaseEstimator):
     """Neural Network based on Proportional Odd Model (NNPOM).
 
     This class implements a neural network model for ordinal regression. The model has

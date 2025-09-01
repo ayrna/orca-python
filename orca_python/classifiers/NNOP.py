@@ -11,7 +11,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
-class NNOP(BaseEstimator, ClassifierMixin):
+class NNOP(ClassifierMixin, BaseEstimator):
     """Neural Network with Ordered Partitions (NNOP).
 
     This model considers the OrderedPartitions coding scheme for the labels and a rule
