@@ -47,6 +47,24 @@ class NNOP(BaseEstimator, ClassifierMixin):
     classes_ : ndarray of shape (n_classes,)
         Array that contains all different class labels found in the original dataset.
 
+    loss_ : float
+        The current loss computed with the loss function.
+
+    n_features_in_ : int
+        Number of features seen during fit.
+
+    n_iter_ : int
+        The number of iterations the solver has run.
+
+    n_layers_ : int
+        Number of layers.
+
+    n_outputs_ : int
+        Number of outputs.
+
+    out_activation_ : str
+        Name of the output activation function.
+
     theta1_ : ndarray of shape (n_hidden, n_features + 1)
         Hidden layer weights (with bias).
 
@@ -137,9 +155,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
 
         # Aux variables
         y = y[:, np.newaxis]
-        n_features = X.shape[1]
         n_classes = len(self.classes_)
         n_samples = X.shape[0]
+        self.n_features_in_ = X.shape[1]
 
         # Recode y to Y using ordinalPartitions coding
         Y = 1 * (
@@ -148,7 +166,9 @@ class NNOP(BaseEstimator, ClassifierMixin):
         )
 
         # Hidden layer weights (with bias)
-        initial_theta1 = self._rand_initialize_weights(n_features + 1, self.n_hidden)
+        initial_theta1 = self._rand_initialize_weights(
+            self.n_features_in_ + 1, self.n_hidden
+        )
         # Output layer weights
         initial_theta2 = self._rand_initialize_weights(self.n_hidden + 1, n_classes - 1)
 
@@ -161,20 +181,34 @@ class NNOP(BaseEstimator, ClassifierMixin):
         results_optimization = scipy.optimize.fmin_l_bfgs_b(
             func=self._nnop_cost_function,
             x0=initial_nn_params.ravel(),
-            args=(n_features, self.n_hidden, n_classes, X, Y, self.lambda_value),
+            args=(
+                self.n_features_in_,
+                self.n_hidden,
+                n_classes,
+                X,
+                Y,
+                self.lambda_value,
+            ),
             fprime=None,
             factr=1e3,
             maxiter=self.max_iter,
-            iprint=-1,
         )
 
         self.nn_params = results_optimization[0]
+        self.loss_ = float(results_optimization[1])
+        self.n_iter_ = int(results_optimization[2].get("nit", 0))
+
         # Unpack the parameters
         theta1, theta2 = self._unpack_parameters(
-            self.nn_params, n_features, self.n_hidden, n_classes
+            self.nn_params, self.n_features_in_, self.n_hidden, n_classes
         )
         self.theta1_ = theta1
         self.theta2_ = theta2
+
+        # Scikit-learn compatibility
+        self.n_layers_ = 3
+        self.n_outputs_ = n_classes - 1
+        self.out_activation_ = "logistic"
 
         return self
 
