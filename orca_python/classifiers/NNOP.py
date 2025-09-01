@@ -186,13 +186,13 @@ class NNOP(BaseEstimator, ClassifierMixin):
             maxiter=self.max_iter,
         )
 
-        self.nn_params = results_optimization[0]
+        nn_params = results_optimization[0]
         self.loss_ = float(results_optimization[1])
         self.n_iter_ = int(results_optimization[2].get("nit", 0))
 
         # Unpack the parameters
         theta1, theta2 = self._unpack_parameters(
-            self.nn_params, self.n_features_in_, self.n_hidden, n_classes
+            nn_params, self.n_features_in_, self.n_hidden, n_classes
         )
         self.theta1_ = theta1
         self.theta2_ = theta2
