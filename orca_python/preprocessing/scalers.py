@@ -37,6 +37,78 @@ def _validate_and_align(X_train, X_test):
     return X_train, X_test
 
 
+def apply_scaling(X_train, X_test=None, method=None, return_transformer=False):
+    """Apply normalization or standardization to the input data.
+
+    The preprocessing is fit on the training data and then applied to both
+    training and test data (if provided).
+
+    Parameters
+    ----------
+    X_train : array-like of shape (n_samples, n_features)
+        Feature matrix used specifically for model training.
+
+    X_test : array-like of shape (m_samples, n_features), optional
+        Feature matrix used for model evaluation and prediction.
+
+    method : {"norm", "std", None}, optional
+        - "norm": Min-Max scaling to [0, 1]
+        - "std" : Standardization (mean=0, std=1)
+        - None  : No preprocessing
+
+    return_transformer : bool, default=False
+        If True, also return the fitted scaling object.
+
+    Returns
+    -------
+    (X_train_scaled, X_test_scaled) or (X_train_scaled, X_test_scaled, scaler)
+        Scaled arrays; X_test_scaled is None if X_test is None.
+        If return_transformer=True and method=None, scaler is None.
+
+    Raises
+    ------
+    ValueError
+        If an unknown scaling method is specified.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from preprocessing.scalers import apply_scaling
+    >>> X_train = np.array([[1.0, 2.0], [2.0, 4.0], [3.0, 6.0]])
+    >>> X_test = np.array([[2.5, 5.0]])
+    >>> X_train_scaled, X_test_scaled = apply_scaling(X_train, X_test, method="norm")
+    >>> X_train_scaled
+    array([[0. , 0. ],
+           [0.5, 0.5],
+           [1. , 1. ]])
+    >>> X_test_scaled
+    array([[0.75, 0.75]])
+    >>> X_train_scaled, X_test_scaled = apply_scaling(X_train, X_test, method="std")
+    >>> X_train_scaled.round(3)
+    array([[-1.225, -1.225],
+           [ 0.   ,  0.   ],
+           [ 1.225,  1.225]])
+    >>> X_test_scaled.round(3)
+    array([[0.612, 0.612]])
+
+    """
+    if method is None:
+        return (X_train, X_test, None) if return_transformer else (X_train, X_test)
+
+    if not isinstance(method, str):
+        raise ValueError("Scaling method must be a string or None.")
+
+    key = method.lower()
+    if key == "norm":
+        return minmax_scale(X_train, X_test, return_transformer)
+    elif key == "std":
+        return standardize(X_train, X_test, return_transformer)
+    else:
+        raise ValueError(
+            f"Unknown scaling method '{method}'. Valid options: 'norm', 'std', None."
+        )
+
+
 def minmax_scale(X_train, X_test=None, return_transformer=False):
     """Scale features to a fixed range between 0 and 1.
 

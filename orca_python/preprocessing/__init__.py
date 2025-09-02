@@ -1,5 +1,5 @@
 """Preprocessing module."""
 
-from .scalers import minmax_scale, standardize
+from .scalers import apply_scaling, minmax_scale, standardize
 
-__all__ = ["minmax_scale", "standardize"]
+__all__ = ["apply_scaling", "minmax_scale", "standardize"]
