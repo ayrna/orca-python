@@ -4,7 +4,6 @@ from __future__ import print_function
 
 from collections import OrderedDict
 from copy import deepcopy
-from importlib import import_module
 from pathlib import Path
 from sys import path as syspath
 from time import time
@@ -64,21 +63,6 @@ class Utilities:
 
         syspath.append("classifiers")
 
-    def _resolve_estimator(self, identifier):
-        """Resolve and return a classifier given its identifier."""
-        if not isinstance(identifier, str):
-            return identifier
-
-        try:
-            return get_classifier_by_name(identifier)
-        except Exception:
-            pass
-
-        if "." in identifier:
-            module_path, class_name = identifier.rsplit(".", 1)
-            return getattr(import_module(module_path), class_name)
-        raise ValueError(f"Unknown classifier identifier: {identifier}")
-
     def run_experiment(self):
         """Run an experiment. Main method of this framework.
 
@@ -129,7 +113,7 @@ class Utilities:
                 if self.verbose:
                     print("Running", conf_name, "...")
 
-                classifier = self._resolve_estimator(configuration["classifier"])
+                classifier = get_classifier_by_name(configuration["classifier"])
 
                 # Iterating over partitions
                 for part_idx, partition in dataset:
@@ -429,12 +413,12 @@ class Utilities:
 
         """
         random_seed = np.random.get_state()[1][0]
-        for _, conf in self.configurations.items():
 
+        for _, conf in self.configurations.items():
             parameters = conf["parameters"]
 
             try:
-                estimator_cls = self._resolve_estimator(conf["classifier"])
+                estimator_cls = get_classifier_by_name(conf["classifier"])
             except Exception as e:
                 raise ValueError(
                     f"Unable to resolve classifier '{conf['classifier']}': {e}"

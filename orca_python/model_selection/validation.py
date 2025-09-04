@@ -2,7 +2,6 @@
 
 from ast import literal_eval
 from copy import deepcopy
-from importlib import import_module
 from itertools import product
 
 import numpy as np
@@ -255,21 +254,7 @@ def _prepare_parameters_for_ensemble(param_grid, random_state=None):
 
     from orca_python.model_selection.loaders import get_classifier_by_name
 
-    # base_estimator = get_classifier_by_name(param_grid["base_classifier"])
-    # Temporal fix for the issue with dotted paths
-    base_id = param_grid["base_classifier"]
-    if not isinstance(base_id, str):
-        base_estimator = base_id
-    else:
-        try:
-            base_estimator = get_classifier_by_name(base_id)
-        except Exception:
-            if "." in base_id:
-                module_path, class_name = base_id.rsplit(".", 1)
-                base_estimator = getattr(import_module(module_path), class_name)
-            else:
-                raise ValueError(f"Unknown base_classifier identifier: {base_id}. ")
-
+    base_estimator = get_classifier_by_name(param_grid["base_classifier"])
     base_params = param_grid.get("parameters", {})
 
     if check_for_random_state(base_estimator):
