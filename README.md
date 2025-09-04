@@ -90,18 +90,18 @@ ORCA-python includes sample datasets with pre-partitioned train/test splits usin
     },
     "configurations": {
         "SVM": {
-            "classifier": "sklearn.svm.SVC",
+            "classifier": "SVC",
             "parameters": {
                 "C": [0.001, 0.1, 1, 10, 100],
                 "gamma": [0.1, 1, 10]
             }
         },
         "SVMOP": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "classifier": "OrdinalDecomposition",
             "parameters": {
                 "dtype": "ordered_partitions",
                 "decision_method": "frank_hall",
-                "base_classifier": "sklearn.svm.SVC",
+                "base_classifier": "SVC",
                 "parameters": {
                     "C": [0.01, 0.1, 1, 10],
                     "gamma": [0.01, 0.1, 1, 10],
@@ -144,7 +144,7 @@ Controls global experiment parameters.
 
 Defines classifiers and their hyperparameters for GridSearchCV. Each configuration has a name and consists of:
 
-- **`classifier`**: scikit-learn path or built-in ORCA-python classifier
+- **`classifier`**: scikit-learn or built-in ORCA-python classifier
 - **`parameters`**: hyperparameters for grid search (nested for ensemble methods)
 
 ## Running Experiments

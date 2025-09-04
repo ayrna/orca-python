@@ -2,10 +2,8 @@
 
 from __future__ import print_function
 
-from ast import literal_eval
 from collections import OrderedDict
 from copy import deepcopy
-from itertools import product
 from pathlib import Path
 from sys import path as syspath
 from time import time
@@ -14,9 +12,10 @@ import numpy as np
 import pandas as pd
 from pkg_resources import get_distribution, parse_version
 from sklearn import preprocessing
-from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.model_selection import GridSearchCV
 
-from orca_python.metrics import compute_metric, load_metric_as_scorer
+from orca_python.metrics import compute_metric
+from orca_python.model_selection import load_classifier
 from orca_python.results import Results
 
 
@@ -85,7 +84,6 @@ class Utilities:
         self._results = Results(self.general_conf["output_folder"])
 
         self._check_dataset_list()
-        self._check_params()
 
         if self.verbose:
             print("\n###############################")
@@ -109,8 +107,6 @@ class Utilities:
 
                 if self.verbose:
                     print("Running", conf_name, "...")
-
-                classifier = load_classifier(configuration["classifier"])
 
                 # Iterating over partitions
                 for part_idx, partition in dataset:
@@ -147,7 +143,7 @@ class Utilities:
                     optimal_estimator = self._get_optimal_estimator(
                         partition["train_inputs"],
                         partition["train_outputs"],
-                        classifier,
+                        configuration["classifier"],
                         configuration["parameters"],
                     )
 
@@ -390,89 +386,8 @@ class Utilities:
 
         return std_scaler.transform(train_data), std_scaler.transform(test_data)
 
-    def _check_params(self):
-        """Check if all given configurations are syntactically correct.
-
-        Performs two different transformations over parameter dictionaries when needed:
-
-        - If one parameter's values are not inside a list, GridSearchCV
-          will not be able to handle them, so they must be enclosed into one.
-
-        - When an ensemble method, as OrderedPartitions, is chosen as classifier,
-          transforms the dict of lists in which the parameters for the internal
-          classifier are stated into a list of dicts (all possible combinations of
-          those different parameters).
-
-        Raises
-        ------
-        TypeError
-            If any parameter value for the base_classifier is not a list.
-
-        """
-        random_seed = np.random.get_state()[1][0]
-        for _, conf in self.configurations.items():
-
-            parameters = conf["parameters"]  # Aliasing
-
-            # Adding given seed as random_state value
-            if check_for_random_state(conf["classifier"]):
-                parameters["random_state"] = [random_seed]
-
-            # An ensemble method is going to be used
-            if "parameters" in parameters and isinstance(
-                parameters["parameters"], dict
-            ):
-
-                # Adding given seed as random_state value
-                if check_for_random_state(parameters["base_classifier"]):
-                    parameters["parameters"]["random_state"] = [random_seed]
-
-                try:
-
-                    # Creating a list for each parameter.
-                    # Elements represented as 'parameterName;parameterValue'.
-                    p_list = [
-                        [p_name + ";" + str(v) for v in p]
-                        for p_name, p in parameters["parameters"].items()
-                    ]
-                    # Permutations of all lists. Generates all possible
-                    # combination of elements between lists.
-                    p_list = [list(item) for item in list(product(*p_list))]
-                    # Creates a list of dictionaries, containing all
-                    # combinations of given parameters
-                    p_list = [dict([item.split(";") for item in p]) for p in p_list]
-
-                except TypeError:
-                    raise TypeError("All parameters for base_classifier must be list")
-
-                # Returns non-string values back to it's normal self
-                for d in p_list:
-                    for k, v in d.items():
-
-                        try:
-                            d[k] = literal_eval(v)
-                        except ValueError:
-                            pass
-
-                parameters["parameters"] = p_list
-
-            # No need to cross-validate when there is just one value per parameter
-            if all(
-                not isinstance(p, list) or len(p) == 1 for _, p in parameters.items()
-            ):
-                # Pop lonely values out of list
-                for p_name, p in parameters.items():
-                    if isinstance(p, list):
-                        parameters[p_name] = p[0]
-
-            else:
-                # Convert non-list values to lists
-                for p_name, p in parameters.items():
-                    if not isinstance(p, list) and not isinstance(p, dict):
-                        parameters[p_name] = [p]
-
     def _get_optimal_estimator(
-        self, train_inputs, train_outputs, classifier, parameters
+        self, train_inputs, train_outputs, classifier_name, parameters
     ):
         """Perform cross-validation over one dataset and configuration.
 
@@ -492,9 +407,8 @@ class Utilities:
         train_outputs : array-like of shape (n_samples)
             Target vector relative to train_inputs.
 
-        classifier : object
-            Class implementing a mathematical model able to be trained and to perform
-            predictions over given datasets.
+        classifier_name : str
+            Name of the classification algorithm being employed.
 
         parameters : dict
             Dictionary containing parameters to optimize as keys, and the list of
@@ -513,41 +427,25 @@ class Utilities:
             If the metric name is not found or cv_metric is not a string.
 
         """
-        # No need to cross-validate when there is just one value per parameter
-        if all(not isinstance(p, list) for k, p in parameters.items()):
-
-            optimal = classifier(**parameters)
-
-            start = time()
-            optimal.fit(train_inputs, train_outputs)
-            elapsed = time() - start
-
-            optimal.refit_time_ = elapsed
-            return optimal
-
-        metric_name = self.general_conf["cv_metric"].strip().lower()
-        scoring_function = load_metric_as_scorer(metric_name)
-
-        # Creating object to split train data for cross-validation
-        # This will make GridSearch have a pseudo-random beheaviour
-        skf = StratifiedKFold(
-            n_splits=self.general_conf["hyperparam_cv_nfolds"],
-            shuffle=True,
+        estimator = load_classifier(
+            classifier_name=classifier_name,
             random_state=np.random.get_state()[1][0],
-        )
-
-        # Performing cross-validation phase
-        optimal = GridSearchCV(
-            estimator=classifier(),
+            n_jobs=self.general_conf.get("jobs", 1),
+            cv_n_folds=self.general_conf.get("hyperparam_cv_nfolds", 3),
+            cv_metric=self.general_conf.get("cv_metric", "mae"),
             param_grid=parameters,
-            scoring=scoring_function,
-            n_jobs=self.general_conf["jobs"],
-            cv=skf,
         )
 
-        optimal.fit(train_inputs, train_outputs)
+        start = time()
+        estimator.fit(train_inputs, train_outputs)
+        elapsed = time() - start
 
-        return optimal
+        if not isinstance(estimator, GridSearchCV):
+            estimator.refit_time_ = elapsed
+            estimator.best_params_ = parameters
+            estimator.best_estimator_ = estimator
+
+        return estimator
 
     def write_report(self):
         """Save summarized information about experiment through Results class."""
@@ -604,69 +502,6 @@ def check_packages_version():
         print("OUTDATED. Upgrade to 1.1.0 or newer")
     else:
         print("OK")
-
-
-def load_classifier(classifier_path, params=None):
-    """Load and return a classifier.
-
-    Parameters
-    ----------
-    classifier_path : str
-        Package path where the classifier class is located in. That module can be local
-        if the classifier is built inside the framework, or relative to scikit-learn
-        package.
-
-    params : dict
-        Parameters to initialize the classifier with. Used when loading a classifiers
-        inside of an ensemble algorithm (base_classifier).
-
-    Returns
-    -------
-    classifier : object
-        Returns a loaded classifier, either from an scikit-learn module, or from a
-        module of this framework. Depending if hyper-parameters are specified, the
-        object will be instantiated or not.
-
-    """
-    # Path to framework local classifier
-    if len(classifier_path.split(".")) == 1:
-        classifier = __import__(classifier_path)
-        classifier = getattr(classifier, classifier_path)
-
-    # Path to Scikit-Learn classifier
-    else:
-
-        classifier = __import__(classifier_path.rsplit(".", 1)[0], fromlist="None")
-        classifier = getattr(classifier, classifier_path.rsplit(".", 1)[1])
-
-    # Instancing meta-classifier with given parameters
-    if params is not None:
-        classifier = classifier(**params)
-
-    return classifier
-
-
-def check_for_random_state(classifier):
-    """Check if classifier has random_state attribute.
-
-    Parameters
-    ----------
-    classifier : object
-        Instance of an sklearn compatible classifier.
-
-    Returns
-    -------
-    has_random_state : bool
-        True if classifier has random_state attribute, False otherwise.
-
-    """
-    try:
-
-        load_classifier(classifier)().random_state
-        return True
-
-    except AttributeError:
-        return False
 
 
 def get_key(key):

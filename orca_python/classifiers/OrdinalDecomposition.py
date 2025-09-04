@@ -5,7 +5,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import StrOptions
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
-from orca_python.utilities import load_classifier
+from orca_python.model_selection import load_classifier
 
 
 class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
@@ -110,7 +110,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         self,
         dtype="ordered_partitions",
         decision_method="frank_hall",
-        base_classifier="sklearn.linear_model.LogisticRegression",
+        base_classifier="LogisticRegression",
         parameters={},
     ):
         self.dtype = dtype
@@ -161,7 +161,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         # Fitting n_targets - 1 classifiers
         for n in range(len(class_labels[0, :])):
 
-            estimator = load_classifier(self.base_classifier, self.parameters)
+            estimator = load_classifier(
+                self.base_classifier, param_grid=self.parameters
+            )
             estimator.fit(
                 X[np.where(class_labels[:, n] != 0)],
                 np.ravel(class_labels[np.where(class_labels[:, n] != 0), n].T),

@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from orca_python.testing import TEST_DATASETS_DIR
-from orca_python.utilities import Utilities, load_classifier
+from orca_python.utilities import Utilities
 
 
 @pytest.fixture
@@ -130,127 +130,6 @@ def test_standardize_data(util):
     npt.assert_almost_equal(np.std(std_X_train), 1)
 
 
-def test_load_algorithm():
-    # Loading a method from within this framework
-    from orca_python.classifiers import OrdinalDecomposition
-
-    imported_class = load_classifier("orca_python.classifiers.OrdinalDecomposition")
-    npt.assert_equal(imported_class, OrdinalDecomposition)
-
-    # Loading a scikit-learn classifier
-    from sklearn.svm import SVC
-
-    imported_class = load_classifier("sklearn.svm.SVC")
-    npt.assert_equal(imported_class, SVC)
-
-    # Raising exceptions when the classifier cannot be loaded
-    with pytest.raises(ImportError):
-        load_classifier("sklearn.svm.SVC.submethod")
-    with pytest.raises(AttributeError):
-        load_classifier("sklearn.svm.SVCC")
-
-
-def test_check_params(util):
-    """Testing functionality of check_params method.
-
-    It will test the 3 different scenarios contemplated within the framework
-    for passing the configuration.
-
-    """
-    # Normal use of configuration file with a non nested method
-    util.configurations = {
-        "conf1": {
-            "classifier": "sklearn.svm.SVC",
-            "parameters": {
-                "C": [0.1, 1, 10],
-                "gamma": [0.1, 1, 100],
-                "probability": "True",
-            },
-        }
-    }
-
-    # Getting formatted_params and expected_params
-    util._check_params()
-    formatted_params = util.configurations["conf1"]["parameters"]
-
-    random_state = util.configurations["conf1"]["parameters"]["random_state"]
-    expected_params = {
-        "C": [0.1, 1, 10],
-        "gamma": [0.1, 1, 100],
-        "probability": ["True"],
-        "random_state": random_state,
-    }
-
-    npt.assert_equal(formatted_params, expected_params)
-
-    # Configuration file using an ensemble method
-    util.configurations = {
-        "conf2": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
-            "parameters": {
-                "dtype": "OrderedPartitions",
-                "base_classifier": "sklearn.svm.SVC",
-                "parameters": {"C": [1, 10], "gamma": [1, 10], "probability": ["True"]},
-            },
-        }
-    }
-
-    # Getting formatted_params and expected_params
-    util._check_params()
-    formatted_params = util.configurations["conf2"]["parameters"]
-
-    random_state = util.configurations["conf2"]["parameters"]["parameters"][0][
-        "random_state"
-    ]
-    expected_params = {
-        "dtype": ["OrderedPartitions"],
-        "base_classifier": ["sklearn.svm.SVC"],
-        "parameters": [
-            {"C": 1, "gamma": 1, "probability": True, "random_state": random_state},
-            {"C": 1, "gamma": 10, "probability": True, "random_state": random_state},
-            {"C": 10, "gamma": 1, "probability": True, "random_state": random_state},
-            {"C": 10, "gamma": 10, "probability": True, "random_state": random_state},
-        ],
-    }
-
-    # Ordering list of parameters from formatted_params to prevent inconsistencies
-    formatted_params["parameters"] = sorted(
-        formatted_params["parameters"], key=lambda k: k["C"]
-    )
-
-    npt.assert_equal(expected_params, formatted_params)
-
-    # Configuration file where it's not necessary to perform cross-validation
-    util.configurations = {
-        "conf3": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
-            "parameters": {
-                "dtype": "OrderedPartitions",
-                "base_classifier": "sklearn.svm.SVC",
-                "parameters": {"C": [1], "gamma": [1]},
-            },
-        }
-    }
-
-    # Getting formatted_params and expected_params
-    util._check_params()
-    formatted_params = util.configurations["conf3"]["parameters"]
-
-    random_state = util.configurations["conf3"]["parameters"]["parameters"][
-        "random_state"
-    ]
-    expected_params = {
-        "dtype": "OrderedPartitions",
-        "base_classifier": "sklearn.svm.SVC",
-        "parameters": {"C": 1, "gamma": 1, "random_state": random_state},
-    }
-
-    npt.assert_equal(formatted_params, expected_params)
-
-    # Resetting configurations to not interfere with other experiments
-    util.configurations = {}
-
-
 @pytest.fixture
 def main_folder():
     return Path(__file__).parent.parent.parent
@@ -279,15 +158,15 @@ def general_conf(dataset_folder):
 def configurations():
     return {
         "SVM": {
-            "classifier": "sklearn.svm.SVC",
+            "classifier": "SVC",
             "parameters": {"C": [0.001, 0.1, 1, 10, 100], "gamma": [0.1, 1, 10]},
         },
         "SVMOP": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "classifier": "OrdinalDecomposition",
             "parameters": {
                 "dtype": "ordered_partitions",
                 "decision_method": "frank_hall",
-                "base_classifier": "sklearn.svm.SVC",
+                "base_classifier": "SVC",
                 "parameters": {
                     "C": [0.01, 0.1, 1, 10],
                     "gamma": [0.01, 0.1, 1, 10],

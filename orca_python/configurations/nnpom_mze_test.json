@@ -11,7 +11,7 @@
     },
     "configurations": {
         "NNPOM-MZE": {
-            "classifier": "orca_python.classifiers.NNPOM",
+            "classifier": "NNPOM",
             "parameters": {
                 "epsilon_init": 0.5,
                 "n_hidden": [5, 10, 20, 30, 40, 50],
