@@ -140,7 +140,7 @@ def test_check_params(util):
     # Normal use of configuration file with a non nested method
     util.configurations = {
         "conf1": {
-            "classifier": "sklearn.svm.SVC",
+            "classifier": "SVC",
             "parameters": {
                 "C": [0.1, 1, 10],
                 "gamma": [0.1, 1, 100],
@@ -166,7 +166,7 @@ def test_check_params(util):
     # Configuration file using an ensemble method
     util.configurations = {
         "conf2": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "classifier": "OrdinalDecomposition",
             "parameters": {
                 "dtype": "OrderedPartitions",
                 "base_classifier": "SVC",
@@ -203,7 +203,7 @@ def test_check_params(util):
     # Configuration file where it's not necessary to perform cross-validation
     util.configurations = {
         "conf3": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "classifier": "OrdinalDecomposition",
             "parameters": {
                 "dtype": "OrderedPartitions",
                 "base_classifier": "SVC",
@@ -259,11 +259,11 @@ def general_conf(dataset_folder):
 def configurations():
     return {
         "SVM": {
-            "classifier": "sklearn.svm.SVC",
+            "classifier": "SVC",
             "parameters": {"C": [0.001, 0.1, 1, 10, 100], "gamma": [0.1, 1, 10]},
         },
         "SVMOP": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "classifier": "OrdinalDecomposition",
             "parameters": {
                 "dtype": "ordered_partitions",
                 "decision_method": "frank_hall",
