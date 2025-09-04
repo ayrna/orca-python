@@ -189,7 +189,7 @@ def test_check_params(util):
             "classifier": "orca_python.classifiers.OrdinalDecomposition",
             "parameters": {
                 "dtype": "OrderedPartitions",
-                "base_classifier": "sklearn.svm.SVC",
+                "base_classifier": "SVC",
                 "parameters": {"C": [1, 10], "gamma": [1, 10], "probability": ["True"]},
             },
         }
@@ -204,7 +204,7 @@ def test_check_params(util):
     ]
     expected_params = {
         "dtype": ["OrderedPartitions"],
-        "base_classifier": ["sklearn.svm.SVC"],
+        "base_classifier": ["SVC"],
         "parameters": [
             {"C": 1, "gamma": 1, "probability": True, "random_state": random_state},
             {"C": 1, "gamma": 10, "probability": True, "random_state": random_state},
@@ -226,7 +226,7 @@ def test_check_params(util):
             "classifier": "orca_python.classifiers.OrdinalDecomposition",
             "parameters": {
                 "dtype": "OrderedPartitions",
-                "base_classifier": "sklearn.svm.SVC",
+                "base_classifier": "SVC",
                 "parameters": {"C": [1], "gamma": [1]},
             },
         }
@@ -241,7 +241,7 @@ def test_check_params(util):
     ]
     expected_params = {
         "dtype": "OrderedPartitions",
-        "base_classifier": "sklearn.svm.SVC",
+        "base_classifier": "SVC",
         "parameters": {"C": 1, "gamma": 1, "random_state": random_state},
     }
 

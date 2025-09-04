@@ -2,10 +2,9 @@
 
 from __future__ import print_function
 
-from ast import literal_eval
 from collections import OrderedDict
 from copy import deepcopy
-from itertools import product
+from importlib import import_module
 from pathlib import Path
 from sys import path as syspath
 from time import time
@@ -17,7 +16,11 @@ from sklearn import preprocessing
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
 from orca_python.metrics import compute_metric, load_metric_as_scorer
-from orca_python.model_selection import check_for_random_state
+from orca_python.model_selection import (
+    get_classifier_by_name,
+    is_searchcv,
+    prepare_param_grid,
+)
 from orca_python.results import Results
 
 
@@ -60,6 +63,21 @@ class Utilities:
         self.verbose = verbose
 
         syspath.append("classifiers")
+
+    def _resolve_estimator(self, identifier):
+        """Resolve and return a classifier given its identifier."""
+        if not isinstance(identifier, str):
+            return identifier
+
+        try:
+            return get_classifier_by_name(identifier)
+        except Exception:
+            pass
+
+        if "." in identifier:
+            module_path, class_name = identifier.rsplit(".", 1)
+            return getattr(import_module(module_path), class_name)
+        raise ValueError(f"Unknown classifier identifier: {identifier}")
 
     def run_experiment(self):
         """Run an experiment. Main method of this framework.
@@ -413,66 +431,20 @@ class Utilities:
         random_seed = np.random.get_state()[1][0]
         for _, conf in self.configurations.items():
 
-            parameters = conf["parameters"]  # Aliasing
+            parameters = conf["parameters"]
 
-            # Adding given seed as random_state value
-            classifier = load_classifier(conf["classifier"])
-            if check_for_random_state(classifier):
-                parameters["random_state"] = [random_seed]
+            try:
+                estimator_cls = self._resolve_estimator(conf["classifier"])
+            except Exception as e:
+                raise ValueError(
+                    f"Unable to resolve classifier '{conf['classifier']}': {e}"
+                )
 
-            # An ensemble method is going to be used
-            if "parameters" in parameters and isinstance(
-                parameters["parameters"], dict
-            ):
+            prepared = prepare_param_grid(
+                estimator=estimator_cls, param_grid=parameters, random_state=random_seed
+            )
 
-                # Adding given seed as random_state value
-                base_classifier = load_classifier(parameters["base_classifier"])
-                if check_for_random_state(base_classifier):
-                    parameters["parameters"]["random_state"] = [random_seed]
-
-                try:
-
-                    # Creating a list for each parameter.
-                    # Elements represented as 'parameterName;parameterValue'.
-                    p_list = [
-                        [p_name + ";" + str(v) for v in p]
-                        for p_name, p in parameters["parameters"].items()
-                    ]
-                    # Permutations of all lists. Generates all possible
-                    # combination of elements between lists.
-                    p_list = [list(item) for item in list(product(*p_list))]
-                    # Creates a list of dictionaries, containing all
-                    # combinations of given parameters
-                    p_list = [dict([item.split(";") for item in p]) for p in p_list]
-
-                except TypeError:
-                    raise TypeError("All parameters for base_classifier must be list")
-
-                # Returns non-string values back to it's normal self
-                for d in p_list:
-                    for k, v in d.items():
-
-                        try:
-                            d[k] = literal_eval(v)
-                        except ValueError:
-                            pass
-
-                parameters["parameters"] = p_list
-
-            # No need to cross-validate when there is just one value per parameter
-            if all(
-                not isinstance(p, list) or len(p) == 1 for _, p in parameters.items()
-            ):
-                # Pop lonely values out of list
-                for p_name, p in parameters.items():
-                    if isinstance(p, list):
-                        parameters[p_name] = p[0]
-
-            else:
-                # Convert non-list values to lists
-                for p_name, p in parameters.items():
-                    if not isinstance(p, list) and not isinstance(p, dict):
-                        parameters[p_name] = [p]
+            conf["parameters"] = prepared
 
     def _get_optimal_estimator(
         self, train_inputs, train_outputs, classifier, parameters
@@ -517,8 +489,7 @@ class Utilities:
 
         """
         # No need to cross-validate when there is just one value per parameter
-        if all(not isinstance(p, list) for k, p in parameters.items()):
-
+        if not is_searchcv(parameters):
             optimal = classifier(**parameters)
 
             start = time()
