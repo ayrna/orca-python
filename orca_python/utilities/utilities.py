@@ -17,6 +17,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
 from orca_python.metrics import compute_metric, load_metric_as_scorer
+from orca_python.model_selection import check_for_random_state
 from orca_python.results import Results
 
 
@@ -415,7 +416,8 @@ class Utilities:
             parameters = conf["parameters"]  # Aliasing
 
             # Adding given seed as random_state value
-            if check_for_random_state(conf["classifier"]):
+            classifier = load_classifier(conf["classifier"])
+            if check_for_random_state(classifier):
                 parameters["random_state"] = [random_seed]
 
             # An ensemble method is going to be used
@@ -424,7 +426,8 @@ class Utilities:
             ):
 
                 # Adding given seed as random_state value
-                if check_for_random_state(parameters["base_classifier"]):
+                base_classifier = load_classifier(parameters["base_classifier"])
+                if check_for_random_state(base_classifier):
                     parameters["parameters"]["random_state"] = [random_seed]
 
                 try:
@@ -644,29 +647,6 @@ def load_classifier(classifier_path, params=None):
         classifier = classifier(**params)
 
     return classifier
-
-
-def check_for_random_state(classifier):
-    """Check if classifier has random_state attribute.
-
-    Parameters
-    ----------
-    classifier : object
-        Instance of an sklearn compatible classifier.
-
-    Returns
-    -------
-    has_random_state : bool
-        True if classifier has random_state attribute, False otherwise.
-
-    """
-    try:
-
-        load_classifier(classifier)().random_state
-        return True
-
-    except AttributeError:
-        return False
 
 
 def get_key(key):
