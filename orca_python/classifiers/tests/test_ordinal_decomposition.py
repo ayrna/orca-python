@@ -24,7 +24,7 @@ def test_ordinal_decomposition(X, y):
     classifier = OrdinalDecomposition(
         dtype="ordered_partitions",
         decision_method="frank_hall",
-        base_classifier="sklearn.svm.SVC",
+        base_classifier="SVC",
         parameters={"C": 1.0, "gamma": "scale", "probability": True},
     )
 

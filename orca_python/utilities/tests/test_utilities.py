@@ -287,7 +287,7 @@ def configurations():
             "parameters": {
                 "dtype": "ordered_partitions",
                 "decision_method": "frank_hall",
-                "base_classifier": "sklearn.svm.SVC",
+                "base_classifier": "SVC",
                 "parameters": {
                     "C": [0.01, 0.1, 1, 10],
                     "gamma": [0.01, 0.1, 1, 10],
