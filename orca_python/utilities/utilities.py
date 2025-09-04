@@ -129,7 +129,7 @@ class Utilities:
                 if self.verbose:
                     print("Running", conf_name, "...")
 
-                classifier = load_classifier(configuration["classifier"])
+                classifier = self._resolve_estimator(configuration["classifier"])
 
                 # Iterating over partitions
                 for part_idx, partition in dataset:
@@ -578,46 +578,6 @@ def check_packages_version():
         print("OUTDATED. Upgrade to 1.1.0 or newer")
     else:
         print("OK")
-
-
-def load_classifier(classifier_path, params=None):
-    """Load and return a classifier.
-
-    Parameters
-    ----------
-    classifier_path : str
-        Package path where the classifier class is located in. That module can be local
-        if the classifier is built inside the framework, or relative to scikit-learn
-        package.
-
-    params : dict
-        Parameters to initialize the classifier with. Used when loading a classifiers
-        inside of an ensemble algorithm (base_classifier).
-
-    Returns
-    -------
-    classifier : object
-        Returns a loaded classifier, either from an scikit-learn module, or from a
-        module of this framework. Depending if hyper-parameters are specified, the
-        object will be instantiated or not.
-
-    """
-    # Path to framework local classifier
-    if len(classifier_path.split(".")) == 1:
-        classifier = __import__(classifier_path)
-        classifier = getattr(classifier, classifier_path)
-
-    # Path to Scikit-Learn classifier
-    else:
-
-        classifier = __import__(classifier_path.rsplit(".", 1)[0], fromlist="None")
-        classifier = getattr(classifier, classifier_path.rsplit(".", 1)[1])
-
-    # Instancing meta-classifier with given parameters
-    if params is not None:
-        classifier = classifier(**params)
-
-    return classifier
 
 
 def get_key(key):

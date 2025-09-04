@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from orca_python.testing import TEST_DATASETS_DIR
-from orca_python.utilities import Utilities, load_classifier
+from orca_python.utilities import Utilities
 
 
 @pytest.fixture
@@ -128,26 +128,6 @@ def test_standardize_data(util):
     # Test verification
     npt.assert_almost_equal(np.mean(std_X_train), 0)
     npt.assert_almost_equal(np.std(std_X_train), 1)
-
-
-def test_load_algorithm():
-    # Loading a method from within this framework
-    from orca_python.classifiers import OrdinalDecomposition
-
-    imported_class = load_classifier("orca_python.classifiers.OrdinalDecomposition")
-    npt.assert_equal(imported_class, OrdinalDecomposition)
-
-    # Loading a scikit-learn classifier
-    from sklearn.svm import SVC
-
-    imported_class = load_classifier("sklearn.svm.SVC")
-    npt.assert_equal(imported_class, SVC)
-
-    # Raising exceptions when the classifier cannot be loaded
-    with pytest.raises(ImportError):
-        load_classifier("sklearn.svm.SVC.submethod")
-    with pytest.raises(AttributeError):
-        load_classifier("sklearn.svm.SVCC")
 
 
 def test_check_params(util):
