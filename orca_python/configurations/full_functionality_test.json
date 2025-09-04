@@ -18,18 +18,18 @@
     },
     "configurations": {
         "SVM": {
-            "classifier": "sklearn.svm.SVC",
+            "classifier": "SVC",
             "parameters": {
                 "C": [0.001, 0.1, 1, 10, 100],
                 "gamma": [0.1, 1, 10]
             }
         },
         "SVMOP": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "classifier": "OrdinalDecomposition",
             "parameters": {
                 "dtype": "ordered_partitions",
                 "decision_method": "frank_hall",
-                "base_classifier": "sklearn.svm.SVC",
+                "base_classifier": "SVC",
                 "parameters": {
                     "C": [0.01, 0.1, 1, 10],
                     "gamma": [0.01, 0.1, 1, 10],
@@ -38,11 +38,11 @@
             }
         },
         "LR": {
-            "classifier": "orca_python.classifiers.OrdinalDecomposition",
+            "classifier": "OrdinalDecomposition",
             "parameters": {
                 "dtype": ["ordered_partitions", "one_vs_next"],
                 "decision_method": "exponential_loss",
-                "base_classifier": "sklearn.linear_model.LogisticRegression",
+                "base_classifier": "LogisticRegression",
                 "parameters": {
                     "solver": ["liblinear"],
                     "C": [0.01, 0.1, 1, 10],
@@ -52,7 +52,7 @@
             }
         },
         "REDSVM": {
-            "classifier": "orca_python.classifiers.REDSVM",
+            "classifier": "REDSVM",
             "parameters": {
                 "kernel": "rbf",
                 "degree": 3,
@@ -60,11 +60,11 @@
                 "coef0": 0,
                 "C": 1,
                 "tol": 0.001,
-                "shrinking": 1
+                "shrinking": true
             }
         },
         "SVOREX": {
-            "classifier": "orca_python.classifiers.SVOREX",
+            "classifier": "SVOREX",
             "parameters": {
                 "kernel": "gaussian",
                 "C": [0.1, 1, 10],
