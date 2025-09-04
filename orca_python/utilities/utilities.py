@@ -12,14 +12,10 @@ import numpy as np
 import pandas as pd
 from pkg_resources import get_distribution, parse_version
 from sklearn import preprocessing
-from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from sklearn.model_selection import GridSearchCV
 
-from orca_python.metrics import compute_metric, load_metric_as_scorer
-from orca_python.model_selection import (
-    get_classifier_by_name,
-    is_searchcv,
-    prepare_param_grid,
-)
+from orca_python.metrics import compute_metric
+from orca_python.model_selection import load_classifier
 from orca_python.results import Results
 
 
@@ -88,7 +84,6 @@ class Utilities:
         self._results = Results(self.general_conf["output_folder"])
 
         self._check_dataset_list()
-        self._check_params()
 
         if self.verbose:
             print("\n###############################")
@@ -112,8 +107,6 @@ class Utilities:
 
                 if self.verbose:
                     print("Running", conf_name, "...")
-
-                classifier = get_classifier_by_name(configuration["classifier"])
 
                 # Iterating over partitions
                 for part_idx, partition in dataset:
@@ -150,7 +143,7 @@ class Utilities:
                     optimal_estimator = self._get_optimal_estimator(
                         partition["train_inputs"],
                         partition["train_outputs"],
-                        classifier,
+                        configuration["classifier"],
                         configuration["parameters"],
                     )
 
@@ -393,45 +386,8 @@ class Utilities:
 
         return std_scaler.transform(train_data), std_scaler.transform(test_data)
 
-    def _check_params(self):
-        """Check if all given configurations are syntactically correct.
-
-        Performs two different transformations over parameter dictionaries when needed:
-
-        - If one parameter's values are not inside a list, GridSearchCV
-          will not be able to handle them, so they must be enclosed into one.
-
-        - When an ensemble method, as OrderedPartitions, is chosen as classifier,
-          transforms the dict of lists in which the parameters for the internal
-          classifier are stated into a list of dicts (all possible combinations of
-          those different parameters).
-
-        Raises
-        ------
-        TypeError
-            If any parameter value for the base_classifier is not a list.
-
-        """
-        random_seed = np.random.get_state()[1][0]
-
-        for _, conf in self.configurations.items():
-            parameters = conf["parameters"]
-
-            try:
-                estimator_cls = get_classifier_by_name(conf["classifier"])
-            except Exception as e:
-                raise ValueError(
-                    f"Unable to resolve classifier '{conf['classifier']}': {e}"
-                )
-
-            prepared = prepare_param_grid(
-                estimator=estimator_cls, param_grid=parameters, random_state=random_seed
-            )
-
-            conf["parameters"] = prepared
-
     def _get_optimal_estimator(
-        self, train_inputs, train_outputs, classifier, parameters
+        self, train_inputs, train_outputs, classifier_name, parameters
     ):
         """Perform cross-validation over one dataset and configuration.
 
@@ -451,9 +407,8 @@ class Utilities:
         train_outputs : array-like of shape (n_samples)
             Target vector relative to train_inputs.
 
-        classifier : object
-            Class implementing a mathematical model able to be trained and to perform
-            predictions over given datasets.
+        classifier_name : str
+            Name of the classification algorithm being employed.
 
         parameters : dict
             Dictionary containing parameters to optimize as keys, and the list of
@@ -472,40 +427,25 @@ class Utilities:
             If the metric name is not found or cv_metric is not a string.
 
         """
-        # No need to cross-validate when there is just one value per parameter
-        if not is_searchcv(parameters):
-            optimal = classifier(**parameters)
-
-            start = time()
-            optimal.fit(train_inputs, train_outputs)
-            elapsed = time() - start
-
-            optimal.refit_time_ = elapsed
-            return optimal
-
-        metric_name = self.general_conf["cv_metric"].strip().lower()
-        scoring_function = load_metric_as_scorer(metric_name)
-
-        # Creating object to split train data for cross-validation
-        # This will make GridSearch have a pseudo-random beheaviour
-        skf = StratifiedKFold(
-            n_splits=self.general_conf["hyperparam_cv_nfolds"],
-            shuffle=True,
+        estimator = load_classifier(
+            classifier_name=classifier_name,
             random_state=np.random.get_state()[1][0],
-        )
-
-        # Performing cross-validation phase
-        optimal = GridSearchCV(
-            estimator=classifier(),
+            n_jobs=self.general_conf.get("jobs", 1),
+            cv_n_folds=self.general_conf.get("hyperparam_cv_nfolds", 3),
+            cv_metric=self.general_conf.get("cv_metric", "mae"),
             param_grid=parameters,
-            scoring=scoring_function,
-            n_jobs=self.general_conf["jobs"],
-            cv=skf,
         )
 
-        optimal.fit(train_inputs, train_outputs)
+        start = time()
+        estimator.fit(train_inputs, train_outputs)
+        elapsed = time() - start
 
-        return optimal
+        if not isinstance(estimator, GridSearchCV):
+            estimator.refit_time_ = elapsed
+            estimator.best_params_ = parameters
+            estimator.best_estimator_ = estimator
+
+        return estimator
 
     def write_report(self):
         """Save summarized information about experiment through Results class."""
