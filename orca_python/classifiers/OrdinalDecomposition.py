@@ -283,36 +283,36 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             predictions = predictions * 2 - 1
 
             # Transforming from binary problems to the original problem
-            losses = self._exponential_loss(predictions)
-            losses = 1 / losses.astype(float)
-            y_proba = []
-            for losse in losses:
-                y_proba.append((np.exp(losse) / np.sum(np.exp(losse))))
-            y_proba = np.array(y_proba)
+            losses = self._exponential_loss(predictions).astype(float)
+            eps = np.finfo(float).tiny
+            scores = 1.0 / (losses + eps)
+            scores -= scores.max(axis=1, keepdims=True)
+            y_proba = np.exp(scores)
+            y_proba /= y_proba.sum(axis=1, keepdims=True)
 
         elif decision_method == "hinge_loss":
             # Scaling predictions from [0,1] range to [-1,1]
             predictions = predictions * 2 - 1
 
             # Transforming from binary problems to the original problem
-            losses = self._hinge_loss(predictions)
-            losses = 1 / losses.astype(float)
-            y_proba = []
-            for losse in losses:
-                y_proba.append((np.exp(losse) / np.sum(np.exp(losse))))
-            y_proba = np.array(y_proba)
+            losses = self._hinge_loss(predictions).astype(float)
+            eps = np.finfo(float).tiny
+            scores = 1.0 / (losses + eps)
+            scores -= scores.max(axis=1, keepdims=True)
+            y_proba = np.exp(scores)
+            y_proba /= y_proba.sum(axis=1, keepdims=True)
 
         elif decision_method == "logarithmic_loss":
             # Scaling predictions from [0,1] range to [-1,1]
             predictions = predictions * 2 - 1
 
             # Transforming from binary problems to the original problem
-            losses = self._logarithmic_loss(predictions)
-            losses = 1 / losses.astype(float)
-            y_proba = []
-            for losse in losses:
-                y_proba.append((np.exp(losse) / np.sum(np.exp(losse))))
-            y_proba = np.array(y_proba)
+            losses = self._logarithmic_loss(predictions).astype(float)
+            eps = np.finfo(float).tiny
+            scores = 1.0 / (losses + eps)
+            scores -= scores.max(axis=1, keepdims=True)
+            y_proba = np.exp(scores)
+            y_proba /= y_proba.sum(axis=1, keepdims=True)
 
         elif decision_method == "frank_hall":
             # Transforming from binary problems to the original problem
@@ -364,7 +364,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             coding_matrix = (plus_ones + minus_ones)[:, :-1]
 
         elif dtype == "one_vs_previous":
-
             plusones = np.triu(np.ones(n_classes))
             minusones = -np.diagflat(np.ones((1, n_classes - 1)), -1)
             coding_matrix = np.flip((plusones + minusones)[:, :-1], axis=1)
