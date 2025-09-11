@@ -3,7 +3,25 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import StrOptions
-from sklearn.utils.validation import check_is_fitted, validate_data
+from sklearn.utils.validation import check_is_fitted
+
+# scikit-learn >= 1.6
+try:
+    from sklearn.utils.validation import validate_data as _sk_validate_data
+
+    def _validate_data_compat(estimator, X, y=None, *, reset=True, **kwargs):
+        y_arg = "no_validation" if y is None else y
+        return _sk_validate_data(estimator, X, y_arg, reset=reset, **kwargs)
+
+
+# scikit-learn < 1.6
+except Exception:
+
+    def _validate_data_compat(estimator, X, y=None, *, reset=True, **kwargs):
+        if y is None:
+            return estimator._validate_data(X, reset=reset, **kwargs)
+        return estimator._validate_data(X, y, reset=reset, **kwargs)
+
 
 from orca_python.model_selection import load_classifier
 
@@ -139,7 +157,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             If parameters are invalid or data has wrong format.
 
         """
-        X, y = validate_data(
+        X, y = _validate_data_compat(
             self, X, y, accept_sparse=False, ensure_2d=True, dtype=None
         )
 
@@ -205,7 +223,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         """
         check_is_fitted(self, ["estimators_", "classes_", "coding_matrix_"])
-        X = validate_data(self, X, reset=False, ensure_2d=True, dtype=None)
+        X = _validate_data_compat(self, X, reset=False, ensure_2d=True, dtype=None)
 
         # Getting predicted labels for dataset from each classifier
         predictions = self._get_predictions(X)
@@ -276,7 +294,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         """
         check_is_fitted(self, ["estimators_", "classes_", "coding_matrix_"])
-        X = validate_data(self, X, reset=False, ensure_2d=True, dtype=None)
+        X = _validate_data_compat(self, X, reset=False, ensure_2d=True, dtype=None)
 
         # Getting predicted labels for dataset from each classifier
         predictions = self._get_predictions(X)
