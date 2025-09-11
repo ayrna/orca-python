@@ -158,14 +158,9 @@ def test_coding_matrix(dtype, expected_cm):
     npt.assert_array_equal(cm, expected_cm)
 
 
-def test_frank_hall_method(X):
+def test_frank_hall_method():
     """Test that frank and hall method returns expected values for one toy problem
     (starting off predicted probabilities given by each binary classifier)."""
-    # Checking frank_hall cannot be used whitout ordered_partitions
-    classifier = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
-    with pytest.raises(AttributeError):
-        classifier._frank_hall_method(X)
-
     classifier = OrdinalDecomposition(dtype="ordered_partitions")
     classifier.coding_matrix_ = classifier._coding_matrix(classifier.dtype, 5)
 
@@ -352,3 +347,10 @@ def test_ordinal_decomposition_predict_invalid_input_raises_error(X, y):
 
     with pytest.raises(ValueError):
         classifier.predict([])
+
+
+def test_frank_hall_method_raises_error(X, y):
+    """Test that using frank_hall with invalid dtype raises a ValueError."""
+    classifier = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
+    with pytest.raises(ValueError):
+        classifier.fit(X, y)

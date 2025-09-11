@@ -148,7 +148,8 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         decision = str(self.decision_method).lower()
         if decision == "frank_hall" and dtype != "ordered_partitions":
             raise ValueError(
-                'decision_method="frank_hall" requires dtype="ordered_partitions".'
+                "When using Frank and Hall decision method,\
+				ordered_partitions must be used"
             )
 
         # Give each train input its corresponding output label
@@ -431,18 +432,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             each class label.
 
         """
-        # Computing exponential losses
-        e_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
-        for i in range(predictions.shape[1] + 1):
-
-            e_losses[:, i] = np.sum(
-                np.exp(
-                    -predictions
-                    * np.tile(self.coding_matrix_[i, :], (predictions.shape[0], 1))
-                ),
-                axis=1,
-            )
-
+        C = self.coding_matrix_[None, :, :]
+        M = predictions[:, None, :]
+        e_losses = np.exp(-M * C).sum(axis=2)
         return e_losses
 
     def _hinge_loss(self, predictions):
@@ -464,22 +456,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             class label.
 
         """
-        # Computing Hinge losses
-        h_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
-        for i in range(predictions.shape[1] + 1):
-
-            h_losses[:, i] = np.sum(
-                np.maximum(
-                    0,
-                    (
-                        1
-                        - np.tile(self.coding_matrix_[i, :], (predictions.shape[0], 1))
-                        * predictions
-                    ),
-                ),
-                axis=1,
-            )
-
+        C = self.coding_matrix_[None, :, :]
+        M = predictions[:, None, :]
+        h_losses = np.maximum(0.0, 1.0 - C * M).sum(axis=2)
         return h_losses
 
     def _logarithmic_loss(self, predictions):
@@ -501,22 +480,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             each class label.
 
         """
-        # Computing logarithmic losses
-        l_losses = np.zeros((predictions.shape[0], (predictions.shape[1] + 1)))
-        for i in range(predictions.shape[1] + 1):
-
-            l_losses[:, i] = np.sum(
-                np.log(
-                    1
-                    + np.exp(
-                        -2
-                        * np.tile(self.coding_matrix_[i, :], (predictions.shape[0], 1))
-                        * predictions
-                    )
-                ),
-                axis=1,
-            )
-
+        C = self.coding_matrix_[None, :, :]
+        M = predictions[:, None, :]
+        l_losses = np.log1p(np.exp(-2.0 * C * M)).sum(axis=2)
         return l_losses
 
     def _frank_hall_method(self, predictions):
@@ -542,12 +508,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             If the decomposition type is not ordered_partitions.
 
         """
-        if self.dtype.lower() != "ordered_partitions":
-            raise AttributeError(
-                "When using Frank and Hall decision method,\
-								ordered_partitions must be used"
-            )
-
         y_proba = np.empty([(predictions.shape[0]), (predictions.shape[1] + 1)])
 
         # Probabilities of each set to belong to the first ordinal class
