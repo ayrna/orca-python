@@ -3,7 +3,7 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import StrOptions
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted, validate_data
 
 from orca_python.model_selection import load_classifier
 
@@ -103,7 +103,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             )
         ],
         "base_classifier": [str],
-        "parameters": [dict],
+        "parameters": [dict, None],
     }
 
     def __init__(
@@ -111,7 +111,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         dtype="ordered_partitions",
         decision_method="frank_hall",
         base_classifier="LogisticRegression",
-        parameters={},
+        parameters=None,
     ):
         self.dtype = dtype
         self.decision_method = decision_method
@@ -142,7 +142,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             If parameters are invalid or data has wrong format.
 
         """
-        X, y = check_X_y(X, y)
+        X, y = validate_data(
+            self, X, y, accept_sparse=False, ensure_2d=True, dtype=None
+        )
 
         self.X_ = X
         self.y_ = y
@@ -158,12 +160,12 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         class_labels = self.coding_matrix_[(np.digitize(y, self.classes_) - 1), :]
 
         self.classifiers_ = []
+        parameters = {} if self.parameters is None else self.parameters
+
         # Fitting n_targets - 1 classifiers
         for n in range(len(class_labels[0, :])):
 
-            estimator = load_classifier(
-                self.base_classifier, param_grid=self.parameters
-            )
+            estimator = load_classifier(self.base_classifier, param_grid=parameters)
             estimator.fit(
                 X[np.where(class_labels[:, n] != 0)],
                 np.ravel(class_labels[np.where(class_labels[:, n] != 0), n].T),
@@ -200,7 +202,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         """
         check_is_fitted(self, ["X_", "y_"])
-        X = check_array(X)
+        X = validate_data(self, X, reset=False, ensure_2d=True, dtype=None)
 
         # Getting predicted labels for dataset from each classifier
         predictions = self._get_predictions(X)
@@ -274,7 +276,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         """
         check_is_fitted(self, ["X_", "y_"])
-        X = check_array(X)
+        X = validate_data(self, X, reset=False, ensure_2d=True, dtype=None)
 
         # Getting predicted labels for dataset from each classifier
         predictions = self._get_predictions(X)
