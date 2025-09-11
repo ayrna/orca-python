@@ -8,7 +8,7 @@ from sklearn.utils.validation import check_is_fitted, validate_data
 from orca_python.model_selection import load_classifier
 
 
-class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
+class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
     """OrdinalDecomposition ensemble classifier.
 
     This class implements an ensemble model where an ordinal problem is decomposed into
