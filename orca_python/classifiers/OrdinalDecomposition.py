@@ -66,16 +66,9 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         subproblem, and in which binary class they belong inside those new models.
         Further explained previously.
 
-    classifiers_ : list of classifiers
+    estimators_ : list of classifiers
         Initially empty, will include all fitted models for each subproblem once the fit
         function for this class is called successfully.
-
-    X_ : array-like, shape (n_samples, n_features)
-        Training patterns array, where n_samples is the number of samples and
-        n_features is the number of features.
-
-    y_ : array-like, shape (n_samples,)
-        Target vector relative to X.
 
     References
     ----------
@@ -146,9 +139,6 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             self, X, y, accept_sparse=False, ensure_2d=True, dtype=None
         )
 
-        self.X_ = X
-        self.y_ = y
-
         # Get list of different labels of the dataset
         self.classes_ = np.unique(y)
 
@@ -159,7 +149,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
         )
         class_labels = self.coding_matrix_[(np.digitize(y, self.classes_) - 1), :]
 
-        self.classifiers_ = []
+        self.estimators_ = []
         parameters = {} if self.parameters is None else self.parameters
 
         # Fitting n_targets - 1 classifiers
@@ -171,7 +161,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
                 np.ravel(class_labels[np.where(class_labels[:, n] != 0), n].T),
             )
 
-            self.classifiers_.append(estimator)
+            self.estimators_.append(estimator)
 
         return self
 
@@ -201,7 +191,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             If the specified loss method is not implemented.
 
         """
-        check_is_fitted(self, ["X_", "y_"])
+        check_is_fitted(self, ["estimators_", "classes_", "coding_matrix_"])
         X = validate_data(self, X, reset=False, ensure_2d=True, dtype=None)
 
         # Getting predicted labels for dataset from each classifier
@@ -275,7 +265,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
             If the specified loss method is not implemented.
 
         """
-        check_is_fitted(self, ["X_", "y_"])
+        check_is_fitted(self, ["estimators_", "classes_", "coding_matrix_"])
         X = validate_data(self, X, reset=False, ensure_2d=True, dtype=None)
 
         # Getting predicted labels for dataset from each classifier
@@ -406,7 +396,7 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         """
         predictions = np.array(
-            list(map(lambda c: c.predict_proba(X)[:, 1], self.classifiers_))
+            list(map(lambda c: c.predict_proba(X)[:, 1], self.estimators_))
         ).T
 
         return predictions
