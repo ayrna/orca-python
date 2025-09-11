@@ -141,12 +141,19 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         # Get list of different labels of the dataset
         self.classes_ = np.unique(y)
+        if self.classes_.size < 2:
+            raise ValueError("OrdinalDecomposition requires at least 2 classes.")
+
+        dtype = str(self.dtype).lower()
+        decision = str(self.decision_method).lower()
+        if decision == "frank_hall" and dtype != "ordered_partitions":
+            raise ValueError(
+                'decision_method="frank_hall" requires dtype="ordered_partitions".'
+            )
 
         # Give each train input its corresponding output label
         # for each binary classifier
-        self.coding_matrix_ = self._coding_matrix(
-            self.dtype.lower(), len(self.classes_)
-        )
+        self.coding_matrix_ = self._coding_matrix(dtype, len(self.classes_))
         class_labels = self.coding_matrix_[(np.digitize(y, self.classes_) - 1), :]
 
         self.estimators_ = []
@@ -154,8 +161,12 @@ class OrdinalDecomposition(BaseEstimator, ClassifierMixin):
 
         # Fitting n_targets - 1 classifiers
         for n in range(len(class_labels[0, :])):
-
             estimator = load_classifier(self.base_classifier, param_grid=parameters)
+            if not hasattr(estimator, "predict_proba"):
+                raise TypeError(
+                    f'Base estimator "{self.base_classifier}" must implement predict_proba.'
+                )
+
             estimator.fit(
                 X[np.where(class_labels[:, n] != 0)],
                 np.ravel(class_labels[np.where(class_labels[:, n] != 0), n].T),
