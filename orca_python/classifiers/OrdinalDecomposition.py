@@ -168,10 +168,8 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
                     f'Base estimator "{self.base_classifier}" must implement predict_proba.'
                 )
 
-            estimator.fit(
-                X[np.where(class_labels[:, n] != 0)],
-                np.ravel(class_labels[np.where(class_labels[:, n] != 0), n].T),
-            )
+            mask = class_labels[:, n] != 0
+            estimator.fit(X[mask], class_labels[mask, n].ravel())
 
             self.estimators_.append(estimator)
 
@@ -211,7 +209,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         decision_method = self.decision_method.lower()
         if decision_method == "exponential_loss":
-
             # Scaling predictions from [0,1] range to [-1,1]
             predictions = predictions * 2 - 1
 
@@ -220,7 +217,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             y_pred = self.classes_[np.argmin(losses, axis=1)]
 
         elif decision_method == "hinge_loss":
-
             # Scaling predictions from [0,1] range to [-1,1]
             predictions = predictions * 2 - 1
 
@@ -229,7 +225,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             y_pred = self.classes_[np.argmin(losses, axis=1)]
 
         elif decision_method == "logarithmic_loss":
-
             # Scaling predictions from [0,1] range to [-1,1]
             predictions = predictions * 2 - 1
 
@@ -238,7 +233,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             y_pred = self.classes_[np.argmin(losses, axis=1)]
 
         elif decision_method == "frank_hall":
-
             # Transforming from binary problems to the original problem
             y_proba = self._frank_hall_method(predictions)
             y_pred = self.classes_[np.argmax(y_proba, axis=1)]
@@ -285,7 +279,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         decision_method = self.decision_method.lower()
         if decision_method == "exponential_loss":
-
             # Scaling predictions from [0,1] range to [-1,1]
             predictions = predictions * 2 - 1
 
@@ -298,7 +291,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             y_proba = np.array(y_proba)
 
         elif decision_method == "hinge_loss":
-
             # Scaling predictions from [0,1] range to [-1,1]
             predictions = predictions * 2 - 1
 
@@ -311,7 +303,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             y_proba = np.array(y_proba)
 
         elif decision_method == "logarithmic_loss":
-
             # Scaling predictions from [0,1] range to [-1,1]
             predictions = predictions * 2 - 1
 
@@ -324,7 +315,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             y_proba = np.array(y_proba)
 
         elif decision_method == "frank_hall":
-
             # Transforming from binary problems to the original problem
             y_proba = self._frank_hall_method(predictions)
 
@@ -360,18 +350,15 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         """
         if dtype == "ordered_partitions":
-
             coding_matrix = np.triu((-2 * np.ones(n_classes - 1))) + 1
             coding_matrix = np.vstack([coding_matrix, np.ones((1, n_classes - 1))])
 
         elif dtype == "one_vs_next":
-
             plus_ones = np.diagflat(np.ones((1, n_classes - 1), dtype=int), -1)
             minus_ones = -(np.eye(n_classes, n_classes - 1, dtype=int))
             coding_matrix = minus_ones + plus_ones[:, :-1]
 
         elif dtype == "one_vs_followers":
-
             minus_ones = np.diagflat(-np.ones((1, n_classes), dtype=int))
             plus_ones = np.tril(np.ones(n_classes), -1)
             coding_matrix = (plus_ones + minus_ones)[:, :-1]
@@ -383,7 +370,6 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             coding_matrix = np.flip((plusones + minusones)[:, :-1], axis=1)
 
         else:
-
             raise ValueError("Decomposition type %s does not exist" % dtype)
 
         return coding_matrix.astype(int)
@@ -408,7 +394,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         """
         predictions = np.array(
-            list(map(lambda c: c.predict_proba(X)[:, 1], self.estimators_))
+            [est.predict_proba(X)[:, 1] for est in self.estimators_]
         ).T
 
         return predictions
