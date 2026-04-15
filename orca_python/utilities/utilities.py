@@ -1,11 +1,8 @@
 """Utility class for running experiments."""
 
-from __future__ import print_function
-
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from sys import path as syspath
 from time import time
 
 import numpy as np
@@ -55,8 +52,6 @@ class Utilities:
         self.general_conf = deepcopy(general_conf)
         self.configurations = deepcopy(configurations)
         self.verbose = verbose
-
-        syspath.append("classifiers")
 
     def run_experiment(self):
         """Run an experiment. Main method of this framework.
@@ -320,17 +315,11 @@ class Utilities:
         if str(base_path).startswith("~"):
             base_path = Path.home() / str(base_path)[1:]
 
-        # Compatibility between python 2 and 3
-        try:
-            basestring = (unicode, str)
-        except NameError:
-            basestring = str
-
         # Check if 'all' is the only value, and if it is, expand it
         if len(dataset_list) == 1 and dataset_list[0] == "all":
             dataset_list = [item.name for item in base_path.iterdir() if item.is_dir()]
 
-        elif not all(isinstance(item, basestring) for item in dataset_list):
+        elif not all(isinstance(item, str) for item in dataset_list):
             raise ValueError("Dataset list can only contain strings")
 
         self.general_conf["basedir"] = str(base_path)
