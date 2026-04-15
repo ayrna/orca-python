@@ -268,7 +268,10 @@ class Utilities:
             )
 
         # Saving partitions as a sorted list of (index, partition) tuples
-        partition_list = sorted(partition_list.items(), key=(lambda t: get_key(t[0])))
+        partition_list = sorted(
+            partition_list.items(),
+            key=lambda t: int(t[0]) if t[0].lstrip("-").isdigit() else t[0],
+        )
 
         return partition_list
 
@@ -459,28 +462,3 @@ class Utilities:
 
         # Saving results through Results class
         self._results.save_summaries(metrics_names)
-
-
-##########################
-# END OF UTILITIES CLASS #
-##########################
-
-
-def get_key(key):
-    """Convert dict key to int if possible, otherwise return as string.
-
-    Parameters
-    ----------
-    key : str
-        Dictionary key to convert.
-
-    Returns
-    -------
-    converted_key : int or str
-        Integer if conversion is possible, original string otherwise.
-
-    """
-    try:
-        return int(key)
-    except ValueError:
-        return key
