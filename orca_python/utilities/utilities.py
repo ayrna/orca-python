@@ -10,7 +10,6 @@ from time import time
 
 import numpy as np
 import pandas as pd
-from pkg_resources import get_distribution, parse_version
 from sklearn import preprocessing
 from sklearn.model_selection import GridSearchCV
 
@@ -465,43 +464,6 @@ class Utilities:
 ##########################
 # END OF UTILITIES CLASS #
 ##########################
-
-
-def check_packages_version():
-    """Check if minimum version of packages used by this framework are installed."""
-    print("Checking packages version...")
-
-    print("NumPy...", end=" ")
-    if parse_version(get_distribution("numpy").version) < parse_version("1.15.2"):
-        print("OUTDATED. Upgrade to 1.15.2 or newer")
-    else:
-        print("OK")
-
-    print("Pandas...", end=" ")
-    if parse_version(get_distribution("pandas").version) < parse_version("0.23.4"):
-        print("OUTDATED. Upgrade to 0.23.4 or newer")
-    else:
-        print("OK")
-
-    print("Sacred...", end=" ")
-    if parse_version(get_distribution("sacred").version) < parse_version("0.7.3"):
-        print("OUTDATED. Upgrade to 0.7.3 or newer")
-    else:
-        print("OK")
-
-    print("Scikit-Learn...", end=" ")
-    if parse_version(get_distribution("scikit-learn").version) < parse_version(
-        "0.20.0"
-    ):
-        print("OUTDATED. Upgrade to 0.20.0 or newer")
-    else:
-        print("OK")
-
-    print("SciPy...", end=" ")
-    if parse_version(get_distribution("scipy").version) < parse_version("1.1.0"):
-        print("OUTDATED. Upgrade to 1.1.0 or newer")
-    else:
-        print("OK")
 
 
 def get_key(key):
