@@ -1,16 +1,12 @@
 """Utility class for running experiments."""
 
-from __future__ import print_function
-
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
-from sys import path as syspath
 from time import time
 
 import numpy as np
 import pandas as pd
-from pkg_resources import get_distribution, parse_version
 from sklearn import preprocessing
 from sklearn.model_selection import GridSearchCV
 
@@ -56,8 +52,6 @@ class Utilities:
         self.general_conf = deepcopy(general_conf)
         self.configurations = deepcopy(configurations)
         self.verbose = verbose
-
-        syspath.append("classifiers")
 
     def run_experiment(self):
         """Run an experiment. Main method of this framework.
@@ -269,7 +263,10 @@ class Utilities:
             )
 
         # Saving partitions as a sorted list of (index, partition) tuples
-        partition_list = sorted(partition_list.items(), key=(lambda t: get_key(t[0])))
+        partition_list = sorted(
+            partition_list.items(),
+            key=lambda t: int(t[0]) if t[0].lstrip("-").isdigit() else t[0],
+        )
 
         return partition_list
 
@@ -318,17 +315,11 @@ class Utilities:
         if str(base_path).startswith("~"):
             base_path = Path.home() / str(base_path)[1:]
 
-        # Compatibility between python 2 and 3
-        try:
-            basestring = (unicode, str)
-        except NameError:
-            basestring = str
-
         # Check if 'all' is the only value, and if it is, expand it
         if len(dataset_list) == 1 and dataset_list[0] == "all":
             dataset_list = [item.name for item in base_path.iterdir() if item.is_dir()]
 
-        elif not all(isinstance(item, basestring) for item in dataset_list):
+        elif not all(isinstance(item, str) for item in dataset_list):
             raise ValueError("Dataset list can only contain strings")
 
         self.general_conf["basedir"] = str(base_path)
@@ -460,65 +451,3 @@ class Utilities:
 
         # Saving results through Results class
         self._results.save_summaries(metrics_names)
-
-
-##########################
-# END OF UTILITIES CLASS #
-##########################
-
-
-def check_packages_version():
-    """Check if minimum version of packages used by this framework are installed."""
-    print("Checking packages version...")
-
-    print("NumPy...", end=" ")
-    if parse_version(get_distribution("numpy").version) < parse_version("1.15.2"):
-        print("OUTDATED. Upgrade to 1.15.2 or newer")
-    else:
-        print("OK")
-
-    print("Pandas...", end=" ")
-    if parse_version(get_distribution("pandas").version) < parse_version("0.23.4"):
-        print("OUTDATED. Upgrade to 0.23.4 or newer")
-    else:
-        print("OK")
-
-    print("Sacred...", end=" ")
-    if parse_version(get_distribution("sacred").version) < parse_version("0.7.3"):
-        print("OUTDATED. Upgrade to 0.7.3 or newer")
-    else:
-        print("OK")
-
-    print("Scikit-Learn...", end=" ")
-    if parse_version(get_distribution("scikit-learn").version) < parse_version(
-        "0.20.0"
-    ):
-        print("OUTDATED. Upgrade to 0.20.0 or newer")
-    else:
-        print("OK")
-
-    print("SciPy...", end=" ")
-    if parse_version(get_distribution("scipy").version) < parse_version("1.1.0"):
-        print("OUTDATED. Upgrade to 1.1.0 or newer")
-    else:
-        print("OK")
-
-
-def get_key(key):
-    """Convert dict key to int if possible, otherwise return as string.
-
-    Parameters
-    ----------
-    key : str
-        Dictionary key to convert.
-
-    Returns
-    -------
-    converted_key : int or str
-        Integer if conversion is possible, original string otherwise.
-
-    """
-    try:
-        return int(key)
-    except ValueError:
-        return key
