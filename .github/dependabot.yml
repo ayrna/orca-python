@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Maintain dependencies for GitHub Actions as recommended in SPEC8:
+  # https://github.com/scientific-python/specs/pull/325
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      actions:
+        patterns:
+          - "*"
