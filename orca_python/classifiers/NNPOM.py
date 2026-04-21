@@ -505,9 +505,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
             order="F"
         )[(n_classes)::n_classes] + np.multiply(
             error_der[:, 1 : (n_classes - 1)], f_gradients[:, 0 : (n_classes - 2)]
-        ).sum(
-            axis=0
-        )
+        ).sum(axis=0)
 
         thresh_grad_matrix = np.reshape(
             thresh_grad_matrix[:, np.newaxis], original_shape, order="F"

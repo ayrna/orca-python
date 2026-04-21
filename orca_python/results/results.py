@@ -121,7 +121,6 @@ class Results:
         dataframe_row = OrderedDict()
         # Adding best parameters as first elements in row
         for p_name, p_value in best_params.items():
-
             # If some ensemble method has been used, then one of its parameters will be
             # a dictionary containing the best parameters found for the base classifier.
             if isinstance(p_value, dict):
@@ -134,7 +133,6 @@ class Results:
         for (tm_name, tm_value), (ts_name, ts_value) in zip(
             metrics["train"].items(), metrics["test"].items()
         ):
-
             dataframe_row[tm_name] = tm_value
             dataframe_row[ts_name] = ts_value
 

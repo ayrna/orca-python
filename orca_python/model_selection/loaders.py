@@ -153,6 +153,5 @@ def load_classifier(
     except TypeError as e:
         invalid_param = str(e).split("'")[1]
         raise ValueError(
-            f"Invalid parameter '{invalid_param}' for classifier"
-            f" '{classifier_name}'."
+            f"Invalid parameter '{invalid_param}' for classifier '{classifier_name}'."
         )

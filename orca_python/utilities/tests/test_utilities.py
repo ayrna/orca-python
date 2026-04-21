@@ -198,7 +198,6 @@ def test_run_experiment(main_folder, general_conf, configurations):
 
     for dataset in util.general_conf["datasets"]:
         for conf_name, _ in util.configurations.items():
-
             # Check if the folder for that dataset-configurations exists
             conf_folder = experiment_folder / f"{dataset}-{conf_name}"
             npt.assert_equal(conf_folder.exists(), True)
