@@ -35,10 +35,12 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "black",
+    "mypy>=1.9",
     "pre-commit",
     "pytest",
     "pytest-cov",
-    "pytest-xdist[psutil]"
+    "pytest-xdist[psutil]",
+    "ruff>=0.4"
 ]
 
 [project.urls]
