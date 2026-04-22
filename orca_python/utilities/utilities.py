@@ -86,7 +86,6 @@ class Utilities:
 
         # Iterating over Datasets
         for x in self.general_conf["datasets"]:
-
             dataset_name = x.strip()
             dataset_path = Path(self.general_conf["basedir"]) / dataset_name
 
@@ -98,13 +97,11 @@ class Utilities:
 
             # Iterating over Configurations
             for conf_name, configuration in self.configurations.items():
-
                 if self.verbose:
                     print("Running", conf_name, "...")
 
                 # Iterating over partitions
                 for part_idx, partition in dataset:
-
                     if self.verbose:
                         print("  Running Partition", part_idx)
 

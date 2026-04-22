@@ -24,29 +24,14 @@ repos:
     hooks:
       - id: ruff
         args: ["--fix"]
-
-  - repo: https://github.com/pycqa/isort
-    rev: 6.0.1
-    hooks:
-      - id: isort
-        name: isort
-        args: ["--profile=black", "--multi-line=3"]
-
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
-    hooks:
-      - id: black
-        language_version: python3
+      - id: ruff-format
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.9.1
     hooks:
-      - id: nbqa-isort
-        additional_dependencies: [isort]
-        args: [ "--nbqa-dont-skip-bad-cells", "--profile=black", "--multi-line=3" ]
       - id: nbqa-ruff
         additional_dependencies: [ruff]
-        args: [ "--nbqa-dont-skip-bad-cells", "--extend-ignore=E402" ]
-      - id: nbqa-black
-        additional_dependencies: [black]
-        args: [ "--nbqa-dont-skip-bad-cells" ]
+        args: ["--nbqa-dont-skip-bad-cells", "--extend-ignore=E402"]
+      - id: nbqa-ruff-format
+        additional_dependencies: [ruff]
+        args: ["--nbqa-dont-skip-bad-cells"]
