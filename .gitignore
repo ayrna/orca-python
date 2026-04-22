@@ -5,6 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.pyd
 
 # Distribution / packaging
 .Python
@@ -130,3 +131,13 @@ dmypy.json
 
 # macOS
 .DS_Store
+
+# Editor temp files
+*~
+.#*
+*.swp
+*.swo
+
+# Profiling
+*.lprof
+*.prof
