@@ -124,3 +124,4 @@ ignore = ["E501"]
 [tool.mypy]
 ignore_missing_imports = true
 allow_redefinition = true
+exclude = ["orca_python/classifiers/libsvmRank/", "orca_python/classifiers/svorex/"]
