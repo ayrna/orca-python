@@ -114,6 +114,7 @@ exclude = [
     "build",
     "dist",
     "orca_python/classifiers/libsvmRank/",
+    "orca_python/classifiers/svorex/setup.py",
 ]
 
 [tool.ruff.lint]
