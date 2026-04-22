@@ -154,9 +154,10 @@ def test_add_record(results):
     pdt.assert_frame_equal(actual_data_conf_2, expected_data_conf_2)
 
     # Checking if models have been saved successfully
-    with open(conf_1_path / "models" / "toy-conf_1.0", "rb") as model_0, open(
-        conf_1_path / "models" / "toy-conf_1.1", "rb"
-    ) as model_1:
+    with (
+        open(conf_1_path / "models" / "toy-conf_1.0", "rb") as model_0,
+        open(conf_1_path / "models" / "toy-conf_1.1", "rb") as model_1,
+    ):
         actual_data = [load(model_0), load(model_1)]
         npt.assert_equal(all(isinstance(model, SVC) for model in actual_data), True)
 
@@ -172,15 +173,12 @@ def test_add_record(results):
         },
     }
 
-    with open(
-        conf_1_path / "predictions" / "train_toy-conf_1.0", "rb"
-    ) as train_0, open(
-        conf_1_path / "predictions" / "test_toy-conf_1.0", "rb"
-    ) as test_0, open(
-        conf_1_path / "predictions" / "train_toy-conf_1.1", "rb"
-    ) as train_1, open(
-        conf_1_path / "predictions" / "test_toy-conf_1.1", "rb"
-    ) as test_1:
+    with (
+        open(conf_1_path / "predictions" / "train_toy-conf_1.0", "rb") as train_0,
+        open(conf_1_path / "predictions" / "test_toy-conf_1.0", "rb") as test_0,
+        open(conf_1_path / "predictions" / "train_toy-conf_1.1", "rb") as train_1,
+        open(conf_1_path / "predictions" / "test_toy-conf_1.1", "rb") as test_1,
+    ):
         actual_data = {
             "0": {"train": np.loadtxt(train_0), "test": np.loadtxt(test_0)},
             "1": {"train": np.loadtxt(train_1), "test": np.loadtxt(test_1)},

@@ -170,8 +170,8 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
         decision = str(self.decision_method).lower()
         if decision == "frank_hall" and dtype != "ordered_partitions":
             raise ValueError(
-                "When using Frank and Hall decision method,\
-				ordered_partitions must be used"
+                "When using Frank and Hall decision method, "
+                "ordered_partitions must be used"
             )
 
         # Give each train input its corresponding output label
