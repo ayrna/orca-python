@@ -1,3 +1,3 @@
 """Tests for experiment handling."""
 
-__all__ = []
+__all__: list[str] = []

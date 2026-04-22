@@ -1,3 +1,3 @@
 """Tests for the datasets module."""
 
-__all__ = []
+__all__: list[str] = []
