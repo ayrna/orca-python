@@ -1,14 +1,14 @@
-# ORCA-python
+# skordinal
 
 | Overview  |                                                                                                                                          |
 |-----------|------------------------------------------------------------------------------------------------------------------------------------------|
-| **CI/CD** | [![Run Tests](https://github.com/ayrna/orca-python/actions/workflows/pr_pytest.yml/badge.svg?branch=main)](https://github.com/ayrna/orca-python/actions/workflows/pr_pytest.yml) [![!python](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue)](https://www.python.org/) |
-| **Code**  | [![!black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![Linter: Ruff](https://img.shields.io/badge/Linter-Ruff-brightgreen?style=flat-square)](https://github.com/charliermarsh/ruff) [![License - BSD 3-Clause](https://img.shields.io/pypi/l/pandas.svg)](https://github.com/ayrna/orca-python/blob/main/LICENSE) |
+| **CI/CD** | [![Unit tests](https://github.com/ayrna/skordinal/actions/workflows/unit-tests.yml/badge.svg?branch=main)](https://github.com/ayrna/skordinal/actions/workflows/unit-tests.yml) [![!python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/) |
+| **Code**  | [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![License - BSD 3-Clause](https://img.shields.io/pypi/l/pandas.svg)](https://github.com/ayrna/skordinal/blob/main/LICENSE) |
 
 
-## What is ORCA-python?
+## What is skordinal?
 
-**ORCA-python** is an experimental framework built on Python that seamlessly integrates with scikit-learn and sacred modules to automate machine learning experiments through simple JSON configuration files. Initially designed for ordinal classification, it supports regular classification algorithms as long as they are compatible with scikit-learn, making it easy to run reproducible experiments across multiple datasets and classification methods.
+**skordinal** is an experimental framework built on Python that integrates with scikit-learn to automate machine learning experiments through simple JSON configuration files. Initially designed for ordinal classification, it supports regular classification algorithms as long as they are compatible with scikit-learn, making it easy to run reproducible experiments across multiple datasets and classification methods.
 
 ## Table of Contents
 
@@ -22,7 +22,6 @@
     - [configurations](#configurations)
 - [Running Experiments](#running-experiments)
     - [Basic Usage](#basic-usage)
-    - [Recommended Usage](#recommended-usage)
     - [Example Output](#example-output)
 - [License](#license)
 
@@ -30,21 +29,20 @@
 
 ### Requirements
 
-ORCA-python requires Python 3.8 or higher and is tested on Python 3.8, 3.9, 3.10, and 3.11.
+skordinal requires Python 3.9 or higher and is tested on Python 3.9, 3.10, 3.11, and 3.12.
 
 All dependencies are managed through `pyproject.toml` and include:
-- numpy (>=1.24.4)
-- pandas (>=2.0.3)
-- sacred (>=0.8.7)
-- scikit-learn (>=1.3.2)
-- scipy (>=1.10.1)
+- numpy (>=1.21)
+- pandas (>=1.0.1)
+- scikit-learn (>=1.3.0)
+- scipy (>=1.7)
 
 ### Setup
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/ayrna/orca-python
-   cd orca-python
+   git clone https://github.com/ayrna/skordinal
+   cd skordinal
    ```
 
 2. **Install the framework**:
@@ -69,19 +67,19 @@ All dependencies are managed through `pyproject.toml` and include:
 Test your installation with the provided example:
 
 ```bash
-python config.py with orca_python/configurations/full_functionality_test.json -l ERROR
+python config.py with skordinal/configurations/full_functionality_test.json
 ```
 
 ## Quick Start
 
-ORCA-python includes sample datasets with pre-partitioned train/test splits using a 30-holdout experimental design.
+skordinal includes sample datasets with pre-partitioned train/test splits using a 30-holdout experimental design.
 
 **Basic experiment configuration:**
 
 ```json
 {
     "general_conf": {
-        "basedir": "orca_python/datasets/data",
+        "basedir": "skordinal/datasets/data",
         "datasets": ["balance-scale", "contact-lenses", "tae"],
         "hyperparam_cv_nfolds": 3,
         "output_folder": "results/",
@@ -115,7 +113,7 @@ ORCA-python includes sample datasets with pre-partitioned train/test splits usin
 
 **Run the experiment:**
 ```bash
-python config.py with my_experiment.json -l ERROR
+python config.py with my_experiment.json
 ```
 
 Results are saved in `results/` folder with performance metrics for each dataset-classifier combination. The framework automatically performs cross-validation, hyperparameter tuning, and evaluation on test sets.
@@ -144,7 +142,7 @@ Controls global experiment parameters.
 
 Defines classifiers and their hyperparameters for GridSearchCV. Each configuration has a name and consists of:
 
-- **`classifier`**: scikit-learn or built-in ORCA-python classifier
+- **`classifier`**: scikit-learn or built-in skordinal classifier
 - **`parameters`**: hyperparameters for grid search (nested for ensemble methods)
 
 ## Running Experiments
@@ -154,18 +152,6 @@ Defines classifiers and their hyperparameters for GridSearchCV. Each configurati
 ```bash
 python config.py with experiment_file.json
 ```
-
-### Recommended Usage
-
-For reproducible results with minimal output:
-
-```bash
-python config.py with experiment_file.json seed=12345 -l ERROR
-```
-
-**Parameters:**
-- `seed`: fixed random seed for reproducibility
-- `-l ERROR`: reduces Sacred framework verbosity
 
 ### Example Output
 

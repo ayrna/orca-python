@@ -1,4 +1,4 @@
-exclude: ^orca_python/classifiers/(libsvmRank|svorex)/
+exclude: ^skordinal/classifiers/(libsvmRank|svorex)/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -30,7 +30,7 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
-        files: orca_python/
+        files: skordinal/
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.9.1

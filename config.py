@@ -1,4 +1,4 @@
-from orca_python.utilities import Utilities
+from skordinal.utilities import Utilities
 
 
 def main(general_conf, configurations):
