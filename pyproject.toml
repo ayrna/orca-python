@@ -3,7 +3,7 @@ requires = ["setuptools>=74.1.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "orca-python"
+name = "skordinal"
 version = "0.0.1"
 description = "Ordinal classification for Python, scikit-learn compatible"
 readme = "README.md"
@@ -53,54 +53,54 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ayrna/orca-python"
-Repository = "https://github.com/ayrna/orca-python"
-"Bug Tracker" = "https://github.com/ayrna/orca-python/issues"
+Homepage = "https://github.com/ayrna/skordinal"
+Repository = "https://github.com/ayrna/skordinal"
+"Bug Tracker" = "https://github.com/ayrna/skordinal/issues"
 
 [tool.setuptools.packages.find]
 include = [
-    "orca_python",
-    "orca_python.*",
+    "skordinal",
+    "skordinal.*",
 ]
 exclude = ["*.tests"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"orca_python.datasets" = ["data/*.csv"]
+"skordinal.datasets" = ["data/*.csv"]
 
 [tool.setuptools]
 ext-modules = [
-    {name = "orca_python.classifiers.libsvmRank.python.svm", language = "c++", sources = [
-            "orca_python/classifiers/libsvmRank/python/svm-module.cpp",
-            "orca_python/classifiers/libsvmRank/python/svm-train.cpp",
-            "orca_python/classifiers/libsvmRank/python/svm-predict.cpp",
-            "orca_python/classifiers/libsvmRank/python/svm-model-python.cpp",
-            "orca_python/classifiers/libsvmRank/python/svm.cpp",
+    {name = "skordinal.classifiers.libsvmRank.python.svm", language = "c++", sources = [
+            "skordinal/classifiers/libsvmRank/python/svm-module.cpp",
+            "skordinal/classifiers/libsvmRank/python/svm-train.cpp",
+            "skordinal/classifiers/libsvmRank/python/svm-predict.cpp",
+            "skordinal/classifiers/libsvmRank/python/svm-model-python.cpp",
+            "skordinal/classifiers/libsvmRank/python/svm.cpp",
         ], extra-compile-args = ["-Wno-unused-result"]},
-    {name = "orca_python.classifiers.svorex.svorex", language = "c", sources = [
-            "orca_python/classifiers/svorex/svorex_module.c",
-            "orca_python/classifiers/svorex/svorex_train.c",
-            "orca_python/classifiers/svorex/svorex_predict.c",
-            "orca_python/classifiers/svorex/alphas.c",
-            "orca_python/classifiers/svorex/cachelist.c",
-            "orca_python/classifiers/svorex/datalist.c",
-            "orca_python/classifiers/svorex/def_settings.c",
-            "orca_python/classifiers/svorex/loadfile.c",
-            "orca_python/classifiers/svorex/ordinal_takestep.c",
-            "orca_python/classifiers/svorex/setandfi.c",
-            "orca_python/classifiers/svorex/smo_kernel.c",
-            "orca_python/classifiers/svorex/smo_routine.c",
-            "orca_python/classifiers/svorex/smo_settings.c",
-            "orca_python/classifiers/svorex/smo_timer.c",
-            "orca_python/classifiers/svorex/svc_predict.c",
-            "orca_python/classifiers/svorex/smo_model_python.c",
-            "orca_python/classifiers/svorex/smo_loadproblem_python.c",
-            "orca_python/classifiers/svorex/smo_routine_python.c",
+    {name = "skordinal.classifiers.svorex.svorex", language = "c", sources = [
+            "skordinal/classifiers/svorex/svorex_module.c",
+            "skordinal/classifiers/svorex/svorex_train.c",
+            "skordinal/classifiers/svorex/svorex_predict.c",
+            "skordinal/classifiers/svorex/alphas.c",
+            "skordinal/classifiers/svorex/cachelist.c",
+            "skordinal/classifiers/svorex/datalist.c",
+            "skordinal/classifiers/svorex/def_settings.c",
+            "skordinal/classifiers/svorex/loadfile.c",
+            "skordinal/classifiers/svorex/ordinal_takestep.c",
+            "skordinal/classifiers/svorex/setandfi.c",
+            "skordinal/classifiers/svorex/smo_kernel.c",
+            "skordinal/classifiers/svorex/smo_routine.c",
+            "skordinal/classifiers/svorex/smo_settings.c",
+            "skordinal/classifiers/svorex/smo_timer.c",
+            "skordinal/classifiers/svorex/svc_predict.c",
+            "skordinal/classifiers/svorex/smo_model_python.c",
+            "skordinal/classifiers/svorex/smo_loadproblem_python.c",
+            "skordinal/classifiers/svorex/smo_routine_python.c",
         ], extra-compile-args = ["-Wno-unused-result"], libraries = ["m"]}
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["orca_python"]
+testpaths = ["skordinal"]
 addopts = ["--color=yes", "--import-mode=importlib"]
 
 [tool.ruff]
@@ -113,8 +113,8 @@ exclude = [
     "__pycache__",
     "build",
     "dist",
-    "orca_python/classifiers/libsvmRank/",
-    "orca_python/classifiers/svorex/setup.py",
+    "skordinal/classifiers/libsvmRank/",
+    "skordinal/classifiers/svorex/setup.py",
 ]
 
 [tool.ruff.lint]
@@ -124,4 +124,4 @@ ignore = ["E501"]
 [tool.mypy]
 ignore_missing_imports = true
 allow_redefinition = true
-exclude = ["orca_python/classifiers/libsvmRank/", "orca_python/classifiers/svorex/"]
+exclude = ["skordinal/classifiers/libsvmRank/", "skordinal/classifiers/svorex/"]
