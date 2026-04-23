@@ -1,5 +1,5 @@
 name: 🐛 Bug report
-description: Report a bug currently impacting orca_python.
+description: Report a bug currently impacting skordinal.
 title: "BUG: "
 labels: ["bug"]
 
@@ -8,7 +8,7 @@ body:
   attributes:
     value: >
       #### You can see if the bug has already been addressed by searching
-      through the open and closed [issues](https://github.com/ayrna/orca_python/issues?q=is%3Aissue).
+      through the open and closed [issues](https://github.com/ayrna/skordinal/issues?q=is%3Aissue).
 - type: textarea
   attributes:
     label: Describe the bug
