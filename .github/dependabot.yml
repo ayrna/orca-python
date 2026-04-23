@@ -13,3 +13,5 @@ updates:
     labels:
       - "Build / CI"
       - "dependencies"
+    commit-message:
+      prefix: "MNT"

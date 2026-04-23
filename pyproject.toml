@@ -66,7 +66,7 @@ exclude = ["*.tests"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"skordinal.datasets" = ["data/*.csv"]
+"skordinal.datasets" = ["data/*/*.csv"]
 
 [tool.setuptools]
 ext-modules = [
@@ -125,3 +125,27 @@ ignore = ["E501"]
 ignore_missing_imports = true
 allow_redefinition = true
 exclude = ["skordinal/classifiers/libsvmRank/", "skordinal/classifiers/svorex/"]
+
+[tool.check-sdist]
+git-only = [
+    ".codecov.yml",
+    ".coveragerc",
+    ".gitignore",
+    "config.py",
+    "doc/**",
+    "skordinal/**/tests/**",
+    "skordinal/testing/**",
+    "skordinal/configurations/**",
+    "skordinal/classifiers/libsvmRank/grid.py",
+    "skordinal/classifiers/libsvmRank/svm-predict.c",
+    "skordinal/classifiers/libsvmRank/svm-train.c",
+    "skordinal/classifiers/libsvmRank/svm.cpp",
+    "skordinal/classifiers/libsvmRank/Makefile",
+    "skordinal/classifiers/libsvmRank/README",
+    "skordinal/classifiers/libsvmRank/python/setup.py",
+    "skordinal/classifiers/libsvmRank/python/makefile",
+    "skordinal/classifiers/svorex/main.c",
+    "skordinal/classifiers/svorex/Makefile",
+    "skordinal/classifiers/svorex/README.svorex",
+    "skordinal/classifiers/svorex/setup.py",
+]
