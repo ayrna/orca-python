@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import skordinal.datasets.data
-from skordinal.datasets.datasets import (
+from skordinal.datasets import (
     check_ambiguity,
     dataset_exists,
     get_data_path,

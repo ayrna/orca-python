@@ -1,6 +1,6 @@
 """Datasets module."""
 
-from .datasets import (
+from ._loaders import (
     check_ambiguity,
     dataset_exists,
     get_data_path,
