@@ -40,9 +40,9 @@ def process_options(argv=sys.argv):
     global g_begin, g_end, g_step
     global dataset_pathname, dataset_title, pass_through_string
     global svmtrain_exe, gnuplot_exe, gnuplot, out_filename, png_filename
-    
+
     usage = """\
-Usage: grid.py [-log2c begin,end,step] [-log2g begin,end,step] [-v fold] 
+Usage: grid.py [-log2c begin,end,step] [-log2g begin,end,step] [-v fold]
 [-svmtrain pathname] [-gnuplot pathname] [-out pathname] [-png pathname]
 [additional parameters for svm-train] dataset"""
 
@@ -88,7 +88,7 @@ Usage: grid.py [-log2c begin,end,step] [-log2g begin,end,step] [-v fold]
         i = i + 1
 
     pass_through_string = join(pass_through_options," ")
-    assert os.path.exists(svmtrain_exe),"svm-train executable not found"    
+    assert os.path.exists(svmtrain_exe),"svm-train executable not found"
     assert os.path.exists(gnuplot_exe),"gnuplot executable not found"
     gnuplot = os.popen(gnuplot_exe,'w')
 
@@ -240,7 +240,7 @@ class TelnetWorker(Worker):
         Worker.__init__(self,name,job_queue,result_queue)
         self.host = host
         self.username = username
-        self.password = password        
+        self.password = password
     def run(self):
         import telnetlib
         self.tn = tn = telnetlib.Telnet(self.host)
@@ -251,11 +251,11 @@ class TelnetWorker(Worker):
 
         # XXX: how to know whether login is successful?
         tn.read_until(self.username)
-        # 
+        #
         print 'login ok', self.host
         tn.write("cd "+os.getcwd()+"\n")
         Worker.run(self)
-        tn.write("exit\n")               
+        tn.write("exit\n")
     def run_one(self,c,g):
         cmdline = '%s -c %s -g %s -v %s %s %s' % \
           (svmtrain_exe,c,g,fold,pass_through_string,dataset_pathname)

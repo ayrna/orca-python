@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import skordinal.datasets.data
-from skordinal.datasets.datasets import (
+from skordinal.datasets import (
     check_ambiguity,
     dataset_exists,
     get_data_path,
@@ -17,7 +17,7 @@ from skordinal.datasets.datasets import (
     load_dataset,
     shuffle_data,
 )
-from skordinal.testing.testing_utils import TEST_RANDOM_STATE
+from skordinal.testing import TEST_RANDOM_STATE
 
 
 def create_tmp_dataset(tmp_path, dataset_name, filename):

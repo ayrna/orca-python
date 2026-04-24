@@ -1,6 +1,6 @@
 """Results handling module."""
 
-from .results import Results
+from ._results import Results
 
 __all__ = [
     "Results",

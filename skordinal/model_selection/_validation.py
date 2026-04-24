@@ -252,7 +252,7 @@ def _prepare_parameters_for_ensemble(param_grid, random_state=None):
     if not is_ensemble(param_grid):
         return param_grid
 
-    from skordinal.model_selection.loaders import get_classifier_by_name
+    from skordinal.model_selection._loaders import get_classifier_by_name
 
     base_estimator = get_classifier_by_name(param_grid["base_classifier"])
     base_params = param_grid.get("parameters", {})

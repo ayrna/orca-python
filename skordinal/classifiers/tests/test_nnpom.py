@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from sklearn.exceptions import NotFittedError
 
-from skordinal.classifiers.NNPOM import NNPOM
+from skordinal.classifiers import NNPOM
 
 
 @pytest.fixture

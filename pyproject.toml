@@ -70,32 +70,32 @@ namespaces = false
 
 [tool.setuptools]
 ext-modules = [
-    {name = "skordinal.classifiers.libsvmRank.python.svm", language = "c++", sources = [
-            "skordinal/classifiers/libsvmRank/python/svm-module.cpp",
-            "skordinal/classifiers/libsvmRank/python/svm-train.cpp",
-            "skordinal/classifiers/libsvmRank/python/svm-predict.cpp",
-            "skordinal/classifiers/libsvmRank/python/svm-model-python.cpp",
-            "skordinal/classifiers/libsvmRank/python/svm.cpp",
+    {name = "skordinal.classifiers._libsvmrank", language = "c++", sources = [
+            "skordinal/classifiers/src/libsvmrank/python/svm-module.cpp",
+            "skordinal/classifiers/src/libsvmrank/python/svm-train.cpp",
+            "skordinal/classifiers/src/libsvmrank/python/svm-predict.cpp",
+            "skordinal/classifiers/src/libsvmrank/python/svm-model-python.cpp",
+            "skordinal/classifiers/src/libsvmrank/python/svm.cpp",
         ], extra-compile-args = ["-Wno-unused-result"]},
-    {name = "skordinal.classifiers.svorex.svorex", language = "c", sources = [
-            "skordinal/classifiers/svorex/svorex_module.c",
-            "skordinal/classifiers/svorex/svorex_train.c",
-            "skordinal/classifiers/svorex/svorex_predict.c",
-            "skordinal/classifiers/svorex/alphas.c",
-            "skordinal/classifiers/svorex/cachelist.c",
-            "skordinal/classifiers/svorex/datalist.c",
-            "skordinal/classifiers/svorex/def_settings.c",
-            "skordinal/classifiers/svorex/loadfile.c",
-            "skordinal/classifiers/svorex/ordinal_takestep.c",
-            "skordinal/classifiers/svorex/setandfi.c",
-            "skordinal/classifiers/svorex/smo_kernel.c",
-            "skordinal/classifiers/svorex/smo_routine.c",
-            "skordinal/classifiers/svorex/smo_settings.c",
-            "skordinal/classifiers/svorex/smo_timer.c",
-            "skordinal/classifiers/svorex/svc_predict.c",
-            "skordinal/classifiers/svorex/smo_model_python.c",
-            "skordinal/classifiers/svorex/smo_loadproblem_python.c",
-            "skordinal/classifiers/svorex/smo_routine_python.c",
+    {name = "skordinal.classifiers._libsvorex", language = "c", sources = [
+            "skordinal/classifiers/src/svorex/svorex_module.c",
+            "skordinal/classifiers/src/svorex/svorex_train.c",
+            "skordinal/classifiers/src/svorex/svorex_predict.c",
+            "skordinal/classifiers/src/svorex/alphas.c",
+            "skordinal/classifiers/src/svorex/cachelist.c",
+            "skordinal/classifiers/src/svorex/datalist.c",
+            "skordinal/classifiers/src/svorex/def_settings.c",
+            "skordinal/classifiers/src/svorex/loadfile.c",
+            "skordinal/classifiers/src/svorex/ordinal_takestep.c",
+            "skordinal/classifiers/src/svorex/setandfi.c",
+            "skordinal/classifiers/src/svorex/smo_kernel.c",
+            "skordinal/classifiers/src/svorex/smo_routine.c",
+            "skordinal/classifiers/src/svorex/smo_settings.c",
+            "skordinal/classifiers/src/svorex/smo_timer.c",
+            "skordinal/classifiers/src/svorex/svc_predict.c",
+            "skordinal/classifiers/src/svorex/smo_model_python.c",
+            "skordinal/classifiers/src/svorex/smo_loadproblem_python.c",
+            "skordinal/classifiers/src/svorex/smo_routine_python.c",
         ], extra-compile-args = ["-Wno-unused-result"], libraries = ["m"]}
 ]
 
@@ -113,8 +113,8 @@ exclude = [
     "__pycache__",
     "build",
     "dist",
-    "skordinal/classifiers/libsvmRank/",
-    "skordinal/classifiers/svorex/setup.py",
+    "skordinal/classifiers/src/libsvmrank/",
+    "skordinal/classifiers/src/svorex/setup.py",
 ]
 
 [tool.ruff.lint]
@@ -124,7 +124,7 @@ ignore = ["E501"]
 [tool.mypy]
 ignore_missing_imports = true
 allow_redefinition = true
-exclude = ["skordinal/classifiers/libsvmRank/", "skordinal/classifiers/svorex/"]
+exclude = ["skordinal/classifiers/src/libsvmrank/", "skordinal/classifiers/src/svorex/"]
 
 [tool.check-sdist]
 git-only = [
@@ -136,16 +136,16 @@ git-only = [
     "skordinal/**/tests/**",
     "skordinal/testing/**",
     "skordinal/configurations/**",
-    "skordinal/classifiers/libsvmRank/grid.py",
-    "skordinal/classifiers/libsvmRank/svm-predict.c",
-    "skordinal/classifiers/libsvmRank/svm-train.c",
-    "skordinal/classifiers/libsvmRank/svm.cpp",
-    "skordinal/classifiers/libsvmRank/Makefile",
-    "skordinal/classifiers/libsvmRank/README",
-    "skordinal/classifiers/libsvmRank/python/setup.py",
-    "skordinal/classifiers/libsvmRank/python/makefile",
-    "skordinal/classifiers/svorex/main.c",
-    "skordinal/classifiers/svorex/Makefile",
-    "skordinal/classifiers/svorex/README.svorex",
-    "skordinal/classifiers/svorex/setup.py",
+    "skordinal/classifiers/src/libsvmrank/grid.py",
+    "skordinal/classifiers/src/libsvmrank/svm-predict.c",
+    "skordinal/classifiers/src/libsvmrank/svm-train.c",
+    "skordinal/classifiers/src/libsvmrank/svm.cpp",
+    "skordinal/classifiers/src/libsvmrank/Makefile",
+    "skordinal/classifiers/src/libsvmrank/README",
+    "skordinal/classifiers/src/libsvmrank/python/setup.py",
+    "skordinal/classifiers/src/libsvmrank/python/makefile",
+    "skordinal/classifiers/src/svorex/main.c",
+    "skordinal/classifiers/src/svorex/Makefile",
+    "skordinal/classifiers/src/svorex/README.svorex",
+    "skordinal/classifiers/src/svorex/setup.py",
 ]

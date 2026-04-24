@@ -264,7 +264,7 @@ void read_problem_dense(const char*filename)
 {
 	int elements, max_index, i, j;
 	FILE *fp = fopen(filename,"r");
-	
+
 	if(fp == NULL)
 	{
 		fprintf(stderr,"can't open input file %s\n",filename);
@@ -287,7 +287,7 @@ void read_problem_dense(const char*filename)
 				ungetc(cnext, fp);
 				break;
 			}
-			c = cnext;				
+			c = cnext;
 		}
 
 		//newline indicates label
@@ -322,7 +322,7 @@ void read_problem_dense(const char*filename)
 		while(1)
 		{
 			double tmp;
-	
+
 			fscanf(fp, "%lf", &tmp);
 
 			int c = fgetc(fp);
@@ -334,7 +334,7 @@ void read_problem_dense(const char*filename)
 					ungetc(cnext, fp);
 					break;
 				}
-				c = cnext;				
+				c = cnext;
 			}
 
 			//newline indicates label
@@ -355,7 +355,7 @@ void read_problem_dense(const char*filename)
 				}
 				++index;
 			}
-		}	
+		}
 	}
 
 	if(param.gamma == 0)
@@ -369,7 +369,7 @@ void read_problem(const char *filename)
 {
 	int elements, max_index, i, j;
 	FILE *fp = fopen(filename,"r");
-	
+
 	if(fp == NULL)
 	{
 		fprintf(stderr,"can't open input file %s\n",filename);
@@ -421,7 +421,7 @@ out:
 			ungetc(c,fp);
 			fscanf(fp,"%d:%lf",&(x_space[j].index),&(x_space[j].value));
 			++j;
-		}	
+		}
 out2:
 		if(j>=1 && x_space[j-1].index > max_index)
 			max_index = x_space[j-1].index;

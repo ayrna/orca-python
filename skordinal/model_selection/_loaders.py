@@ -4,18 +4,18 @@ from importlib import import_module
 
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
-from skordinal.metrics.utils import load_metric_as_scorer
-from skordinal.model_selection.validation import (
+from skordinal.metrics import load_metric_as_scorer
+from skordinal.model_selection._validation import (
     is_searchcv,
     prepare_param_grid,
 )
 
 _SKORDINAL_CLASSIFIERS = {
-    "NNOP": "skordinal.classifiers.NNOP",
-    "NNPOM": "skordinal.classifiers.NNPOM",
-    "OrdinalDecomposition": "skordinal.classifiers.OrdinalDecomposition",
-    "REDSVM": "skordinal.classifiers.REDSVM",
-    "SVOREX": "skordinal.classifiers.SVOREX",
+    "NNOP": "skordinal.classifiers._nnop.NNOP",
+    "NNPOM": "skordinal.classifiers._nnpom.NNPOM",
+    "OrdinalDecomposition": "skordinal.classifiers._ordinal_decomposition.OrdinalDecomposition",
+    "REDSVM": "skordinal.classifiers._redsvm.REDSVM",
+    "SVOREX": "skordinal.classifiers._svorex.SVOREX",
 }
 
 _SKLEARN_CLASSIFIERS = {
@@ -49,9 +49,9 @@ def get_classifier_by_name(classifier_name):
     Examples
     --------
     >>> get_classifier_by_name("SVOREX")
-    <class 'skordinal.classifiers.SVOREX.SVOREX'>
+    <class 'skordinal.classifiers._svorex.SVOREX'>
     >>> get_classifier_by_name("REDSVM")
-    <class 'skordinal.classifiers.REDSVM.REDSVM'>
+    <class 'skordinal.classifiers._redsvm.REDSVM'>
     >>> get_classifier_by_name("SVC")
     <class 'sklearn.svm._classes.SVC'>
 

@@ -4,7 +4,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-from skordinal.classifiers.REDSVM import REDSVM
+from skordinal.classifiers import REDSVM
 from skordinal.datasets import load_dataset
 from skordinal.testing import TEST_DATASETS_DIR, TEST_PREDICTIONS_DIR
 

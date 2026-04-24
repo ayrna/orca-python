@@ -19,7 +19,7 @@ def get_data_path():
 
     Examples
     --------
-    >>> from skordinal.datasets.datasets import get_data_path
+    >>> from skordinal.datasets import get_data_path
     >>> get_data_path()
     PosixPath('/path/to/skordinal/datasets/data')
 
@@ -45,7 +45,7 @@ def dataset_exists(dataset_name, data_path):
 
     Examples
     --------
-    >>> from skordinal.datasets.datasets import dataset_exists, get_data_path
+    >>> from skordinal.datasets import dataset_exists, get_data_path
     >>> data_path = get_data_path()
     >>> dataset_exists("car", data_path)
     True
@@ -77,7 +77,7 @@ def is_undivided(dataset_name, data_path):
 
     Examples
     --------
-    >>> from skordinal.datasets.datasets import is_undivided, get_data_path
+    >>> from skordinal.datasets import is_undivided, get_data_path
     >>> data_path = get_data_path()
     >>> is_undivided("tae", data_path)
     False
@@ -108,7 +108,7 @@ def has_unseeded_split(dataset_name, data_path):
 
     Examples
     --------
-    >>> from skordinal.datasets.datasets import has_unseeded_split, get_data_path
+    >>> from skordinal.datasets import has_unseeded_split, get_data_path
     >>> data_path = get_data_path()
     >>> has_unseeded_split("tae", data_path)
     False
@@ -144,7 +144,7 @@ def has_seeded_split(dataset_name, seed, data_path):
 
     Examples
     --------
-    >>> from skordinal.datasets.datasets import has_seeded_split, get_data_path
+    >>> from skordinal.datasets import has_seeded_split, get_data_path
     >>> data_path = get_data_path()
     >>> has_seeded_split("tae", 0, data_path)
     True
@@ -183,7 +183,7 @@ def check_ambiguity(dataset_name, data_path, seed=None):
 
     Examples
     --------
-    >>> from skordinal.datasets.datasets import check_ambiguity, get_data_path
+    >>> from skordinal.datasets import check_ambiguity, get_data_path
     >>> data_path = get_data_path()
     >>> check_ambiguity("tae", data_path)
     >>> check_ambiguity("tae", data_path, seed=0)
@@ -238,7 +238,7 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
 
     Examples
     --------
-    >>> from skordinal.datasets.datasets import load_datafile, get_data_path
+    >>> from skordinal.datasets import load_datafile, get_data_path
     >>> X_train, y_train = load_datafile("tae", split="train", seed=None)
     >>> X_train is None, y_train is None
     (True, True)
@@ -313,7 +313,7 @@ def load_dataset(dataset_name, data_path=None, seed=None):
 
     Examples
     --------
-    >>> from skordinal.datasets.datasets import load_dataset
+    >>> from skordinal.datasets import load_dataset
     >>> X_train, y_train, X_test, y_test = load_dataset("tae", seed=0)
     >>> X_train.shape, y_train.shape, X_test.shape, y_test.shape
     ((113, 54), (113,), (38, 54), (38,))
@@ -389,7 +389,7 @@ def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.datasets.datasets import load_dataset, shuffle_data
+    >>> from skordinal.datasets import load_dataset, shuffle_data
     >>> X_train, y_train, X_test, y_test = load_dataset("tae", seed=0)
     >>> X_train.shape, y_train.shape, X_test.shape, y_test.shape
     ((113, 54), (113,), (38, 54), (38,))

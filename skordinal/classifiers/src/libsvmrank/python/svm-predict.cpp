@@ -34,20 +34,20 @@ PyObject* predictLabels(PyObject* features, struct svm_model *model)
 			ptr_instance[i][j] = PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(features, i), j));
 		}
 	}
-	
+
 	x = (struct svm_node*)malloc((feature_number+1)*sizeof(struct svm_node) );
 	for(instance_index=0;instance_index<testing_instance_number;instance_index++)
 	{
 		int i;
 		double predict_label;
-		
+
 		for(i=0;i<feature_number;i++)
 		{
 			x[i].index = i+1;
 			x[i].value = ptr_instance[instance_index][i];
 		}
 		x[feature_number].index = -1;
-		
+
 		if(svm_type == C_RNK ||
                        svm_type == SVORIM ||
 		   svm_type == ONE_CLASS ||
@@ -75,7 +75,7 @@ PyObject* predictLabels(PyObject* features, struct svm_model *model)
 		{
 			double *dec_values = (double *) malloc(sizeof(double) * nr_class*(nr_class-1)/2);
 			svm_predict_values(model, x, dec_values);
-			
+
 			int i;
 			int *vote = (int *) malloc(sizeof(int)* nr_class);
 			for(i=0;i<nr_class;i++)
@@ -105,7 +105,7 @@ PyObject* predictLabels(PyObject* features, struct svm_model *model)
 		list_el = Py_BuildValue("d", predict_label);
 		PyList_Append(predicted_labels, list_el);
 		//PyList_Append increment the passed in PyObjects references so is necesary
-		//to decrement them in order to let python free memory when the model 
+		//to decrement them in order to let python free memory when the model
 		//is not longer needed
 		Py_DECREF(list_el);
 	}
@@ -143,7 +143,7 @@ PyObject* predict(PyObject* self, PyObject* args){
 			PyErr_SetString(PyExc_MemoryError, "Unable to translate python model to C");
 			return NULL;
 		}
-		
+
 		predictedLabels = predictLabels(features, model);
 		/* destroy model*/
 		svm_free_and_destroy_model(&model);

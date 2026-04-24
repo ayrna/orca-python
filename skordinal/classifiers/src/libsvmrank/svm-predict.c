@@ -35,7 +35,7 @@ void predict(FILE *input, FILE *output)
 		{
 			svm_get_labels(model,labels);
 			prob_estimates = (double *) malloc(nr_class*sizeof(double));
-			fprintf(output,"labels");		
+			fprintf(output,"labels");
 			for(j=0;j<nr_class;j++)
 				fprintf(output," %d",labels[j]);
 			fprintf(output,"\n");
@@ -56,7 +56,7 @@ void predict(FILE *input, FILE *output)
 
 				if (fscanf(input, "%lf", &tmp) == EOF)
 					goto show;
-	
+
 				c = fgetc(input);
 				/*read in consecutive spaces until the last one or newline*/
 				while (isspace(c) && c != '\n'){
@@ -65,7 +65,7 @@ void predict(FILE *input, FILE *output)
 						ungetc(cnext, input);
 						break;
 					}
-					c = cnext;				
+					c = cnext;
 				}
 
 				/*newline indicates label*/
@@ -86,7 +86,7 @@ void predict(FILE *input, FILE *output)
 						++i;
 					}
 					index++;
-				}										
+				}
 				else{
 					fprintf(stderr, "unknown character in format: %c\n", c);
 					exit(1);
@@ -96,10 +96,10 @@ void predict(FILE *input, FILE *output)
 		else{
 			int i = 0;
 			int c;
-	
+
 			if (fscanf(input,"%lf",&target)==EOF)
 				break;
-	
+
 			while(1)
 			{
 				if(i>=max_nr_attr-1)	/* need one more for index = -1*/
@@ -115,7 +115,7 @@ void predict(FILE *input, FILE *output)
 				ungetc(c,input);
 				fscanf(input,"%d:%lf",&x[i].index,&x[i].value);
 				++i;
-			}	
+			}
 
 	out2:
 			x[i++].index = -1;
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
 	}
 	if(i>=argc)
 		exit_with_help();
-	
+
 	input = fopen(argv[i],"r");
 	if(input == NULL)
 	{
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
 		fprintf(stderr,"can't open model file %s\n",argv[i+1]);
 		exit(1);
 	}
-	
+
 	line = (char *) malloc(max_line_len*sizeof(char));
 	x = (struct svm_node *) malloc(max_nr_attr*sizeof(struct svm_node));
 	if(predict_probability)

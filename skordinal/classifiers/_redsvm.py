@@ -8,7 +8,7 @@ from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
-from skordinal.classifiers.libsvmRank.python import svm  # type: ignore[attr-defined]
+from . import _libsvmrank as svm  # type: ignore[attr-defined]
 
 
 class REDSVM(BaseEstimator, ClassifierMixin):

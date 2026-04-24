@@ -120,7 +120,7 @@ PyObject* fit(PyObject* self, PyObject* args){
 		free(x_space);
 		return NULL;
 	}
-	
+
 	py_model = modelToPython(model);
 
 	svm_free_and_destroy_model(&model);
