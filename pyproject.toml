@@ -70,12 +70,12 @@ namespaces = false
 
 [tool.setuptools]
 ext-modules = [
-    {name = "skordinal.classifiers.libsvmRank.python.svm", language = "c++", sources = [
-            "skordinal/classifiers/libsvmRank/python/svm-module.cpp",
-            "skordinal/classifiers/libsvmRank/python/svm-train.cpp",
-            "skordinal/classifiers/libsvmRank/python/svm-predict.cpp",
-            "skordinal/classifiers/libsvmRank/python/svm-model-python.cpp",
-            "skordinal/classifiers/libsvmRank/python/svm.cpp",
+    {name = "skordinal.classifiers.src.libsvmrank.python.svm", language = "c++", sources = [
+            "skordinal/classifiers/src/libsvmrank/python/svm-module.cpp",
+            "skordinal/classifiers/src/libsvmrank/python/svm-train.cpp",
+            "skordinal/classifiers/src/libsvmrank/python/svm-predict.cpp",
+            "skordinal/classifiers/src/libsvmrank/python/svm-model-python.cpp",
+            "skordinal/classifiers/src/libsvmrank/python/svm.cpp",
         ], extra-compile-args = ["-Wno-unused-result"]},
     {name = "skordinal.classifiers.svorex.svorex", language = "c", sources = [
             "skordinal/classifiers/svorex/svorex_module.c",
@@ -113,7 +113,7 @@ exclude = [
     "__pycache__",
     "build",
     "dist",
-    "skordinal/classifiers/libsvmRank/",
+    "skordinal/classifiers/src/libsvmrank/",
     "skordinal/classifiers/svorex/setup.py",
 ]
 
@@ -124,7 +124,7 @@ ignore = ["E501"]
 [tool.mypy]
 ignore_missing_imports = true
 allow_redefinition = true
-exclude = ["skordinal/classifiers/libsvmRank/", "skordinal/classifiers/svorex/"]
+exclude = ["skordinal/classifiers/src/libsvmrank/", "skordinal/classifiers/svorex/"]
 
 [tool.check-sdist]
 git-only = [
@@ -136,14 +136,14 @@ git-only = [
     "skordinal/**/tests/**",
     "skordinal/testing/**",
     "skordinal/configurations/**",
-    "skordinal/classifiers/libsvmRank/grid.py",
-    "skordinal/classifiers/libsvmRank/svm-predict.c",
-    "skordinal/classifiers/libsvmRank/svm-train.c",
-    "skordinal/classifiers/libsvmRank/svm.cpp",
-    "skordinal/classifiers/libsvmRank/Makefile",
-    "skordinal/classifiers/libsvmRank/README",
-    "skordinal/classifiers/libsvmRank/python/setup.py",
-    "skordinal/classifiers/libsvmRank/python/makefile",
+    "skordinal/classifiers/src/libsvmrank/grid.py",
+    "skordinal/classifiers/src/libsvmrank/svm-predict.c",
+    "skordinal/classifiers/src/libsvmrank/svm-train.c",
+    "skordinal/classifiers/src/libsvmrank/svm.cpp",
+    "skordinal/classifiers/src/libsvmrank/Makefile",
+    "skordinal/classifiers/src/libsvmrank/README",
+    "skordinal/classifiers/src/libsvmrank/python/setup.py",
+    "skordinal/classifiers/src/libsvmrank/python/makefile",
     "skordinal/classifiers/svorex/main.c",
     "skordinal/classifiers/svorex/Makefile",
     "skordinal/classifiers/svorex/README.svorex",

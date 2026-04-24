@@ -1,4 +1,4 @@
-The program adds two formulations for ordinal regression to LIBSVM. It 
+The program adds two formulations for ordinal regression to LIBSVM. It
 also comes with the infinite ensemble learning and dense format
 support that I wrote for LIBSVM. See their README files respectively
 for details.
@@ -7,7 +7,7 @@ The svm_type 5 is C_RNK, which performs ordinal regression by
 reducing with absolute cost + I_{K-1} encoding + regular SVM.
 The details can be found in
 
-L. Li and H.-T. Lin.  Ordinal Regression by Extended Binary Classification. To appear in 
+L. Li and H.-T. Lin.  Ordinal Regression by Extended Binary Classification. To appear in
 the 20th Annual Conference on Neural Information Processing Systems, 2006.
 
 The svm_type 6 is SVORIM, which exactly implements the method in
@@ -19,8 +19,8 @@ svm-predict.c is modified to report the absolute error.
 grid.py is modified to select with smaller absolute error.
 
 ===The Modification===
-Modified from LIBSVM 2.81 by Hsuan-Tien Lin 
-(htlin at caltech.edu), 
+Modified from LIBSVM 2.81 by Hsuan-Tien Lin
+(htlin at caltech.edu),
 The author takes no responsibility on damage or other problems caused.
 
 ===LIBSVM Copyright===
@@ -54,4 +54,3 @@ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-

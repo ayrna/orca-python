@@ -13,10 +13,10 @@ PyObject* modelToPython(struct svm_model* model){
 						   *svmNode_listAux = NULL, *list_el = NULL;
 	struct svm_parameter* param = NULL;
 	struct svm_node** SV = NULL;
-	
+
 	/*param*/
 	param = &(model->param);
-	
+
 	param_dict = Py_BuildValue(
     			"{"
     			"s:i,"
@@ -24,7 +24,7 @@ PyObject* modelToPython(struct svm_model* model){
     			"s:i,"
     			"s:d,"
     			"s:d"
-    			"}", 
+    			"}",
     			"svm_type", param->svm_type,
     			"kernel_type", param->kernel_type,
     			"degree", param->degree,
@@ -36,14 +36,14 @@ PyObject* modelToPython(struct svm_model* model){
 	/* rho*/
 	rho = model->rho;
 	rho_list = Py_BuildValue("[]");
-	
+
 	if ((model->param).svm_type != C_RNK && (model->param).svm_type != SVORIM){
 		n = model->nr_class * (model->nr_class - 1) / 2;
 		for(i = 0; i < n; i++){
 			list_el = Py_BuildValue("d", rho[i]);
 			PyList_Append(rho_list, list_el);
 			//PyList_Append increment the passed PyObjects references so is necesary
-			//to decrement them in order to let python free memory when the model 
+			//to decrement them in order to let python free memory when the model
 			//is not longer needed
 			Py_DECREF(list_el);
 		}
@@ -56,7 +56,7 @@ PyObject* modelToPython(struct svm_model* model){
 			list_el = Py_BuildValue("d", rho[i]);
 			PyList_Append(rho_list, list_el);
 			//PyList_Append increment the passed PyObjects references so is necesary
-			//to decrement them in order to let python free memory when the model 
+			//to decrement them in order to let python free memory when the model
 			//is not longer needed
 			Py_DECREF(list_el);
 		}
@@ -73,7 +73,7 @@ PyObject* modelToPython(struct svm_model* model){
 			list_el = Py_BuildValue("i", label[i]);
 			PyList_Append(label_list, list_el);
 			//PyList_Append increment the passed PyObjects references so is necesary
-			//to decrement them in order to let python free memory when the model 
+			//to decrement them in order to let python free memory when the model
 			//is not longer needed
 			Py_DECREF(list_el);
 		}
@@ -89,7 +89,7 @@ PyObject* modelToPython(struct svm_model* model){
 			list_el = Py_BuildValue("d", probA[i]);
 			PyList_Append(probA_list, list_el);
 			//PyList_Append increment the passed PyObjects references so is necesary
-			//to decrement them in order to let python free memory when the model 
+			//to decrement them in order to let python free memory when the model
 			//is not longer needed
 			Py_DECREF(list_el);
 		}
@@ -105,7 +105,7 @@ PyObject* modelToPython(struct svm_model* model){
 			list_el = Py_BuildValue("d", probB[i]);
 			PyList_Append(probB_list, list_el);
 			//PyList_Append increment the passed PyObjects references so is necesary
-			//to decrement them in order to let python free memory when the model 
+			//to decrement them in order to let python free memory when the model
 			//is not longer needed
 			Py_DECREF(list_el);
 		}
@@ -115,13 +115,13 @@ PyObject* modelToPython(struct svm_model* model){
 	/* nSV*/
 	nSV = model->nSV;
 	nSV_list = Py_BuildValue("[]");
-	
+
 	if(model->nSV != NULL){
 		for (i = 0; i < nr_class; i++){
 			list_el = Py_BuildValue("i", nSV[i]);
 			PyList_Append(nSV_list, list_el);
 			//PyList_Append increment the passed PyObjects references so is necesary
-			//to decrement them in order to let python free memory when the model 
+			//to decrement them in order to let python free memory when the model
 			//is not longer needed
 			Py_DECREF(list_el);
 		}
@@ -138,14 +138,14 @@ PyObject* modelToPython(struct svm_model* model){
 			list_el = Py_BuildValue("d", sv_coef[i][j]);
 			PyList_Append(sv_coef_listAux, list_el);
 			//PyList_Append increment the passed PyObjects references so is necesary
-			//to decrement them in order to let python free memory when the model 
+			//to decrement them in order to let python free memory when the model
 			//is not longer needed
 			Py_DECREF(list_el);
 		}
-		
+
 		PyList_Append(sv_coef_list, sv_coef_listAux);
 		//PyList_Append increment the passed PyObjects references so is necesary
-		//to decrement them in order to let python free memory when the model 
+		//to decrement them in order to let python free memory when the model
 		//is not longer needed
 		Py_DECREF(sv_coef_listAux);
 	}
@@ -164,14 +164,14 @@ PyObject* modelToPython(struct svm_model* model){
 					"{"
 					"s:i,"
 					"s:d"
-					"}", 
+					"}",
 					"index", 0,
 					"value", SV[i][0].value
 			);
 
 			PyList_Append(svmNode_listAux, svmNode_dict);
 			//PyList_Append increment the passed PyObjects references so is necesary
-			//to decrement them in order to let python free memory when the model 
+			//to decrement them in order to let python free memory when the model
 			//is not longer needed
 			Py_DECREF(svmNode_dict);
 		}
@@ -182,14 +182,14 @@ PyObject* modelToPython(struct svm_model* model){
 					"{"
 					"s:i,"
 					"s:d"
-					"}", 
+					"}",
 					"index", SV[i][x_index].index,
 					"value", SV[i][x_index].value
 				);
 
 				PyList_Append(svmNode_listAux, svmNode_dict);
 				//PyList_Append increment the passed PyObjects references so is necesary
-				//to decrement them in order to let python free memory when the model 
+				//to decrement them in order to let python free memory when the model
 				//is not longer needed
 				Py_DECREF(svmNode_dict);
 				x_index++;
@@ -198,7 +198,7 @@ PyObject* modelToPython(struct svm_model* model){
 
 		PyList_Append(svmNode_list, svmNode_listAux);
 		//PyList_Append increment the passed PyObjects references so is necesary
-		//to decrement them in order to let python free memory when the model 
+		//to decrement them in order to let python free memory when the model
 		//is not longer needed
 		Py_DECREF(svmNode_listAux);
 	}
@@ -229,7 +229,7 @@ PyObject* modelToPython(struct svm_model* model){
     			"nSV", nSV_list
     	   );
 	//Pybuild increment the passed PyObjects references so is necesary
-	//to decrement them in order to let python free memory when the model 
+	//to decrement them in order to let python free memory when the model
 	//is not longer needed
 	Py_DECREF(param_dict);
 	Py_DECREF(svmNode_list);
@@ -250,7 +250,7 @@ struct svm_model* pythonToModel(PyObject* model){
 		return NULL;
 	}
 
-	PyObject *param = NULL, *SV_list = NULL, *svCoef_list = NULL, *aux_list = NULL, *rho_list = NULL, *probA_list = NULL,  
+	PyObject *param = NULL, *SV_list = NULL, *svCoef_list = NULL, *aux_list = NULL, *rho_list = NULL, *probA_list = NULL,
 			 *probB_list = NULL, *label_list = NULL, *nSV_list = NULL;
 	int n, nAux, i, j;
 
@@ -292,7 +292,7 @@ struct svm_model* pythonToModel(PyObject* model){
 			free(model_out);
 			return NULL;
 		}
-		
+
 		for (j = 0; j < nAux; j++){
 			((model_out->SV)[i][j]).index = (int) PyLong_AsLong(PyDict_GetItemString(PyList_GetItem(aux_list, j), "index"));
 			((model_out->SV)[i][j]).value = PyFloat_AsDouble(PyDict_GetItemString(PyList_GetItem(aux_list, j), "value"));
@@ -336,7 +336,7 @@ struct svm_model* pythonToModel(PyObject* model){
 	/*rho*/
 	rho_list = PyDict_GetItemString(model, "rho");
 	n = (int) PyLong_AsLong(PyLong_FromSsize_t(PyList_Size(rho_list)));
-	
+
 	model_out->rho = (double*) malloc(n * sizeof(double));
 	//Not enough memory
 	if(model_out->rho == NULL){
@@ -353,7 +353,7 @@ struct svm_model* pythonToModel(PyObject* model){
 	/*probA*/
 	probA_list = PyDict_GetItemString(model, "probA");
 	n = (int) PyLong_AsLong(PyLong_FromSsize_t(PyList_Size(probA_list)));
-	
+
 	model_out->probA = (double*) malloc(n * sizeof(double));
 	//Not enough memory
 	if(model_out->probA == NULL){
@@ -371,7 +371,7 @@ struct svm_model* pythonToModel(PyObject* model){
 	/*probB*/
 	probB_list = PyDict_GetItemString(model, "probB");
 	n = (int) PyLong_AsLong(PyLong_FromSsize_t(PyList_Size(probB_list)));
-	
+
 	model_out->probB = (double*) malloc(n * sizeof(double));
 	//Not enough memory
 	if(model_out->probB == NULL){
@@ -390,7 +390,7 @@ struct svm_model* pythonToModel(PyObject* model){
 	/*label*/
 	label_list = PyDict_GetItemString(model, "label");
 	n = (int) PyLong_AsLong(PyLong_FromSsize_t(PyList_Size(label_list)));
-	
+
 	model_out->label = (int*) malloc(n * sizeof(int));
 	//Not enough memory
 	if(model_out->label == NULL){
@@ -410,7 +410,7 @@ struct svm_model* pythonToModel(PyObject* model){
 	/*nSV*/
 	nSV_list = PyDict_GetItemString(model, "nSV");
 	n = (int) PyLong_AsLong(PyLong_FromSsize_t(PyList_Size(nSV_list)));
-	
+
 	model_out->nSV = (int*) malloc(n * sizeof(int));
 	//Not enough memory
 	if(model_out->nSV == NULL){
