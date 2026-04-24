@@ -1,6 +1,6 @@
 """Metrics module."""
 
-from .metrics import (
+from ._metrics import (
     accuracy_off1,
     amae,
     ccr,
