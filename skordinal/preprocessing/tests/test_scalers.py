@@ -5,7 +5,7 @@ import numpy.testing as npt
 import pytest
 
 from skordinal.preprocessing import apply_scaling, minmax_scale, standardize
-from skordinal.preprocessing.scalers import _validate_and_align
+from skordinal.preprocessing._scalers import _validate_and_align
 from skordinal.testing import TEST_RANDOM_STATE
 
 

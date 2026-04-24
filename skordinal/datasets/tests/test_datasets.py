@@ -17,7 +17,7 @@ from skordinal.datasets import (
     load_dataset,
     shuffle_data,
 )
-from skordinal.testing.testing_utils import TEST_RANDOM_STATE
+from skordinal.testing import TEST_RANDOM_STATE
 
 
 def create_tmp_dataset(tmp_path, dataset_name, filename):

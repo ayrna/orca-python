@@ -11,7 +11,7 @@ from skordinal.classifiers import (
     SVOREX,
     OrdinalDecomposition,
 )
-from skordinal.model_selection.validation import (
+from skordinal.model_selection._validation import (
     _add_random_state,
     _normalize_param_grid,
     _prepare_parameters_for_ensemble,

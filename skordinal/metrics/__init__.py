@@ -15,7 +15,7 @@ from ._metrics import (
     tkendall,
     wkappa,
 )
-from .utils import (
+from ._utils import (
     compute_metric,
     get_metric_names,
     greater_is_better,
@@ -23,21 +23,21 @@ from .utils import (
 )
 
 __all__ = [
-    "ccr",
+    "accuracy_off1",
     "amae",
+    "ccr",
+    "compute_metric",
+    "get_metric_names",
     "gm",
     "gmsec",
+    "greater_is_better",
+    "load_metric_as_scorer",
     "mae",
     "mmae",
     "ms",
     "mze",
+    "rps",
+    "spearman",
     "tkendall",
     "wkappa",
-    "spearman",
-    "rps",
-    "accuracy_off1",
-    "get_metric_names",
-    "greater_is_better",
-    "load_metric_as_scorer",
-    "compute_metric",
 ]

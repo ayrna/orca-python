@@ -27,7 +27,7 @@ static PyMethodDef svorexMethods[] = {
 #else /*For Python 3*/
 	static struct PyModuleDef svorexmodule = {
 	    PyModuleDef_HEAD_INIT,
-	    "svorex",   /* name of module */
+	    "_libsvorex",   /* name of module */
 	    NULL, 		 /* module documentation, may be NULL */
 	    -1,       	 /* size of per-interpreter state of the module,
 	                 or -1 if the module keeps state in global variables. */
@@ -38,7 +38,7 @@ static PyMethodDef svorexMethods[] = {
 		extern "C" {
 	#endif
 			PyMODINIT_FUNC
-			PyInit_svorex(void){
+			PyInit__libsvorex(void){
 			    return PyModule_Create(&svorexmodule);
 			}
 	#ifdef __cplusplus

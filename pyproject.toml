@@ -70,14 +70,14 @@ namespaces = false
 
 [tool.setuptools]
 ext-modules = [
-    {name = "skordinal.classifiers.src.libsvmrank.python.svm", language = "c++", sources = [
+    {name = "skordinal.classifiers._libsvmrank", language = "c++", sources = [
             "skordinal/classifiers/src/libsvmrank/python/svm-module.cpp",
             "skordinal/classifiers/src/libsvmrank/python/svm-train.cpp",
             "skordinal/classifiers/src/libsvmrank/python/svm-predict.cpp",
             "skordinal/classifiers/src/libsvmrank/python/svm-model-python.cpp",
             "skordinal/classifiers/src/libsvmrank/python/svm.cpp",
         ], extra-compile-args = ["-Wno-unused-result"]},
-    {name = "skordinal.classifiers.src.svorex.svorex", language = "c", sources = [
+    {name = "skordinal.classifiers._libsvorex", language = "c", sources = [
             "skordinal/classifiers/src/svorex/svorex_module.c",
             "skordinal/classifiers/src/svorex/svorex_train.c",
             "skordinal/classifiers/src/svorex/svorex_predict.c",

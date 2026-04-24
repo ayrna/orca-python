@@ -1,5 +1,5 @@
 """Utilities module."""
 
-from .utilities import Utilities
+from ._utilities import Utilities
 
 __all__ = ["Utilities"]

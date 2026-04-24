@@ -27,7 +27,7 @@ static PyMethodDef svmMethods[] = {
 #else /*For Python 3*/
 	static struct PyModuleDef svmmodule = {
 	    PyModuleDef_HEAD_INIT,
-	    "svm",   /* name of module */
+	    "_libsvmrank",   /* name of module */
 	    NULL, 		 /* module documentation, may be NULL */
 	    -1,       	 /* size of per-interpreter state of the module,
 	                 or -1 if the module keeps state in global variables. */
@@ -38,7 +38,7 @@ static PyMethodDef svmMethods[] = {
 		extern "C" {
 	#endif
 			PyMODINIT_FUNC
-			PyInit_svm(void){
+			PyInit__libsvmrank(void){
 			    return PyModule_Create(&svmmodule);
 			}
 	#ifdef __cplusplus

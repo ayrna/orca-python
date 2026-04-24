@@ -1,7 +1,7 @@
 """Model selection and estimator loading utilities."""
 
-from .loaders import get_classifier_by_name, load_classifier
-from .validation import (
+from ._loaders import get_classifier_by_name, load_classifier
+from ._validation import (
     check_for_random_state,
     is_ensemble,
     is_searchcv,
@@ -9,10 +9,10 @@ from .validation import (
 )
 
 __all__ = [
-    "get_classifier_by_name",
-    "load_classifier",
     "check_for_random_state",
+    "get_classifier_by_name",
     "is_ensemble",
     "is_searchcv",
+    "load_classifier",
     "prepare_param_grid",
 ]

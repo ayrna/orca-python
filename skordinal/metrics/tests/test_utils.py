@@ -7,8 +7,12 @@ from skordinal.metrics import (
     accuracy_off1,
     amae,
     ccr,
+    compute_metric,
+    get_metric_names,
     gm,
     gmsec,
+    greater_is_better,
+    load_metric_as_scorer,
     mae,
     mmae,
     ms,
@@ -18,13 +22,7 @@ from skordinal.metrics import (
     tkendall,
     wkappa,
 )
-from skordinal.metrics.utils import (
-    _METRICS,
-    compute_metric,
-    get_metric_names,
-    greater_is_better,
-    load_metric_as_scorer,
-)
+from skordinal.metrics._utils import _METRICS
 
 
 def test_get_metric_names():
