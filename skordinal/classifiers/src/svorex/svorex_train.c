@@ -37,8 +37,11 @@ PyObject* fit(PyObject* self, PyObject* args)
 	/* Put options in argv[]*/
 	int argc = 0;
 	char *argv[CMD_LEN/2];
+	char options_copy[CMD_LEN];
+	strncpy(options_copy, options, CMD_LEN - 1);
+	options_copy[CMD_LEN - 1] = '\0';
 
-	if((argv[argc] = strtok(options, " ")) != NULL)
+	if((argv[argc] = strtok(options_copy, " ")) != NULL)
 		while((argv[++argc] = strtok(NULL, " ")) != NULL)
 			;
 
@@ -200,6 +203,7 @@ PyObject* fit(PyObject* self, PyObject* args)
 		defsetting->beta = 1.0;
 
 	if ( FALSE == smo_Loadproblem_Python (&(defsetting->pairs), features, labels) ){
+		Clear_def_Settings( defsetting );
 		return NULL;
 	}
 
