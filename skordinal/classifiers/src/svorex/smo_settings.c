@@ -142,10 +142,10 @@ smo_Settings * Create_smo_Settings ( def_Settings * settings )
 			psetting->bj_up = (double *) malloc((settings->pairs.classes-1)*sizeof(double)) ;
 			psetting->biasj = (double *) malloc((settings->pairs.classes-1)*sizeof(double)) ;
 			psetting->mu = (double *) calloc((settings->pairs.classes-1),sizeof(double)) ;
-			psetting->bmu_low = (double *) malloc((settings->pairs.classes-1)*sizeof(double)) ;
-			psetting->bmu_up = (double *) malloc((settings->pairs.classes-1)*sizeof(double)) ;
-			psetting->imu_low = (long unsigned int *) malloc((settings->pairs.classes-1)*sizeof(long unsigned int)) ;
-			psetting->imu_up = (long unsigned int *) malloc((settings->pairs.classes-1)*sizeof(long unsigned int)) ;
+			psetting->bmu_low = (double *) calloc((settings->pairs.classes-1),sizeof(double)) ;
+			psetting->bmu_up = (double *) calloc((settings->pairs.classes-1),sizeof(double)) ;
+			psetting->imu_low = (long unsigned int *) calloc((settings->pairs.classes-1),sizeof(long unsigned int)) ;
+			psetting->imu_up = (long unsigned int *) calloc((settings->pairs.classes-1),sizeof(long unsigned int)) ;
 		}
 			
 		psetting->duration = 0 ;
@@ -242,10 +242,10 @@ smo_Settings * Create_smo_Settings_Python ( def_Settings * settings )
 			psetting->bj_up = (double *) malloc((settings->pairs.classes-1)*sizeof(double)) ;
 			psetting->biasj = (double *) malloc((settings->pairs.classes-1)*sizeof(double)) ;
 			psetting->mu = (double *) calloc((settings->pairs.classes-1),sizeof(double)) ;
-			psetting->bmu_low = (double *) malloc((settings->pairs.classes-1)*sizeof(double)) ;
-			psetting->bmu_up = (double *) malloc((settings->pairs.classes-1)*sizeof(double)) ;
-			psetting->imu_low = (long unsigned int *) malloc((settings->pairs.classes-1)*sizeof(long unsigned int)) ;
-			psetting->imu_up = (long unsigned int *) malloc((settings->pairs.classes-1)*sizeof(long unsigned int)) ;
+			psetting->bmu_low = (double *) calloc((settings->pairs.classes-1),sizeof(double)) ;
+			psetting->bmu_up = (double *) calloc((settings->pairs.classes-1),sizeof(double)) ;
+			psetting->imu_low = (long unsigned int *) calloc((settings->pairs.classes-1),sizeof(long unsigned int)) ;
+			psetting->imu_up = (long unsigned int *) calloc((settings->pairs.classes-1),sizeof(long unsigned int)) ;
 		}
 			
 		psetting->duration = 0 ;
