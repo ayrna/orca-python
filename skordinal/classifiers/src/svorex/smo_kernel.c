@@ -61,8 +61,12 @@ double Calculate_Kernel( double * pi, double * pj, smo_Settings * settings )
 					kernel = kernel + settings->ard[dimen] ;
 			}
 		}
-		if ((double) P > 1.0)
-			kernel = pow( (kernel + 1.0), (double) P ) ;
+		if ((double) P > 1.0) {
+			double base = kernel + 1.0 ;
+			unsigned int k ;
+			kernel = 1.0 ;
+			for (k = 0 ; k < P ; k++) kernel *= base ;
+		}
 	}
 	else if ( GAUSSIAN == KERNEL )
 	{

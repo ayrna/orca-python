@@ -96,7 +96,7 @@ ext-modules = [
             "skordinal/classifiers/src/svorex/smo_model_python.c",
             "skordinal/classifiers/src/svorex/smo_loadproblem_python.c",
             "skordinal/classifiers/src/svorex/smo_routine_python.c",
-        ], extra-compile-args = ["-Wno-unused-result"], libraries = ["m"]}
+        ], extra-compile-args = ["-Wno-unused-result", "-ffp-contract=off"], libraries = ["m"]}
 ]
 
 [tool.pytest.ini_options]

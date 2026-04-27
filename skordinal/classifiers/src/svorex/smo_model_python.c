@@ -161,6 +161,7 @@ PyObject* modelToPython(smo_Settings* model){
 								"{"
 								"s:O,"
 								"s:i,"
+								"s:I,"
 								"s:d,"
 								"s:O,"
 								"s:O,"
@@ -169,6 +170,7 @@ PyObject* modelToPython(smo_Settings* model){
 								"}",
 								"ard", ard_list,
 								"kernel", model->kernel,
+								"p", model->p,
 								"kappa", model->kappa,
 								"alpha", alpha_list,
 								"pairs", pairs_data_list_dict,
@@ -201,8 +203,9 @@ smo_Settings* pythonToModel(PyObject* model){
 	if(model_out == NULL)
 		return NULL;
 
-	//kernel, kappa, bias
+	//kernel, p, kappa, bias
 	model_out->kernel = (int) PyLong_AsLong(PyDict_GetItemString(model, "kernel"));
+	model_out->p = (unsigned int) PyLong_AsUnsignedLong(PyDict_GetItemString(model, "p"));
 	model_out->kappa = PyFloat_AsDouble(PyDict_GetItemString(model, "kappa"));
 	model_out->bias = PyFloat_AsDouble(PyDict_GetItemString(model, "bias"));
 
