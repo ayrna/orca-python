@@ -10,12 +10,10 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "BSD-3-Clause"}
 authors = [
-    {name = "Francisco Bérchez-Moreno", email = "fberchez@uco.es"},
-    {name = "Víctor Manuel Vargas", email = "vvargas@uco.es"},
-    {name = "Javier Barbero-Gómez", email = "jbarbero@uco.es"},
-    {name = "Rafael Ayllón-Gavilán", email = "rayllong@uco.es"},
     {name = "David Guijo-Rubio", email = "dguijo@uco.es"},
     {name = "Ángel Sevilla Molina", email = "asevilla@uco.es"},
+    {name = "Víctor Manuel Vargas", email = "vvargas@uco.es"},
+    {name = "Pedro A. Gutiérrez", email = "pagutierrez@uco.es},
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
