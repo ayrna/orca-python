@@ -20,7 +20,7 @@ from skordinal.model_selection._validation import (
     is_searchcv,
     prepare_param_grid,
 )
-from skordinal.testing import TEST_RANDOM_STATE
+from skordinal.utils._testing import TEST_RANDOM_STATE
 
 
 @pytest.mark.parametrize(

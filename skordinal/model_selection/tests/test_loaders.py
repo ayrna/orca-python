@@ -8,7 +8,7 @@ from sklearn.svm import SVC
 from skordinal.classifiers import NNOP, NNPOM, REDSVM, SVOREX, OrdinalDecomposition
 from skordinal.metrics import load_metric_as_scorer
 from skordinal.model_selection import get_classifier_by_name, load_classifier
-from skordinal.testing import TEST_RANDOM_STATE
+from skordinal.utils._testing import TEST_RANDOM_STATE
 
 
 def test_get_classifier_by_name_correct():
