@@ -8,8 +8,8 @@ import numpy.testing as npt
 import pandas as pd
 import pytest
 
-from skordinal.testing import TEST_DATASETS_DIR
 from skordinal.utilities import Utilities
+from skordinal.utils._testing import make_balance_scale_split
 
 
 @pytest.fixture
@@ -96,13 +96,7 @@ def test_load_nontrainfile_dataset(tmp_path, util):
 
 def test_normalize_data(tmp_path, util):
     # Test preparation
-    dataset_path = Path(TEST_DATASETS_DIR) / "balance-scale"
-
-    train_file = np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
-    X_train = train_file[:, 0:(-1)]
-
-    test_file = np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
-    X_test = test_file[:, 0:(-1)]
+    X_train, X_test, _, _ = make_balance_scale_split()
 
     # Test execution
     norm_X_train, _ = util._normalize_data(X_train, X_test)
@@ -114,13 +108,7 @@ def test_normalize_data(tmp_path, util):
 
 def test_standardize_data(util):
     # Test preparation
-    dataset_path = Path(TEST_DATASETS_DIR) / "balance-scale"
-
-    train_file = np.loadtxt(dataset_path / "train_balance-scale.csv", delimiter=",")
-    X_train = train_file[:, 0:(-1)]
-
-    test_file = np.loadtxt(dataset_path / "test_balance-scale.csv", delimiter=",")
-    X_test = test_file[:, 0:(-1)]
+    X_train, X_test, _, _ = make_balance_scale_split()
 
     # Test execution
     std_X_train, _ = util._standardize_data(X_train, X_test)
