@@ -144,16 +144,16 @@ class NNPOM(ClassifierMixin, BaseEstimator):
 
         """
         X, y = validate_data(self, X, y)
-        self.classes_, _ = check_ordinal_targets(y)
+        self.classes_, y_encoded = check_ordinal_targets(y)
 
         # Aux variables
-        y = y[:, np.newaxis]
+        y_1indexed = (y_encoded + 1)[:, np.newaxis]
         n_classes = len(self.classes_)
         n_samples = X.shape[0]
 
         # Recode y to Y using nominal coding
         Y = 1 * (
-            np.tile(y, (1, n_classes))
+            np.tile(y_1indexed, (1, n_classes))
             == np.tile(np.arange(1, n_classes + 1)[np.newaxis, :], (n_samples, 1))
         )
 
@@ -250,7 +250,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         a3T = 1.0 / (1.0 + np.exp(-z3))
         a3 = np.append(a3T, np.ones((n_samples, 1)), axis=1)
         a3[:, 1:] = a3[:, 1:] - a3[:, 0:-1]
-        y_pred = a3.argmax(1) + 1
+        y_pred = self.classes_[a3.argmax(1)]
 
         return y_pred
 
