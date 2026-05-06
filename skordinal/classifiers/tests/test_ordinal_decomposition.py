@@ -1,8 +1,12 @@
 """Tests for the OrdinalDecomposition ensemble."""
 
+import inspect
+
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
 import pytest
+from sklearn.exceptions import NotFittedError
 
 from skordinal.classifiers import OrdinalDecomposition
 
@@ -354,3 +358,46 @@ def test_frank_hall_method_raises_error(X, y):
     classifier = OrdinalDecomposition(dtype="one_vs_next", decision_method="frank_hall")
     with pytest.raises(ValueError):
         classifier.fit(X, y)
+
+
+def test_ordinal_decomposition_sets_classes_and_n_features_in_after_fit(X, y):
+    """Test that classes_ and n_features_in_ are set after fit."""
+    classifier = OrdinalDecomposition().fit(X, y)
+
+    assert isinstance(classifier.classes_, np.ndarray)
+    np.testing.assert_array_equal(classifier.classes_, np.unique(y))
+    assert isinstance(classifier.n_features_in_, int)
+    assert classifier.n_features_in_ == X.shape[1]
+
+
+def test_ordinal_decomposition_predict_raises_if_not_fitted(X):
+    """Test that predict raises NotFittedError if called before fit."""
+    classifier = OrdinalDecomposition()
+    with pytest.raises(NotFittedError):
+        classifier.predict(X)
+
+
+def test_ordinal_decomposition_feature_names_in_when_dataframe(X, y):
+    """Test that feature_names_in_ is set when X is a DataFrame."""
+    df = pd.DataFrame(X, columns=["f0", "f1"])
+    classifier = OrdinalDecomposition().fit(df, y)
+
+    assert hasattr(classifier, "feature_names_in_")
+    np.testing.assert_array_equal(
+        classifier.feature_names_in_, np.array(["f0", "f1"], dtype=object)
+    )
+
+
+def test_ordinal_decomposition_parameter_constraints_match_init_params():
+    """Test that _parameter_constraints keys match __init__ parameters."""
+    init_params = set(inspect.signature(OrdinalDecomposition.__init__).parameters) - {
+        "self"
+    }
+    assert set(OrdinalDecomposition._parameter_constraints) == init_params
+
+
+def test_ordinal_decomposition_predict_rejects_wrong_n_features(X, y):
+    """Test that predict rejects input with mismatched n_features."""
+    classifier = OrdinalDecomposition().fit(X, y)
+    with pytest.raises(ValueError):
+        classifier.predict(X[:, :-1])
