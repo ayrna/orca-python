@@ -7,8 +7,10 @@ import numpy as np
 import scipy
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import Interval
-from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
+
+from skordinal.utils._sklearn_compat import validate_data
+from skordinal.utils.validation import check_ordinal_targets
 
 
 class NNPOM(ClassifierMixin, BaseEstimator):
@@ -24,7 +26,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
     http://www.ias.informatik.tu-darmstadt.de/Research/RpropToolbox
 
     The model is adjusted by minimizing cross entropy. A regularization parameter
-    "lambda_value" is included based on L2, and the number of iterations is specified
+    ``alpha`` is included based on L2, and the number of iterations is specified
     by the "max_iter" parameter.
 
     Parameters
@@ -39,7 +41,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         Maximum number of iterations. The solver iterates until convergence or this
         number of iterations.
 
-    lambda_value : float, default=0.01
+    alpha : float, default=0.01
         Regularization parameter.
 
     Attributes
@@ -109,14 +111,14 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         "epsilon_init": [Interval(Real, 0.0, None, closed="neither")],
         "n_hidden": [Interval(Integral, 1, None, closed="left")],
         "max_iter": [Interval(Integral, 1, None, closed="left")],
-        "lambda_value": [Interval(Real, 0.0, None, closed="neither")],
+        "alpha": [Interval(Real, 0.0, None, closed="neither")],
     }
 
-    def __init__(self, epsilon_init=0.5, n_hidden=50, max_iter=500, lambda_value=0.01):
+    def __init__(self, epsilon_init=0.5, n_hidden=50, max_iter=500, alpha=0.01):
         self.epsilon_init = epsilon_init
         self.n_hidden = n_hidden
         self.max_iter = max_iter
-        self.lambda_value = lambda_value
+        self.alpha = alpha
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
@@ -141,16 +143,13 @@ class NNPOM(ClassifierMixin, BaseEstimator):
             If parameters are invalid or data has wrong format.
 
         """
-        # Check that X and y have correct shape
-        X, y = check_X_y(X, y)
-        # Store the classes seen during fit
-        self.classes_ = unique_labels(y)
+        X, y = validate_data(self, X, y)
+        self.classes_, _ = check_ordinal_targets(y)
 
         # Aux variables
         y = y[:, np.newaxis]
         n_classes = len(self.classes_)
         n_samples = X.shape[0]
-        self.n_features_in_ = X.shape[1]
 
         # Recode y to Y using nominal coding
         Y = 1 * (
@@ -186,7 +185,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
                 n_classes,
                 X,
                 Y,
-                self.lambda_value,
+                self.alpha,
             ),
             fprime=None,
             factr=1e3,
@@ -235,12 +234,8 @@ class NNPOM(ClassifierMixin, BaseEstimator):
             If input is invalid.
 
         """
-        # Check is fit had been called
-        check_is_fitted(self, attributes=["theta1_", "theta2_", "classes_"])
-
-        # Input validation
-        X = check_array(X)
-
+        check_is_fitted(self)
+        X = validate_data(self, X, reset=False)
         n_samples = X.shape[0]
         n_classes = len(self.classes_)
 
@@ -374,7 +369,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         return thresholds
 
     def _nnpom_cost_function(
-        self, nn_params, n_features, n_hidden, n_classes, X, Y, lambda_value
+        self, nn_params, n_features, n_hidden, n_classes, X, Y, alpha
     ):
         """Implement the cost function and obtain the corresponding derivatives.
 
@@ -401,7 +396,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         Y : array-like of shape (n_samples,)
             Target vector relative to X.
 
-        lambda_value : float
+        alpha : float
             Regularization parameter.
 
         Returns
@@ -448,9 +443,9 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         p = np.sum((theta1[:, 1:] ** 2).sum() + (theta2[:, 0:] ** 2).sum())
 
         # Cross entropy
-        J = np.sum(
-            -np.log(out[np.where(Y == 1)]), axis=0
-        ) / n_samples + lambda_value * p / (2 * n_samples)
+        J = np.sum(-np.log(out[np.where(Y == 1)]), axis=0) / n_samples + alpha * p / (
+            2 * n_samples
+        )
 
         # Cross entropy
         error_der = np.zeros(Y.shape)
@@ -479,10 +474,10 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         delta_2 = np.matmul(sigma3.T, a2)
 
         # Calculate regularized gradient
-        p1 = (lambda_value / n_samples) * np.concatenate(
+        p1 = (alpha / n_samples) * np.concatenate(
             (np.zeros((np.size(theta1, axis=0), 1)), theta1[:, 1:]), axis=1
         )
-        p2 = (lambda_value / n_samples) * theta2[:, 0:]
+        p2 = (alpha / n_samples) * theta2[:, 0:]
         theta1_grad = delta_1 / n_samples + p1
         theta2_grad = delta_2 / n_samples + p2
 

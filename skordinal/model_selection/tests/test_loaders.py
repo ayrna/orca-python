@@ -53,14 +53,14 @@ def test_load_classifier_with_parameters():
         "epsilon_init": 0.5,
         "n_hidden": 10,
         "max_iter": 500,
-        "lambda_value": 0.01,
+        "alpha": 0.01,
     }
     classifier = load_classifier("NNPOM", param_grid=param_grid)
     assert isinstance(classifier, NNPOM)
     assert classifier.epsilon_init == 0.5
     assert classifier.n_hidden == 10
     assert classifier.max_iter == 500
-    assert classifier.lambda_value == 0.01
+    assert classifier.alpha == 0.01
 
 
 def test_load_classifier_with_searchcv():
