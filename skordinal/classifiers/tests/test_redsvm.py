@@ -1,9 +1,11 @@
 """Tests for the REDSVM classifier."""
 
+import inspect
 from pathlib import Path
 
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
 import pytest
 
 from skordinal.classifiers import REDSVM
@@ -68,7 +70,6 @@ def test_redsvm_predict_matches_expected(kernel):
         ("C", -1),
         ("degree", -1),
         ("gamma", -0.5),
-        ("shrinking", 2),
         ("tol", -1e-5),
         ("cache_size", 0),
         ("kernel", "unknown"),
@@ -91,6 +92,7 @@ def test_redsvm_hyperparameter_value_validation(X, y, param_name, invalid_value)
         ("degree", 2.5),
         ("coef0", "bias"),
         ("shrinking", "yes"),
+        ("shrinking", 2),
         ("tol", "tight"),
         ("cache_size", "big"),
     ],
@@ -143,3 +145,37 @@ def test_redsvm_predict_invalid_input_raises_error(X, y):
 
     with pytest.raises(ValueError):
         classifier.predict([])
+
+
+def test_redsvm_sets_classes_and_n_features_in_after_fit(X, y):
+    """Test that classes_ and n_features_in_ are set after fit."""
+    classifier = REDSVM().fit(X, y)
+
+    assert isinstance(classifier.classes_, np.ndarray)
+    np.testing.assert_array_equal(classifier.classes_, np.unique(y))
+    assert isinstance(classifier.n_features_in_, int)
+    assert classifier.n_features_in_ == X.shape[1]
+
+
+def test_redsvm_feature_names_in_when_dataframe(X, y):
+    """Test that feature_names_in_ is set when X is a DataFrame."""
+    df = pd.DataFrame(X, columns=["f0", "f1"])
+    classifier = REDSVM().fit(df, y)
+
+    assert hasattr(classifier, "feature_names_in_")
+    np.testing.assert_array_equal(
+        classifier.feature_names_in_, np.array(["f0", "f1"], dtype=object)
+    )
+
+
+def test_redsvm_parameter_constraints_match_init_params():
+    """Test that _parameter_constraints keys match __init__ parameters."""
+    init_params = set(inspect.signature(REDSVM.__init__).parameters) - {"self"}
+    assert set(REDSVM._parameter_constraints) == init_params
+
+
+def test_redsvm_predict_rejects_wrong_n_features(X, y):
+    """Test that predict rejects input with mismatched n_features."""
+    classifier = REDSVM().fit(X, y)
+    with pytest.raises(ValueError):
+        classifier.predict(X[:, :-1])

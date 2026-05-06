@@ -5,13 +5,15 @@ from numbers import Integral, Real
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import Interval, StrOptions
-from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
+
+from skordinal.utils._sklearn_compat import validate_data
+from skordinal.utils.validation import check_ordinal_targets
 
 from . import _libsvmrank as svm  # type: ignore[attr-defined]
 
 
-class REDSVM(BaseEstimator, ClassifierMixin):
+class REDSVM(ClassifierMixin, BaseEstimator):
     """Reduction from ordinal regression to binary SVM classifiers.
 
     The configuration used is the identity coding matrix, the absolute cost matrix and
@@ -150,17 +152,8 @@ class REDSVM(BaseEstimator, ClassifierMixin):
             If parameters are invalid or data has wrong format.
 
         """
-        # Additional strict validation for boolean parameters
-        if not isinstance(self.shrinking, bool):
-            raise ValueError(
-                f"The 'shrinking' parameter must be of type bool. "
-                f"Got {type(self.shrinking).__name__} instead."
-            )
-
-        # Check that X and y have correct shape
-        X, y = check_X_y(X, y)
-        # Store the classes seen during fit
-        self.classes_ = unique_labels(y)
+        X, y = validate_data(self, X, y)
+        self.classes_, _ = check_ordinal_targets(y)
 
         # Set default gamma value if not specified
         gamma_value = self.gamma
@@ -221,12 +214,7 @@ class REDSVM(BaseEstimator, ClassifierMixin):
             If input is invalid.
 
         """
-        # Check is fit had been called
-        check_is_fitted(self, ["model_"])
-
-        # Input validation
-        X = check_array(X)
-
+        check_is_fitted(self)
+        X = validate_data(self, X, reset=False)
         y_pred = np.array(svm.predict(X.tolist(), self.model_))
-
         return y_pred
