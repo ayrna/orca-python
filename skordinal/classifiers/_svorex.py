@@ -5,13 +5,15 @@ from numbers import Integral, Real
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import Interval, StrOptions
-from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
+
+from skordinal.utils._sklearn_compat import validate_data
+from skordinal.utils.validation import check_ordinal_targets
 
 from . import _libsvorex as svorex  # type: ignore[attr-defined]
 
 
-class SVOREX(BaseEstimator, ClassifierMixin):
+class SVOREX(ClassifierMixin, BaseEstimator):
     """Support Vector for Ordinal Regression (Explicit constraints).
 
     This class derives from the Algorithm Class and implements the SVOREX method.
@@ -23,9 +25,9 @@ class SVOREX(BaseEstimator, ClassifierMixin):
     C : float, default=1
         Set the parameter C.
 
-    kernel : str, default="gaussian"
+    kernel : str, default="rbf"
         Set type of kernel function.
-        - gaussian: use gaussian kernel
+        - rbf: use Gaussian RBF kernel
         - linear: use imbalanced Linear kernel
         - poly: use Polynomial kernel with order p
 
@@ -35,8 +37,8 @@ class SVOREX(BaseEstimator, ClassifierMixin):
     tol : float, default=0.001
         Set tolerance of termination criterion.
 
-    kappa : float, default=1
-        Set kappa value.
+    gamma : float, default=1
+        Kernel coefficient for the RBF and polynomial kernels.
 
     Attributes
     ----------
@@ -61,26 +63,18 @@ class SVOREX(BaseEstimator, ClassifierMixin):
 
     _parameter_constraints: dict = {
         "C": [Interval(Real, 0.0, None, closed="neither")],
-        "kernel": [
-            StrOptions(
-                {
-                    "gaussian",
-                    "linear",
-                    "poly",
-                }
-            )
-        ],
+        "kernel": [StrOptions({"rbf", "linear", "poly"})],
         "degree": [Interval(Integral, 0, None, closed="left")],
         "tol": [Interval(Real, 0.0, None, closed="neither")],
-        "kappa": [Interval(Real, 0.0, None, closed="neither")],
+        "gamma": [Interval(Real, 0.0, None, closed="neither")],
     }
 
-    def __init__(self, C=1.0, kernel="gaussian", degree=2, tol=0.001, kappa=1):
+    def __init__(self, C=1.0, kernel="rbf", degree=2, tol=0.001, gamma=1):
         self.C = C
         self.kernel = kernel
         self.degree = degree
         self.tol = tol
-        self.kappa = kappa
+        self.gamma = gamma
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
@@ -106,24 +100,20 @@ class SVOREX(BaseEstimator, ClassifierMixin):
             If parameters are invalid or data has wrong format.
 
         """
-        # Check that X and y have correct shape
-        X, y = check_X_y(X, y)
-        # Store the classes seen during fit
-        self.classes_ = unique_labels(y)
+        X, y = validate_data(self, X, y)
+        self.classes_, _ = check_ordinal_targets(y)
 
         arg = ""
-        # Prepare the kernel type arguments
         if self.kernel == "linear":
             arg = "-L"
         elif self.kernel == "poly":
             arg = "-P {}".format(self.degree)
+        # kernel == "rbf" maps to the C core's default (gaussian); no flag emitted.
 
-        # Fit the model
         options = "svorex {} -T {} -K {} -C {}".format(
-            arg, str(self.tol), str(self.kappa), str(self.C)
+            arg, str(self.tol), str(self.gamma), str(self.C)
         )
         self.model_ = svorex.fit(y.tolist(), X.tolist(), options)
-
         return self
 
     def predict(self, X):
@@ -149,12 +139,7 @@ class SVOREX(BaseEstimator, ClassifierMixin):
             If the input is invalid.
 
         """
-        # Check is fit had been called
-        check_is_fitted(self, ["model_"])
-
-        # Input validation
-        X = check_array(X)
-
+        check_is_fitted(self)
+        X = validate_data(self, X, reset=False)
         y_pred = np.array(svorex.predict(X.tolist(), self.model_))
-
         return y_pred

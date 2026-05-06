@@ -5,25 +5,9 @@ from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import StrOptions
 from sklearn.utils.validation import check_is_fitted
 
-# scikit-learn >= 1.6
-try:
-    from sklearn.utils.validation import validate_data as _sk_validate_data
-
-    def _validate_data_compat(estimator, X, y=None, *, reset=True, **kwargs):
-        y_arg = "no_validation" if y is None else y
-        return _sk_validate_data(estimator, X, y_arg, reset=reset, **kwargs)
-
-
-# scikit-learn < 1.6
-except Exception:
-
-    def _validate_data_compat(estimator, X, y=None, *, reset=True, **kwargs):
-        if y is None:
-            return estimator._validate_data(X, reset=reset, **kwargs)
-        return estimator._validate_data(X, y, reset=reset, **kwargs)
-
-
 from skordinal.model_selection import load_classifier
+from skordinal.utils._sklearn_compat import validate_data
+from skordinal.utils.validation import check_ordinal_targets
 
 
 class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
@@ -157,12 +141,11 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             If parameters are invalid or data has wrong format.
 
         """
-        X, y = _validate_data_compat(
+        X, y = validate_data(
             self, X, y, accept_sparse=False, ensure_2d=True, dtype=None
         )
 
-        # Get list of different labels of the dataset
-        self.classes_ = np.unique(y)
+        self.classes_, _ = check_ordinal_targets(y)
         if self.classes_.size < 2:
             raise ValueError("OrdinalDecomposition requires at least 2 classes.")
 
@@ -222,8 +205,8 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             If the specified loss method is not implemented.
 
         """
-        check_is_fitted(self, ["estimators_", "classes_", "coding_matrix_"])
-        X = _validate_data_compat(self, X, reset=False, ensure_2d=True, dtype=None)
+        check_is_fitted(self)
+        X = validate_data(self, X, reset=False, ensure_2d=True, dtype=None)
 
         # Getting predicted labels for dataset from each classifier
         predictions = self._get_predictions(X)
@@ -293,8 +276,8 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
             If the specified loss method is not implemented.
 
         """
-        check_is_fitted(self, ["estimators_", "classes_", "coding_matrix_"])
-        X = _validate_data_compat(self, X, reset=False, ensure_2d=True, dtype=None)
+        check_is_fitted(self)
+        X = validate_data(self, X, reset=False, ensure_2d=True, dtype=None)
 
         # Getting predicted labels for dataset from each classifier
         predictions = self._get_predictions(X)

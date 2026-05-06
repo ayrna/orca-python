@@ -1,6 +1,9 @@
 """Tests for the NNPOM classifier."""
 
+import inspect
+
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
@@ -26,7 +29,7 @@ def y():
         ("epsilon_init", -1),
         ("n_hidden", -1),
         ("max_iter", -1),
-        ("lambda_value", -1e-5),
+        ("alpha", -1e-5),
     ],
 )
 def test_nnpom_hyperparameter_value_validation(X, y, param_name, invalid_value):
@@ -43,7 +46,7 @@ def test_nnpom_hyperparameter_value_validation(X, y, param_name, invalid_value):
         ("epsilon_init", "high"),
         ("n_hidden", 5.5),
         ("max_iter", 2.5),
-        ("lambda_value", "tight"),
+        ("alpha", "tight"),
     ],
 )
 def test_nnpom_hyperparameter_type_validation(X, y, param_name, invalid_value):
@@ -123,3 +126,27 @@ def test_nnpom_predict_raises_if_not_fitted(X):
     classifier = NNPOM()
     with pytest.raises(NotFittedError):
         classifier.predict(X)
+
+
+def test_nnpom_feature_names_in_when_dataframe(X, y):
+    """Test that feature_names_in_ is set when X is a DataFrame."""
+    df = pd.DataFrame(X, columns=["f0", "f1"])
+    classifier = NNPOM(n_hidden=4, max_iter=5).fit(df, y)
+
+    assert hasattr(classifier, "feature_names_in_")
+    np.testing.assert_array_equal(
+        classifier.feature_names_in_, np.array(["f0", "f1"], dtype=object)
+    )
+
+
+def test_nnpom_parameter_constraints_match_init_params():
+    """Test that _parameter_constraints keys match __init__ parameters."""
+    init_params = set(inspect.signature(NNPOM.__init__).parameters) - {"self"}
+    assert set(NNPOM._parameter_constraints) == init_params
+
+
+def test_nnpom_predict_rejects_wrong_n_features(X, y):
+    """Test that predict rejects input with mismatched n_features."""
+    classifier = NNPOM(n_hidden=4, max_iter=5).fit(X, y)
+    with pytest.raises(ValueError):
+        classifier.predict(X[:, :-1])

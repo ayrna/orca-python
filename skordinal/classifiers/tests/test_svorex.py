@@ -1,9 +1,11 @@
 """Tests for the SVOREX classifier."""
 
+import inspect
 from pathlib import Path
 
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
 import pytest
 
 from skordinal.classifiers import SVOREX
@@ -27,7 +29,7 @@ def y():
 @pytest.mark.parametrize(
     "kernel",
     [
-        "gaussian",
+        "rbf",
         "linear",
         "poly",
     ],
@@ -36,7 +38,7 @@ def test_svorex_predict_matches_expected(kernel):
     """Test that predictions match expected values."""
     X_train, X_test, y_train, _ = make_balance_scale_split()
 
-    classifier = SVOREX(C=0.5, kernel=kernel, degree=4, tol=0.002, kappa=0.1)
+    classifier = SVOREX(C=0.5, kernel=kernel, degree=4, tol=0.002, gamma=0.1)
     classifier.fit(X_train, y_train)
     y_pred = classifier.predict(X_test)
     y_expected = np.loadtxt(PREDICTIONS_DIR / f"predictions_{kernel}.csv", dtype=int)
@@ -55,7 +57,7 @@ def test_svorex_predict_matches_expected(kernel):
         ("tol", 0),
         ("tol", -1e-5),
         ("kernel", "unknown"),
-        ("kappa", -1),
+        ("gamma", -1),
     ],
 )
 def test_svorex_hyperparameter_value_validation(X, y, param_name, invalid_value):
@@ -73,7 +75,7 @@ def test_svorex_hyperparameter_value_validation(X, y, param_name, invalid_value)
         ("kernel", 5),
         ("degree", 2.5),
         ("tol", "tight"),
-        ("kappa", "low"),
+        ("gamma", "low"),
     ],
 )
 def test_svorex_hyperparameter_type_validation(X, y, param_name, invalid_value):
@@ -124,3 +126,37 @@ def test_svorex_predict_invalid_input_raises_error(X, y):
 
     with pytest.raises(ValueError):
         classifier.predict([])
+
+
+def test_svorex_sets_classes_and_n_features_in_after_fit(X, y):
+    """Test that classes_ and n_features_in_ are set after fit."""
+    classifier = SVOREX().fit(X, y)
+
+    assert isinstance(classifier.classes_, np.ndarray)
+    np.testing.assert_array_equal(classifier.classes_, np.unique(y))
+    assert isinstance(classifier.n_features_in_, int)
+    assert classifier.n_features_in_ == X.shape[1]
+
+
+def test_svorex_feature_names_in_when_dataframe(X, y):
+    """Test that feature_names_in_ is set when X is a DataFrame."""
+    df = pd.DataFrame(X, columns=["f0", "f1"])
+    classifier = SVOREX().fit(df, y)
+
+    assert hasattr(classifier, "feature_names_in_")
+    np.testing.assert_array_equal(
+        classifier.feature_names_in_, np.array(["f0", "f1"], dtype=object)
+    )
+
+
+def test_svorex_parameter_constraints_match_init_params():
+    """Test that _parameter_constraints keys match __init__ parameters."""
+    init_params = set(inspect.signature(SVOREX.__init__).parameters) - {"self"}
+    assert set(SVOREX._parameter_constraints) == init_params
+
+
+def test_svorex_predict_rejects_wrong_n_features(X, y):
+    """Test that predict rejects input with mismatched n_features."""
+    classifier = SVOREX().fit(X, y)
+    with pytest.raises(ValueError):
+        classifier.predict(X[:, :-1])
