@@ -17,13 +17,13 @@ PREDICTIONS_DIR = Path(__file__).parent / "data" / "SVOREX"
 @pytest.fixture
 def X():
     """Create sample feature patterns for testing."""
-    return np.array([[1, 2], [2, 1], [2, 2], [1, 1], [2, 3]])
+    return np.array([[0, 1], [1, 0], [1, 1], [0, 0], [1, 2]])
 
 
 @pytest.fixture
 def y():
     """Create sample target variables for testing."""
-    return np.array([1, 2, 2, 1, 2])
+    return np.array([0, 1, 1, 0, 1])
 
 
 @pytest.mark.parametrize(
@@ -160,3 +160,27 @@ def test_svorex_predict_rejects_wrong_n_features(X, y):
     classifier = SVOREX().fit(X, y)
     with pytest.raises(ValueError):
         classifier.predict(X[:, :-1])
+
+
+@pytest.mark.parametrize(
+    "labels",
+    [
+        [1, 2, 3],  # standard 1-indexed
+        [0, 1, 2],  # 0-indexed
+        [-1, 0, 1],  # negative labels
+        [3, 5, 7],  # non-contiguous with gaps
+    ],
+)
+def test_svorex_label_roundtrip(labels):
+    """Test that SVOREX preserves arbitrary ordinal label sets through fit/predict."""
+    labels_array = np.array(labels)
+    X = np.array(
+        [[i, i] for i, _ in enumerate(np.repeat(labels_array, 3))], dtype=float
+    )
+    y = np.repeat(labels_array, 3)
+
+    classifier = SVOREX(C=0.5, kernel="linear")
+    classifier.fit(X, y)
+
+    assert np.array_equal(classifier.classes_, np.unique(labels_array))
+    assert set(classifier.predict(X)).issubset(set(np.unique(labels_array)))

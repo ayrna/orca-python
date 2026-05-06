@@ -153,7 +153,7 @@ class REDSVM(ClassifierMixin, BaseEstimator):
 
         """
         X, y = validate_data(self, X, y)
-        self.classes_, _ = check_ordinal_targets(y)
+        self.classes_, y_encoded = check_ordinal_targets(y)
 
         # Set default gamma value if not specified
         gamma_value = self.gamma
@@ -187,7 +187,7 @@ class REDSVM(ClassifierMixin, BaseEstimator):
             str(self.tol),
             str(1 if self.shrinking else 0),
         )
-        self.model_ = svm.fit(y.tolist(), X.tolist(), options)
+        self.model_ = svm.fit((y_encoded + 1).tolist(), X.tolist(), options)
 
         return self
 
@@ -217,4 +217,4 @@ class REDSVM(ClassifierMixin, BaseEstimator):
         check_is_fitted(self)
         X = validate_data(self, X, reset=False)
         y_pred = np.array(svm.predict(X.tolist(), self.model_))
-        return y_pred
+        return self.classes_[y_pred.astype(int) - 1]

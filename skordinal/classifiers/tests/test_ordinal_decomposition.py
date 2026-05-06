@@ -401,3 +401,29 @@ def test_ordinal_decomposition_predict_rejects_wrong_n_features(X, y):
     classifier = OrdinalDecomposition().fit(X, y)
     with pytest.raises(ValueError):
         classifier.predict(X[:, :-1])
+
+
+@pytest.mark.parametrize(
+    "labels",
+    [
+        [1, 2, 3],
+        [0, 1, 2],
+        [-1, 0, 1],
+        [3, 5, 7],
+    ],
+)
+def test_ordinal_decomposition_label_roundtrip(labels):
+    """Test that arbitrary ordinal label sets round-trip through fit/predict."""
+    labels_array = np.array(labels)
+    X = np.array(
+        [[i, i] for i, _ in enumerate(np.repeat(labels_array, 3))], dtype=float
+    )
+    y = np.repeat(labels_array, 3)
+
+    classifier = OrdinalDecomposition(
+        base_classifier="SVC",
+        parameters={"C": 1.0, "gamma": "scale", "probability": True},
+    ).fit(X, y)
+
+    np.testing.assert_array_equal(classifier.classes_, np.unique(labels_array))
+    assert set(classifier.predict(X)).issubset(set(np.unique(labels_array)))

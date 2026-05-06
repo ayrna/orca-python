@@ -150,3 +150,27 @@ def test_nnop_predict_rejects_wrong_n_features(X, y):
     classifier = NNOP(n_hidden=4, max_iter=5).fit(X, y)
     with pytest.raises(ValueError):
         classifier.predict(X[:, :-1])
+
+
+@pytest.mark.parametrize(
+    "labels",
+    [
+        [1, 2, 3],  # standard 1-indexed
+        [0, 1, 2],  # 0-indexed
+        [-1, 0, 1],  # negative labels
+        [3, 5, 7],  # non-contiguous with gaps
+    ],
+)
+def test_nnop_label_roundtrip(labels):
+    """Test that NNOP preserves arbitrary ordinal label sets through fit/predict."""
+    labels_array = np.array(labels)
+    X = np.array(
+        [[i, i] for i, _ in enumerate(np.repeat(labels_array, 3))], dtype=float
+    )
+    y = np.repeat(labels_array, 3)
+
+    classifier = NNOP(n_hidden=4, max_iter=10)
+    classifier.fit(X, y)
+
+    assert np.array_equal(classifier.classes_, np.unique(labels_array))
+    assert set(classifier.predict(X)).issubset(set(np.unique(labels_array)))

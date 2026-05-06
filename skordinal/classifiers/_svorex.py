@@ -101,7 +101,7 @@ class SVOREX(ClassifierMixin, BaseEstimator):
 
         """
         X, y = validate_data(self, X, y)
-        self.classes_, _ = check_ordinal_targets(y)
+        self.classes_, y_encoded = check_ordinal_targets(y)
 
         arg = ""
         if self.kernel == "linear":
@@ -113,7 +113,7 @@ class SVOREX(ClassifierMixin, BaseEstimator):
         options = "svorex {} -T {} -K {} -C {}".format(
             arg, str(self.tol), str(self.gamma), str(self.C)
         )
-        self.model_ = svorex.fit(y.tolist(), X.tolist(), options)
+        self.model_ = svorex.fit((y_encoded + 1).tolist(), X.tolist(), options)
         return self
 
     def predict(self, X):
@@ -142,4 +142,4 @@ class SVOREX(ClassifierMixin, BaseEstimator):
         check_is_fitted(self)
         X = validate_data(self, X, reset=False)
         y_pred = np.array(svorex.predict(X.tolist(), self.model_))
-        return y_pred
+        return self.classes_[y_pred.astype(int) - 1]
