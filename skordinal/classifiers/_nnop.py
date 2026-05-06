@@ -143,17 +143,17 @@ class NNOP(ClassifierMixin, BaseEstimator):
 
         """
         X, y = validate_data(self, X, y)
-        self.classes_, _ = check_ordinal_targets(y)
+        self.classes_, y_encoded = check_ordinal_targets(y)
 
         # Aux variables
-        y = y[:, np.newaxis]
+        y_1indexed = (y_encoded + 1)[:, np.newaxis]
         n_classes = len(self.classes_)
         n_samples = X.shape[0]
         # n_features_in_ is set by validate_data; do not assign manually.
 
         # Recode y to Y using ordinalPartitions coding
         Y = 1 * (
-            np.tile(y, (1, n_classes))
+            np.tile(y_1indexed, (1, n_classes))
             <= np.tile(np.arange(1, n_classes + 1)[np.newaxis, :], (n_samples, 1))
         )
 
@@ -243,7 +243,7 @@ class NNOP(ClassifierMixin, BaseEstimator):
             np.tile(np.arange(1, n_classes + 1), (n_samples, 1)),
         )
         a3[np.where(a3 == 0)] = n_classes + 1
-        y_pred = a3.min(axis=1)
+        y_pred = self.classes_[a3.min(axis=1).astype(int) - 1]
 
         return y_pred
 
