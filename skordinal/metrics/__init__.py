@@ -15,23 +15,16 @@ from ._metrics import (
     tkendall,
     wkappa,
 )
-from ._utils import (
-    compute_metric,
-    get_metric_names,
-    greater_is_better,
-    load_metric_as_scorer,
-)
+from ._scorers import get_ordinal_scorer, list_ordinal_scorers
 
 __all__ = [
     "accuracy_off1",
     "amae",
     "ccr",
-    "compute_metric",
-    "get_metric_names",
+    "get_ordinal_scorer",
     "gm",
     "gmsec",
-    "greater_is_better",
-    "load_metric_as_scorer",
+    "list_ordinal_scorers",
     "mae",
     "mmae",
     "ms",
