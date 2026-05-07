@@ -6,7 +6,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 
 from skordinal.classifiers import NNOP, NNPOM, REDSVM, SVOREX, OrdinalDecomposition
-from skordinal.metrics import load_metric_as_scorer
+from skordinal.metrics import get_ordinal_scorer
 from skordinal.model_selection import get_classifier_by_name, load_classifier
 from skordinal.utils._testing import TEST_RANDOM_STATE
 
@@ -104,7 +104,7 @@ def test_load_classifier_with_ensemble_method():
         param_grid=param_grid,
         n_jobs=10,
         cv_n_folds=3,
-        cv_metric=load_metric_as_scorer("mae"),
+        cv_metric=get_ordinal_scorer("neg_mae"),
         random_state=TEST_RANDOM_STATE,
     )
     assert isinstance(classifier, GridSearchCV)

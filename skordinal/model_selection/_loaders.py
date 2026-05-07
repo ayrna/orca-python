@@ -4,7 +4,7 @@ from importlib import import_module
 
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
-from skordinal.metrics import load_metric_as_scorer
+from skordinal.metrics import get_ordinal_scorer
 from skordinal.model_selection._validation import (
     is_searchcv,
     prepare_param_grid,
@@ -129,9 +129,7 @@ def load_classifier(
 
     if is_searchcv(param_grid):
         scorer = (
-            load_metric_as_scorer(cv_metric)
-            if isinstance(cv_metric, str)
-            else cv_metric
+            get_ordinal_scorer(cv_metric) if isinstance(cv_metric, str) else cv_metric
         )
         cv = StratifiedKFold(
             n_splits=cv_n_folds, shuffle=True, random_state=random_state

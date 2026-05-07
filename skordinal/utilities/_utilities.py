@@ -10,9 +10,15 @@ import pandas as pd
 from sklearn import preprocessing
 from sklearn.model_selection import GridSearchCV
 
-from skordinal.metrics import compute_metric
 from skordinal.model_selection import load_classifier
 from skordinal.results import Results
+
+
+def _compute_metric(metric_name, y_true, y_pred):
+    import skordinal.metrics as _metrics
+
+    fn = getattr(_metrics, metric_name.strip())
+    return fn(y_true, y_pred)
 
 
 class Utilities:
@@ -157,7 +163,7 @@ class Utilities:
                     test_metrics = OrderedDict()
                     for metric_name in self.general_conf["metrics"]:
                         # Get train scores
-                        train_score = compute_metric(
+                        train_score = _compute_metric(
                             metric_name,
                             partition["train_outputs"],
                             train_predicted_y,
@@ -167,7 +173,7 @@ class Utilities:
                         # Get test scores
                         test_metrics[metric_name.strip() + "_test"] = np.nan
                         if "test_outputs" in partition:
-                            test_score = compute_metric(
+                            test_score = _compute_metric(
                                 metric_name, partition["test_outputs"], test_predicted_y
                             )
                             test_metrics[metric_name.strip() + "_test"] = test_score
