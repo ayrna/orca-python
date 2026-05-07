@@ -27,8 +27,8 @@ from skordinal.utils._testing import TEST_RANDOM_STATE
     "estimator, expected",
     [
         (None, False),
-        (NNOP, False),
-        (NNPOM, False),
+        (NNOP, True),
+        (NNPOM, True),
         (OrdinalDecomposition, False),
         (REDSVM, False),
         (SVOREX, False),
@@ -258,7 +258,7 @@ def test_add_random_state():
 
     param_grid = {"C": 1.0}
     updated = _add_random_state(NNOP, param_grid.copy(), TEST_RANDOM_STATE)
-    assert "random_state" not in updated
+    assert updated["random_state"] == TEST_RANDOM_STATE
 
 
 def test_normalize_param_grid():
