@@ -47,6 +47,8 @@ def test_nnpom_hyperparameter_value_validation(X, y, param_name, invalid_value):
         ("n_hidden", 5.5),
         ("max_iter", 2.5),
         ("alpha", "tight"),
+        ("random_state", "seed"),
+        ("random_state", 1.5),
     ],
 )
 def test_nnpom_hyperparameter_type_validation(X, y, param_name, invalid_value):
@@ -174,3 +176,31 @@ def test_nnpom_label_roundtrip(labels):
 
     assert np.array_equal(classifier.classes_, np.unique(labels_array))
     assert set(classifier.predict(X)).issubset(set(np.unique(labels_array)))
+
+
+def test_nnpom_random_state_reproducibility(X, y):
+    """Two fits with the same seed produce identical theta1_, theta2_, n_iter_."""
+    clf_a = NNPOM(n_hidden=4, max_iter=10, random_state=0).fit(X, y)
+    clf_b = NNPOM(n_hidden=4, max_iter=10, random_state=0).fit(X, y)
+
+    np.testing.assert_array_equal(clf_a.theta1_, clf_b.theta1_)
+    np.testing.assert_array_equal(clf_a.theta2_, clf_b.theta2_)
+    assert clf_a.n_iter_ == clf_b.n_iter_
+
+
+def test_nnpom_random_state_different_seeds_differ(X, y):
+    """Different seeds produce different initial weights."""
+    clf_a = NNPOM(n_hidden=4, max_iter=10, random_state=0).fit(X, y)
+    clf_b = NNPOM(n_hidden=4, max_iter=10, random_state=1).fit(X, y)
+
+    assert not np.array_equal(clf_a.theta1_, clf_b.theta1_)
+
+
+def test_nnpom_random_state_accepts_random_state_instance(X, y):
+    """RandomState instance gives the same result as the equivalent seed."""
+    rs_seed = NNPOM(n_hidden=4, max_iter=10, random_state=42).fit(X, y)
+    rs_instance = NNPOM(
+        n_hidden=4, max_iter=10, random_state=np.random.RandomState(42)
+    ).fit(X, y)
+
+    np.testing.assert_array_equal(rs_seed.theta1_, rs_instance.theta1_)

@@ -6,6 +6,7 @@ from numbers import Integral, Real
 import numpy as np
 import scipy
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
+from sklearn.utils import check_random_state
 from sklearn.utils._param_validation import Interval
 from sklearn.utils.validation import check_is_fitted
 
@@ -43,6 +44,10 @@ class NNPOM(ClassifierMixin, BaseEstimator):
 
     alpha : float, default=0.01
         Regularization parameter.
+
+    random_state : int, RandomState instance, default=None
+        Determines random number generation for weight initialization.
+        Pass an int for reproducible results across multiple function calls.
 
     Attributes
     ----------
@@ -112,13 +117,17 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         "n_hidden": [Interval(Integral, 1, None, closed="left")],
         "max_iter": [Interval(Integral, 1, None, closed="left")],
         "alpha": [Interval(Real, 0.0, None, closed="neither")],
+        "random_state": ["random_state"],
     }
 
-    def __init__(self, epsilon_init=0.5, n_hidden=50, max_iter=500, alpha=0.01):
+    def __init__(
+        self, epsilon_init=0.5, n_hidden=50, max_iter=500, alpha=0.01, random_state=None
+    ):
         self.epsilon_init = epsilon_init
         self.n_hidden = n_hidden
         self.max_iter = max_iter
         self.alpha = alpha
+        self.random_state = random_state
 
     @_fit_context(prefer_skip_nested_validation=True)
     def fit(self, X, y):
@@ -145,6 +154,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         """
         X, y = validate_data(self, X, y)
         self.classes_, y_encoded = check_ordinal_targets(y)
+        rng = check_random_state(self.random_state)
 
         # Aux variables
         y_1indexed = (y_encoded + 1)[:, np.newaxis]
@@ -159,12 +169,12 @@ class NNPOM(ClassifierMixin, BaseEstimator):
 
         # Hidden layer weigths (with bias)
         initial_theta1 = self._rand_initialize_weights(
-            self.n_features_in_ + 1, self.n_hidden
+            self.n_features_in_ + 1, self.n_hidden, rng
         )
         # Output layer weigths (without bias, the biases will be the thresholds)
-        initial_theta2 = self._rand_initialize_weights(self.n_hidden, 1)
+        initial_theta2 = self._rand_initialize_weights(self.n_hidden, 1, rng)
         # Class thresholds parameters
-        initial_thresholds = self._rand_initialize_weights((n_classes - 1), 1)
+        initial_thresholds = self._rand_initialize_weights((n_classes - 1), 1, rng)
 
         # Pack parameters
         initial_nn_params = np.concatenate(
@@ -303,7 +313,7 @@ class NNPOM(ClassifierMixin, BaseEstimator):
 
         return theta1, theta2, thresholds_param
 
-    def _rand_initialize_weights(self, L_in, L_out):
+    def _rand_initialize_weights(self, L_in, L_out, rng):
         """Initialize layer weights randomly.
 
         Randomly initialize the weights of a layer with L_in incoming connections and
@@ -317,13 +327,16 @@ class NNPOM(ClassifierMixin, BaseEstimator):
         L_out : int
             Number of outputs of the layer.
 
+        rng : numpy.random.RandomState
+            Random number generator used for weight initialization.
+
         Returns
         -------
         W : ndarray of shape (L_out, L_in)
             Array with the weights of each synaptic relationship between nodes.
 
         """
-        W = np.random.rand(L_out, L_in) * 2 * self.epsilon_init - self.epsilon_init
+        W = rng.rand(L_out, L_in) * 2 * self.epsilon_init - self.epsilon_init
 
         return W
 
