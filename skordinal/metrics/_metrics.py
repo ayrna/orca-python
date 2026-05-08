@@ -2,52 +2,19 @@
 
 from __future__ import division
 
+import warnings
+
 import numpy as np
 import scipy.stats
-from sklearn.metrics import confusion_matrix, recall_score
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    mean_absolute_error,
+    recall_score,
+)
 
 
-def ccr(y_true, y_pred):
-    """Calculate the Correctly Classified Ratio.
-
-    Also named Accuracy, it's the percentage of well classified patterns among all
-    patterns from a set.
-
-    Parameters
-    ----------
-    y_true : np.ndarray, shape (n_samples,)
-        Ground truth labels.
-
-    y_pred : np.ndarray, shape (n_samples,)
-        Predicted labels.
-
-    Returns
-    -------
-    ccr : float
-        Correctly classified ratio.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from skordinal.metrics import ccr
-    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
-    >>> y_pred = np.array([0, 1, 1, 2, 0, 0, 1])
-    >>> ccr(y_true, y_pred)
-    0.5714285714285714
-
-    """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    return np.count_nonzero(y_true == y_pred) / float(len(y_true))
-
-
-def amae(y_true, y_pred):
+def average_mean_absolute_error(y_true, y_pred):
     """Calculate the Average MAE.
 
     Mean of the MAE metric among classes.
@@ -62,16 +29,16 @@ def amae(y_true, y_pred):
 
     Returns
     -------
-    amae : float
+    average_mean_absolute_error : float
         Average mean absolute error.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import amae
+    >>> from skordinal.metrics import average_mean_absolute_error
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> amae(y_true, y_pred)
+    >>> average_mean_absolute_error(y_true, y_pred)
     np.float64(0.125)
 
     """
@@ -98,7 +65,7 @@ def amae(y_true, y_pred):
     return np.mean(per_class_maes)
 
 
-def gm(y_true, y_pred):
+def geometric_mean(y_true, y_pred):
     """Calculate the Geometric mean of the sensitivity (accuracy) for each class.
 
     Parameters
@@ -111,16 +78,16 @@ def gm(y_true, y_pred):
 
     Returns
     -------
-    gm : float
+    geometric_mean : float
         Geometric mean of the sensitivities.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import gm
+    >>> from skordinal.metrics import geometric_mean
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> gm(y_true, y_pred)
+    >>> geometric_mean(y_true, y_pred)
     np.float64(0.8408964152537145)
 
     """
@@ -181,46 +148,7 @@ def gmsec(y_true, y_pred):
     return np.sqrt(sensitivities[0] * sensitivities[-1])
 
 
-def mae(y_true, y_pred):
-    """Calculate the Mean Absolute Error.
-
-    Average absolute deviation of the predicted class from the actual true class.
-
-    Parameters
-    ----------
-    y_true : np.ndarray, shape (n_samples,)
-        Ground truth labels.
-
-    y_pred : np.ndarray, shape (n_samples,)
-        Predicted labels.
-
-    Returns
-    -------
-    mae : float
-        Mean absolute error.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from skordinal.metrics import mae
-    >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
-    >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> mae(y_true, y_pred)
-    np.float64(0.2857142857142857)
-
-    """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    return abs(y_true - y_pred).sum() / len(y_true)
-
-
-def mmae(y_true, y_pred):
+def maximum_mean_absolute_error(y_true, y_pred):
     """Calculate the Maximum Mean Absolute Error.
 
     MAE value of the class with higher distance from the true values to the predicted
@@ -236,16 +164,16 @@ def mmae(y_true, y_pred):
 
     Returns
     -------
-    mmae : float
+    maximum_mean_absolute_error : float
         Maximum mean absolute error.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import mmae
+    >>> from skordinal.metrics import maximum_mean_absolute_error
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> mmae(y_true, y_pred)
+    >>> maximum_mean_absolute_error(y_true, y_pred)
     np.float64(0.5)
 
     """
@@ -272,7 +200,7 @@ def mmae(y_true, y_pred):
     return per_class_maes.max()
 
 
-def ms(y_true, y_pred):
+def minimum_sensitivity(y_true, y_pred):
     """Calculate the Minimum Sensitivity.
 
     Lowest percentage of patterns correctly predicted as belonging to each class, with
@@ -288,16 +216,16 @@ def ms(y_true, y_pred):
 
     Returns
     -------
-    ms : float
+    minimum_sensitivity : float
         Minimum sensitivity.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import ms
+    >>> from skordinal.metrics import minimum_sensitivity
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> ms(y_true, y_pred)
+    >>> minimum_sensitivity(y_true, y_pred)
     np.float64(0.5)
 
     """
@@ -313,7 +241,7 @@ def ms(y_true, y_pred):
     return np.min(sensitivities)
 
 
-def mze(y_true, y_pred):
+def mean_zero_one_error(y_true, y_pred):
     """Calculate the Mean Zero-one Error.
 
     Better known as error rate, is the complementary measure of CCR.
@@ -328,16 +256,16 @@ def mze(y_true, y_pred):
 
     Returns
     -------
-    mze : float
+    mean_zero_one_error : float
         Mean zero-one error.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import mze
+    >>> from skordinal.metrics import mean_zero_one_error
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> mze(y_true, y_pred)
+    >>> mean_zero_one_error(y_true, y_pred)
     np.float64(0.2857142857142857)
 
     """
@@ -353,7 +281,7 @@ def mze(y_true, y_pred):
     return 1 - np.diagonal(confusion).sum() / confusion.sum()
 
 
-def tkendall(y_true, y_pred):
+def kendalls_tau(y_true, y_pred):
     """Calculate Kendall's tau.
 
     A statistic used to measure the association between two measured quantities. It is
@@ -369,16 +297,16 @@ def tkendall(y_true, y_pred):
 
     Returns
     -------
-    tkendall : float
+    kendalls_tau : float
         Kendall's tau.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import tkendall
+    >>> from skordinal.metrics import kendalls_tau
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> tkendall(y_true, y_pred)
+    >>> kendalls_tau(y_true, y_pred)
     np.float64(0.8140915784106943)
 
     """
@@ -394,7 +322,7 @@ def tkendall(y_true, y_pred):
     return corr
 
 
-def wkappa(y_true, y_pred):
+def weighted_kappa(y_true, y_pred):
     """Calculate the Weighted Kappa.
 
     A modified version of the Kappa statistic calculated to allow assigning
@@ -410,16 +338,16 @@ def wkappa(y_true, y_pred):
 
     Returns
     -------
-    wkappa : float
+    weighted_kappa : float
         Weighted Kappa.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import wkappa
+    >>> from skordinal.metrics import weighted_kappa
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> wkappa(y_true, y_pred)
+    >>> weighted_kappa(y_true, y_pred)
     np.float64(0.7586206896551724)
 
     """
@@ -448,7 +376,7 @@ def wkappa(y_true, y_pred):
     return (po - pe) / (1 - pe)
 
 
-def spearman(y_true, y_pred):
+def spearmans_rho(y_true, y_pred):
     """Calculate the Spearman's rank correlation coefficient.
 
     A non-parametric measure of statistical dependence between two variables.
@@ -463,16 +391,16 @@ def spearman(y_true, y_pred):
 
     Returns
     -------
-    spearman : float
+    spearmans_rho : float
         Spearman rank correlation coefficient.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import spearman
+    >>> from skordinal.metrics import spearmans_rho
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
-    >>> spearman(y_true, y_pred)
+    >>> spearmans_rho(y_true, y_pred)
     np.float64(0.9165444688834581)
 
     """
@@ -500,7 +428,7 @@ def spearman(y_true, y_pred):
         return num / div
 
 
-def rps(y_true, y_proba):
+def ranked_probability_score(y_true, y_proba):
     """Compute the ranked probability score.
 
     As presented in :footcite:t:`janitza2016random`.
@@ -515,20 +443,20 @@ def rps(y_true, y_proba):
 
     Returns
     -------
-    rps : float
+    ranked_probability_score : float
         The ranked probability score.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from skordinal.metrics import rps
+    >>> from skordinal.metrics import ranked_probability_score
     >>> y_true = np.array([0, 0, 3, 2])
     >>> y_pred = np.array(
     ...     [[0.2, 0.4, 0.2, 0.2],
     ...      [0.7, 0.1, 0.1, 0.1],
     ...      [0.5, 0.05, 0.1, 0.35],
     ...      [0.1, 0.05, 0.65, 0.2]])
-    >>> rps(y_true, y_pred)
+    >>> ranked_probability_score(y_true, y_pred)
     np.float64(0.5068750000000001)
 
     """
@@ -597,3 +525,113 @@ def accuracy_off1(y_true, y_pred, labels=None):
     correct = mask * conf_mat
 
     return 1.0 * np.sum(correct) / np.sum(conf_mat)
+
+
+def ccr(y_true, y_pred):
+    """Deprecated alias for :func:`accuracy_score`."""
+    warnings.warn(
+        "ccr is deprecated, use accuracy_score instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return accuracy_score(y_true, y_pred)
+
+
+def amae(y_true, y_pred):
+    """Deprecated alias for :func:`average_mean_absolute_error`."""
+    warnings.warn(
+        "amae is deprecated, use average_mean_absolute_error instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return average_mean_absolute_error(y_true, y_pred)
+
+
+def gm(y_true, y_pred):
+    """Deprecated alias for :func:`geometric_mean`."""
+    warnings.warn(
+        "gm is deprecated, use geometric_mean instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return geometric_mean(y_true, y_pred)
+
+
+def mae(y_true, y_pred):
+    """Deprecated alias for :func:`mean_absolute_error`."""
+    warnings.warn(
+        "mae is deprecated, use mean_absolute_error instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return mean_absolute_error(y_true, y_pred)
+
+
+def mmae(y_true, y_pred):
+    """Deprecated alias for :func:`maximum_mean_absolute_error`."""
+    warnings.warn(
+        "mmae is deprecated, use maximum_mean_absolute_error instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return maximum_mean_absolute_error(y_true, y_pred)
+
+
+def ms(y_true, y_pred):
+    """Deprecated alias for :func:`minimum_sensitivity`."""
+    warnings.warn(
+        "ms is deprecated, use minimum_sensitivity instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return minimum_sensitivity(y_true, y_pred)
+
+
+def mze(y_true, y_pred):
+    """Deprecated alias for :func:`mean_zero_one_error`."""
+    warnings.warn(
+        "mze is deprecated, use mean_zero_one_error instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return mean_zero_one_error(y_true, y_pred)
+
+
+def tkendall(y_true, y_pred):
+    """Deprecated alias for :func:`kendalls_tau`."""
+    warnings.warn(
+        "tkendall is deprecated, use kendalls_tau instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return kendalls_tau(y_true, y_pred)
+
+
+def wkappa(y_true, y_pred):
+    """Deprecated alias for :func:`weighted_kappa`."""
+    warnings.warn(
+        "wkappa is deprecated, use weighted_kappa instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return weighted_kappa(y_true, y_pred)
+
+
+def spearman(y_true, y_pred):
+    """Deprecated alias for :func:`spearmans_rho`."""
+    warnings.warn(
+        "spearman is deprecated, use spearmans_rho instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return spearmans_rho(y_true, y_pred)
+
+
+def rps(y_true, y_proba):
+    """Deprecated alias for :func:`ranked_probability_score`."""
+    warnings.warn(
+        "rps is deprecated, use ranked_probability_score instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return ranked_probability_score(y_true, y_proba)

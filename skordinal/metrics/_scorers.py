@@ -4,46 +4,70 @@ from __future__ import annotations
 
 from typing import Callable
 
-from sklearn.metrics import make_scorer
+from sklearn.metrics import accuracy_score, make_scorer, mean_absolute_error
 
 from ._metrics import (
     accuracy_off1,
-    amae,
-    ccr,
-    gm,
+    average_mean_absolute_error,
+    geometric_mean,
     gmsec,
-    mae,
-    mmae,
-    ms,
-    mze,
-    rps,
-    spearman,
-    tkendall,
-    wkappa,
+    kendalls_tau,
+    maximum_mean_absolute_error,
+    mean_zero_one_error,
+    minimum_sensitivity,
+    ranked_probability_score,
+    spearmans_rho,
+    weighted_kappa,
 )
 
 _SCORERS: dict[str, Callable] = {
-    # Error metrics (greater_is_better=False).
-    "neg_amae": make_scorer(amae, greater_is_better=False),
-    "neg_mae": make_scorer(mae, greater_is_better=False),
-    "neg_mmae": make_scorer(mmae, greater_is_better=False),
-    "neg_mze": make_scorer(mze, greater_is_better=False),
-    "neg_rps": make_scorer(rps, greater_is_better=False),
-    # Scoring metrics (greater_is_better=True).
+    "neg_average_mean_absolute_error": make_scorer(
+        average_mean_absolute_error, greater_is_better=False
+    ),
+    "neg_mean_absolute_error": make_scorer(
+        mean_absolute_error, greater_is_better=False
+    ),
+    "neg_maximum_mean_absolute_error": make_scorer(
+        maximum_mean_absolute_error, greater_is_better=False
+    ),
+    "neg_mean_zero_one_error": make_scorer(
+        mean_zero_one_error, greater_is_better=False
+    ),
+    "neg_ranked_probability_score": make_scorer(
+        ranked_probability_score, greater_is_better=False
+    ),
+    "average_mean_absolute_error": make_scorer(
+        average_mean_absolute_error, greater_is_better=False
+    ),
+    "mean_absolute_error": make_scorer(mean_absolute_error, greater_is_better=False),
+    "maximum_mean_absolute_error": make_scorer(
+        maximum_mean_absolute_error, greater_is_better=False
+    ),
+    "mean_zero_one_error": make_scorer(mean_zero_one_error, greater_is_better=False),
+    "accuracy": make_scorer(accuracy_score),
     "accuracy_off1": make_scorer(accuracy_off1),
-    "ccr": make_scorer(ccr),
-    "gm": make_scorer(gm),
+    "geometric_mean": make_scorer(geometric_mean),
     "gmsec": make_scorer(gmsec),
-    "ms": make_scorer(ms),
-    "spearman": make_scorer(spearman),
-    "tkendall": make_scorer(tkendall),
-    "wkappa": make_scorer(wkappa),
-    # Error metrics without neg_ prefix, for compatibility.
-    "amae": make_scorer(amae, greater_is_better=False),
-    "mae": make_scorer(mae, greater_is_better=False),
-    "mmae": make_scorer(mmae, greater_is_better=False),
-    "mze": make_scorer(mze, greater_is_better=False),
-    "rps": make_scorer(rps, greater_is_better=False),
+    "kendalls_tau": make_scorer(kendalls_tau),
+    "minimum_sensitivity": make_scorer(minimum_sensitivity),
+    "spearmans_rho": make_scorer(spearmans_rho),
+    "weighted_kappa": make_scorer(weighted_kappa),
+    "neg_amae": make_scorer(average_mean_absolute_error, greater_is_better=False),
+    "neg_mae": make_scorer(mean_absolute_error, greater_is_better=False),
+    "neg_mmae": make_scorer(maximum_mean_absolute_error, greater_is_better=False),
+    "neg_mze": make_scorer(mean_zero_one_error, greater_is_better=False),
+    "neg_rps": make_scorer(ranked_probability_score, greater_is_better=False),
+    "amae": make_scorer(average_mean_absolute_error, greater_is_better=False),
+    "ccr": make_scorer(accuracy_score),
+    "gm": make_scorer(geometric_mean),
+    "mae": make_scorer(mean_absolute_error, greater_is_better=False),
+    "mmae": make_scorer(maximum_mean_absolute_error, greater_is_better=False),
+    "ms": make_scorer(minimum_sensitivity),
+    "mze": make_scorer(mean_zero_one_error, greater_is_better=False),
+    "rps": make_scorer(ranked_probability_score, greater_is_better=False),
+    "spearman": make_scorer(spearmans_rho),
+    "tkendall": make_scorer(kendalls_tau),
+    "wkappa": make_scorer(weighted_kappa),
 }
 
 __all__ = ["get_ordinal_scorer", "list_ordinal_scorers"]
@@ -74,7 +98,7 @@ def get_ordinal_scorer(name: str) -> Callable:
     Examples
     --------
     >>> from skordinal.metrics import get_ordinal_scorer
-    >>> scorer = get_ordinal_scorer("neg_mae")
+    >>> scorer = get_ordinal_scorer("neg_mean_absolute_error")
     >>> callable(scorer)
     True
 
@@ -103,7 +127,7 @@ def list_ordinal_scorers() -> list[str]:
     >>> all_scorers = list_ordinal_scorers()
     >>> type(all_scorers)
     <class 'list'>
-    >>> "neg_mae" in all_scorers
+    >>> "neg_mean_absolute_error" in all_scorers
     True
     >>> "ccr" in all_scorers
     True
