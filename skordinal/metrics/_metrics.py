@@ -12,9 +12,164 @@ from sklearn.metrics import (
     mean_absolute_error,
     recall_score,
 )
+from sklearn.utils import check_array, check_consistent_length
 
 
-def average_mean_absolute_error(y_true, y_pred):
+def _check_metric_inputs(y_true, y_pred):
+    """Coerce metric inputs to 1-D arrays and validate length consistency.
+
+    Two-dimensional inputs are interpreted as one-hot encoded labels and
+    collapsed via ``argmax`` along the last axis. Centralises the input
+    coercion that every public ordinal metric needs.
+
+    Parameters
+    ----------
+    y_true : array-like of shape (n_samples,) or (n_samples, n_classes)
+        Ground truth labels.
+
+    y_pred : array-like of shape (n_samples,) or (n_samples, n_classes)
+        Predicted labels or class scores.
+
+    Returns
+    -------
+    y_true : ndarray of shape (n_samples,)
+    y_pred : ndarray of shape (n_samples,)
+
+    Raises
+    ------
+    ValueError
+        If ``y_true`` and ``y_pred`` have different lengths.
+    """
+    y_true_arr = np.asarray(y_true)
+    y_pred_arr = np.asarray(y_pred)
+    if y_true_arr.ndim > 1:
+        y_true_arr = y_true_arr.argmax(axis=-1)
+    if y_pred_arr.ndim > 1:
+        y_pred_arr = y_pred_arr.argmax(axis=-1)
+    check_consistent_length(y_true_arr, y_pred_arr)
+    return y_true_arr, y_pred_arr
+
+
+def _check_proba_inputs(y_true, y_proba, *, sum_atol=1e-6):
+    """Validate inputs for probabilistic ordinal metrics.
+
+    ``y_true`` may be 1-D class labels or a 2-D one-hot matrix.
+    ``y_proba`` must be a 2-D matrix coercible to ``float64`` whose rows
+    sum to approximately one.
+
+    Parameters
+    ----------
+    y_true : array-like of shape (n_samples,) or (n_samples, n_classes)
+        Ground truth labels.
+
+    y_proba : array-like of shape (n_samples, n_classes)
+        Predicted class probability matrix.
+
+    sum_atol : float, default=1e-6
+        Absolute tolerance for the row-sum check.
+
+    Returns
+    -------
+    y_true : ndarray of shape (n_samples,)
+    y_proba : ndarray of shape (n_samples, n_classes), dtype float64
+
+    Raises
+    ------
+    ValueError
+        If ``y_true`` and ``y_proba`` have inconsistent length, or if any
+        row of ``y_proba`` does not sum to 1 within ``sum_atol``.
+    """
+    y_true_arr = np.asarray(y_true)
+    if y_true_arr.ndim > 1:
+        y_true_arr = y_true_arr.argmax(axis=-1)
+    y_proba_arr = check_array(
+        y_proba, ensure_2d=True, dtype="float64", input_name="y_proba"
+    )
+    check_consistent_length(y_true_arr, y_proba_arr)
+    row_sums = y_proba_arr.sum(axis=1)
+    if not np.allclose(row_sums, 1.0, atol=sum_atol):
+        raise ValueError(
+            f"y_proba rows must sum to 1 (atol={sum_atol}); got row-sum "
+            f"range [{row_sums.min():.6g}, {row_sums.max():.6g}]"
+        )
+    return y_true_arr, y_proba_arr
+
+
+def _recall_per_class(y_true, y_pred, *, labels=None, sample_weight=None):
+    """Return per-class recall as a 1-D float64 ndarray.
+
+    Thin wrapper around :func:`sklearn.metrics.recall_score` with
+    ``average=None`` and ``zero_division=0``. Centralises the call so
+    public sensitivity-based metrics share one implementation.
+
+    Parameters
+    ----------
+    y_true : ndarray of shape (n_samples,)
+        Ground truth labels.
+
+    y_pred : ndarray of shape (n_samples,)
+        Predicted labels.
+
+    labels : array-like of shape (n_classes,), default=None
+        Labels in the order to score. If ``None``, all unique labels are
+        used.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights.
+
+    Returns
+    -------
+    sensitivities : ndarray of shape (n_classes,), dtype float64
+    """
+    return np.asarray(
+        recall_score(
+            y_true,
+            y_pred,
+            labels=labels,
+            average=None,
+            sample_weight=sample_weight,
+            zero_division=0,
+        ),
+        dtype=np.float64,
+    )
+
+
+def _per_class_mae(y_true, y_pred, *, labels=None, sample_weight=None):
+    """Return per-class mean absolute error as a 1-D float64 ndarray.
+
+    Drops rows of the confusion matrix with no support (zero true
+    samples for that class) so divisions remain finite. Shared by
+    :func:`average_mean_absolute_error` and
+    :func:`maximum_mean_absolute_error`.
+
+    Parameters
+    ----------
+    y_true : ndarray of shape (n_samples,)
+        Ground truth labels.
+
+    y_pred : ndarray of shape (n_samples,)
+        Predicted labels.
+
+    labels : array-like of shape (n_classes,), default=None
+        Labels to index the confusion matrix.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights.
+
+    Returns
+    -------
+    per_class_mae : ndarray of shape (n_classes_with_support,), dtype float64
+    """
+    cm = confusion_matrix(y_true, y_pred, labels=labels, sample_weight=sample_weight)
+    n_class = cm.shape[0]
+    costs = np.abs(np.arange(n_class)[:, None] - np.arange(n_class)[None, :])
+    errors = costs * cm
+    support = cm.sum(axis=1).astype(np.float64)
+    non_zero = support > 0
+    return errors[non_zero].sum(axis=1) / support[non_zero]
+
+
+def average_mean_absolute_error(y_true, y_pred, *, sample_weight=None):
     """Calculate the Average MAE.
 
     Mean of the MAE metric among classes.
@@ -42,30 +197,11 @@ def average_mean_absolute_error(y_true, y_pred):
     np.float64(0.125)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    cm = confusion_matrix(y_true, y_pred)
-    n_class = cm.shape[0]
-    costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
-    costs = np.abs(costs - np.transpose(costs))
-    errors = costs * cm
-
-    # Remove rows with all zeros in the confusion matrix
-    non_zero_cm_rows = ~np.all(cm == 0, axis=1)
-    errors = errors[non_zero_cm_rows]
-    cm = cm[non_zero_cm_rows]
-
-    per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
-    return np.mean(per_class_maes)
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    return _per_class_mae(y_true, y_pred, sample_weight=sample_weight).mean()
 
 
-def geometric_mean(y_true, y_pred):
+def geometric_mean(y_true, y_pred, *, sample_weight=None):
     """Calculate the Geometric mean of the sensitivity (accuracy) for each class.
 
     Parameters
@@ -91,23 +227,16 @@ def geometric_mean(y_true, y_pred):
     np.float64(0.8408964152537145)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    cm = confusion_matrix(y_true, y_pred)
-    sum_by_class = np.sum(cm, axis=1)
-    sensitivities = np.diag(cm) / sum_by_class.astype("double")
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred, sample_weight=sample_weight)
+    sum_by_class = cm.sum(axis=1)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        sensitivities = np.diag(cm) / sum_by_class.astype("double")
     sensitivities[sum_by_class == 0] = 1
-    gm = pow(np.prod(sensitivities), 1.0 / cm.shape[0])
-    return gm
+    return pow(np.prod(sensitivities), 1.0 / cm.shape[0])
 
 
-def gmsec(y_true, y_pred):
+def gmsec(y_true, y_pred, *, sample_weight=None):
     """Compute the Geometric Mean of the Sensitivity of the Extreme Classes (GMSEC).
 
     Proposed in (:footcite:t:`vargas2024improving`) to assess the classification
@@ -136,19 +265,12 @@ def gmsec(y_true, y_pred):
     np.float64(0.7071067811865476)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    sensitivities = recall_score(y_true, y_pred, average=None)
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    sensitivities = _recall_per_class(y_true, y_pred, sample_weight=sample_weight)
     return np.sqrt(sensitivities[0] * sensitivities[-1])
 
 
-def maximum_mean_absolute_error(y_true, y_pred):
+def maximum_mean_absolute_error(y_true, y_pred, *, sample_weight=None):
     """Calculate the Maximum Mean Absolute Error.
 
     MAE value of the class with higher distance from the true values to the predicted
@@ -177,30 +299,11 @@ def maximum_mean_absolute_error(y_true, y_pred):
     np.float64(0.5)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    cm = confusion_matrix(y_true, y_pred)
-    n_class = cm.shape[0]
-    costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
-    costs = np.abs(costs - np.transpose(costs))
-    errors = costs * cm
-
-    # Remove rows with all zeros in the confusion matrix
-    non_zero_cm_rows = ~np.all(cm == 0, axis=1)
-    errors = errors[non_zero_cm_rows]
-    cm = cm[non_zero_cm_rows]
-
-    per_class_maes = np.sum(errors, axis=1) / np.sum(cm, axis=1).astype("double")
-    return per_class_maes.max()
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    return _per_class_mae(y_true, y_pred, sample_weight=sample_weight).max()
 
 
-def minimum_sensitivity(y_true, y_pred):
+def minimum_sensitivity(y_true, y_pred, *, sample_weight=None):
     """Calculate the Minimum Sensitivity.
 
     Lowest percentage of patterns correctly predicted as belonging to each class, with
@@ -229,19 +332,12 @@ def minimum_sensitivity(y_true, y_pred):
     np.float64(0.5)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    sensitivities = recall_score(y_true, y_pred, average=None)
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    sensitivities = _recall_per_class(y_true, y_pred, sample_weight=sample_weight)
     return np.min(sensitivities)
 
 
-def mean_zero_one_error(y_true, y_pred):
+def mean_zero_one_error(y_true, y_pred, *, sample_weight=None):
     """Calculate the Mean Zero-one Error.
 
     Better known as error rate, is the complementary measure of CCR.
@@ -269,16 +365,9 @@ def mean_zero_one_error(y_true, y_pred):
     np.float64(0.2857142857142857)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    confusion = confusion_matrix(y_true, y_pred)
-    return 1 - np.diagonal(confusion).sum() / confusion.sum()
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred, sample_weight=sample_weight)
+    return 1 - np.diagonal(cm).sum() / cm.sum()
 
 
 def kendalls_tau(y_true, y_pred):
@@ -310,19 +399,12 @@ def kendalls_tau(y_true, y_pred):
     np.float64(0.8140915784106943)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    corr, pvalue = scipy.stats.kendalltau(y_true, y_pred)
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    corr, _ = scipy.stats.kendalltau(y_true, y_pred)
     return corr
 
 
-def weighted_kappa(y_true, y_pred):
+def weighted_kappa(y_true, y_pred, *, sample_weight=None):
     """Calculate the Weighted Kappa.
 
     A modified version of the Kappa statistic calculated to allow assigning
@@ -351,25 +433,17 @@ def weighted_kappa(y_true, y_pred):
     np.float64(0.7586206896551724)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    cm = confusion_matrix(y_true, y_pred)
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    cm = confusion_matrix(y_true, y_pred, sample_weight=sample_weight)
     n_class = cm.shape[0]
-    costs = np.reshape(np.tile(range(n_class), n_class), (n_class, n_class))
-    costs = np.abs(costs - np.transpose(costs))
+    costs = np.abs(np.arange(n_class)[:, None] - np.arange(n_class)[None, :])
     f = 1 - costs
 
     n = cm.sum()
     x = cm / n
 
-    r = x.sum(axis=1)  # Row sum
-    s = x.sum(axis=0)  # Col sum
+    r = x.sum(axis=1)
+    s = x.sum(axis=0)
     Ex = r.reshape(-1, 1) * s
     po = (x * f).sum()
     pe = (Ex * f).sum()
@@ -404,31 +478,18 @@ def spearmans_rho(y_true, y_pred):
     np.float64(0.9165444688834581)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
-
-    n = len(y_true)
-    num = (
-        (y_true - np.repeat(np.mean(y_true), n))
-        * (y_pred - np.repeat(np.mean(y_pred), n))
-    ).sum()
-    div = np.sqrt(
-        (pow(y_true - np.repeat(np.mean(y_true), n), 2)).sum()
-        * (pow(y_pred - np.repeat(np.mean(y_pred), n), 2)).sum()
-    )
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
+    y_true_centered = y_true - np.mean(y_true)
+    y_pred_centered = y_pred - np.mean(y_pred)
+    num = (y_true_centered * y_pred_centered).sum()
+    div = np.sqrt((y_true_centered**2).sum() * (y_pred_centered**2).sum())
 
     if num == 0:
         return 0
-    else:
-        return num / div
+    return num / div
 
 
-def ranked_probability_score(y_true, y_proba):
+def ranked_probability_score(y_true, y_proba, *, sample_weight=None):
     """Compute the ranked probability score.
 
     As presented in :footcite:t:`janitza2016random`.
@@ -460,25 +521,26 @@ def ranked_probability_score(y_true, y_proba):
     np.float64(0.5068750000000001)
 
     """
-    y_true = np.array(y_true)
-    y_proba = np.array(y_proba)
+    y_true, y_proba = _check_proba_inputs(y_true, y_proba)
+    y_true = y_true.astype(np.intp)
+    n_samples, n_classes = y_proba.shape
 
-    y_oh = np.zeros(y_proba.shape)
-    y_oh[np.arange(len(y_true)), y_true] = 1
+    in_range = (y_true >= 0) & (y_true < n_classes)
+    y_oh = np.zeros_like(y_proba)
+    rows = np.arange(n_samples)[in_range]
+    y_oh[rows, y_true[in_range]] = 1.0
 
-    y_oh = y_oh.cumsum(axis=1)
-    y_proba = y_proba.cumsum(axis=1)
+    y_oh_cum = y_oh.cumsum(axis=1)
+    y_proba_cum = y_proba.cumsum(axis=1)
 
-    rps = 0
-    for i in range(len(y_true)):
-        if y_true[i] in np.arange(y_proba.shape[1]):
-            rps += np.power(y_proba[i] - y_oh[i], 2).sum()
-        else:
-            rps += 1
-    return rps / len(y_true)
+    per_sample = np.power(y_proba_cum - y_oh_cum, 2).sum(axis=1)
+    per_sample[~in_range] = 1.0
+
+    weights = None if sample_weight is None else np.asarray(sample_weight, dtype=float)
+    return np.average(per_sample, weights=weights)
 
 
-def accuracy_off1(y_true, y_pred, labels=None):
+def accuracy_off1(y_true, y_pred, *, labels=None, sample_weight=None):
     """Computes the accuracy of the predictions.
 
     Allows errors if they occur in an adjacent class.
@@ -509,17 +571,13 @@ def accuracy_off1(y_true, y_pred, labels=None):
     np.float64(0.8571428571428571)
 
     """
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-
-    if len(y_true.shape) > 1:
-        y_true = np.argmax(y_true, axis=1)
-    if len(y_pred.shape) > 1:
-        y_pred = np.argmax(y_pred, axis=1)
+    y_true, y_pred = _check_metric_inputs(y_true, y_pred)
     if labels is None:
         labels = np.unique(y_true)
 
-    conf_mat = confusion_matrix(y_true, y_pred, labels=labels)
+    conf_mat = confusion_matrix(
+        y_true, y_pred, labels=labels, sample_weight=sample_weight
+    )
     n = conf_mat.shape[0]
     mask = np.eye(n, n) + np.eye(n, n, k=1), +np.eye(n, n, k=-1)
     correct = mask * conf_mat
