@@ -13,8 +13,8 @@
         "jobs": 10,
         "input_preprocessing": "std",
         "output_folder": "my_runs/",
-        "metrics": ["ccr", "mae", "amae", "mze"],
-        "cv_metric": "mae"
+        "metrics": ["accuracy", "mean_absolute_error", "average_mean_absolute_error", "mean_zero_one_error"],
+        "cv_metric": "neg_mean_absolute_error"
     },
     "configurations": {
         "SVM": {
@@ -66,9 +66,9 @@
         "SVOREX": {
             "classifier": "SVOREX",
             "parameters": {
-                "kernel": "gaussian",
+                "kernel": "rbf",
                 "C": [0.1, 1, 10],
-                "kappa": [0.1, 1, 10],
+                "gamma": [0.1, 1, 10],
                 "tol": 0.001
             }
         }

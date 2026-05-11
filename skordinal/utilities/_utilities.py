@@ -15,10 +15,10 @@ from skordinal.results import Results
 
 
 def _compute_metric(metric_name, y_true, y_pred):
-    import skordinal.metrics as _metrics
+    from skordinal.metrics import get_ordinal_scorer
 
-    fn = getattr(_metrics, metric_name.strip())
-    return fn(y_true, y_pred)
+    scorer = get_ordinal_scorer(metric_name.strip())
+    return scorer._score_func(y_true, y_pred, **scorer._kwargs)
 
 
 class Utilities:
@@ -112,29 +112,24 @@ class Utilities:
                         print("  Running Partition", part_idx)
 
                     # Normalization or Standardization of the partition if requested
-                    if (
-                        self.general_conf["input_preprocessing"].strip().lower()
-                        == "norm"
-                    ):
+                    _preproc = (
+                        self.general_conf.get("input_preprocessing", "").strip().lower()
+                    )
+                    if _preproc == "norm":
                         partition["train_inputs"], partition["test_inputs"] = (
                             self._normalize_data(
                                 partition["train_inputs"], partition["test_inputs"]
                             )
                         )
-                    elif (
-                        self.general_conf["input_preprocessing"].strip().lower()
-                        == "std"
-                    ):
+                    elif _preproc == "std":
                         partition["train_inputs"], partition["test_inputs"] = (
                             self._standardize_data(
                                 partition["train_inputs"], partition["test_inputs"]
                             )
                         )
-
-                    elif self.general_conf["input_preprocessing"].strip().lower() != "":
+                    elif _preproc != "":
                         raise AttributeError(
-                            "Input preprocessing named '%s' unknown"
-                            % self.general_conf["input_preprocessing"].strip().lower()
+                            "Input preprocessing named '%s' unknown" % _preproc
                         )
 
                     optimal_estimator = self._get_optimal_estimator(

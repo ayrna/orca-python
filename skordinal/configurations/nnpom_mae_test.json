@@ -6,8 +6,8 @@
 		"jobs": 10,
 		"input_preprocessing": "std",
 		"output_folder": "my_runs/",
-		"metrics": ["ccr", "mae", "mze"],
-		"cv_metric": "mae"
+		"metrics": ["accuracy", "mean_absolute_error", "mean_zero_one_error"],
+		"cv_metric": "neg_mean_absolute_error"
 	},
 	"configurations": {
 		"NNPOM-MAE": {
@@ -16,7 +16,7 @@
                 "epsilon_init": 0.5,
                 "n_hidden": [5, 10, 20, 30, 40, 50],
                 "max_iter": [250, 500],
-                "lambda_value": [0, 0.01, 1]
+                "alpha": [0.001, 0.01, 1]
             }
 		}
 	}

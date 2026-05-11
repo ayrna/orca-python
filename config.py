@@ -1,3 +1,7 @@
+import argparse
+import json
+from pathlib import Path
+
 from skordinal.utilities import Utilities
 
 
@@ -17,3 +21,14 @@ def main(general_conf, configurations):
     interface = Utilities(general_conf, configurations)
     interface.run_experiment()
     interface.write_report()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run a skordinal experiment.")
+    parser.add_argument("config", type=Path, help="Path to a JSON configuration file.")
+    args = parser.parse_args()
+
+    with args.config.open() as f:
+        recipe = json.load(f)
+
+    main(recipe["general_conf"], recipe["configurations"])

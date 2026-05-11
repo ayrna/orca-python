@@ -137,8 +137,13 @@ def general_conf(dataset_folder):
         "hyperparam_cv_nfolds": 3,
         "jobs": 10,
         "output_folder": "my_runs/",
-        "metrics": ["ccr", "mae", "amae", "mze"],
-        "cv_metric": "mae",
+        "metrics": [
+            "accuracy",
+            "mean_absolute_error",
+            "average_mean_absolute_error",
+            "mean_zero_one_error",
+        ],
+        "cv_metric": "neg_mean_absolute_error",
     }
 
 

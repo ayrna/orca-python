@@ -6,16 +6,16 @@
         "jobs": 10,
         "input_preprocessing": "std",
         "output_folder": "my_runs/",
-        "metrics": ["ccr", "mae", "mze"],
-        "cv_metric": "mae"
+        "metrics": ["accuracy", "mean_absolute_error", "mean_zero_one_error"],
+        "cv_metric": "neg_mean_absolute_error"
     },
     "configurations": {
         "SVOREX": {
             "classifier": "SVOREX",
             "parameters": {
-                "kernel": "gaussian",
+                "kernel": "rbf",
                 "C": [0.001, 0.01, 0.1, 1, 10, 100, 1000],
-                "kappa": [0.001, 0.01, 0.1, 1, 10, 100, 1000]
+                "gamma": [0.001, 0.01, 0.1, 1, 10, 100, 1000]
             }
         }
     }
