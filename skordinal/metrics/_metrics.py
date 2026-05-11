@@ -1,11 +1,13 @@
 """Metrics for ordinal classification."""
 
-from __future__ import division
+from __future__ import annotations
 
 import warnings
+from typing import Optional
 
 import numpy as np
 import scipy.stats
+from numpy.typing import ArrayLike, NDArray
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -15,7 +17,9 @@ from sklearn.metrics import (
 from sklearn.utils import check_array, check_consistent_length
 
 
-def _check_metric_inputs(y_true, y_pred):
+def _check_metric_inputs(
+    y_true: ArrayLike, y_pred: ArrayLike
+) -> tuple[NDArray, NDArray]:
     """Coerce metric inputs to 1-D arrays and validate length consistency.
 
     Two-dimensional inputs are interpreted as one-hot encoded labels and
@@ -50,7 +54,9 @@ def _check_metric_inputs(y_true, y_pred):
     return y_true_arr, y_pred_arr
 
 
-def _check_proba_inputs(y_true, y_proba, *, sum_atol=1e-6):
+def _check_proba_inputs(
+    y_true: ArrayLike, y_proba: ArrayLike, *, sum_atol: float = 1e-6
+) -> tuple[NDArray, NDArray[np.float64]]:
     """Validate inputs for probabilistic ordinal metrics.
 
     ``y_true`` may be 1-D class labels or a 2-D one-hot matrix.
@@ -95,7 +101,13 @@ def _check_proba_inputs(y_true, y_proba, *, sum_atol=1e-6):
     return y_true_arr, y_proba_arr
 
 
-def _recall_per_class(y_true, y_pred, *, labels=None, sample_weight=None):
+def _recall_per_class(
+    y_true: NDArray,
+    y_pred: NDArray,
+    *,
+    labels: Optional[ArrayLike] = None,
+    sample_weight: Optional[ArrayLike] = None,
+) -> NDArray[np.float64]:
     """Return per-class recall as a 1-D float64 ndarray.
 
     Thin wrapper around :func:`sklearn.metrics.recall_score` with
@@ -134,7 +146,13 @@ def _recall_per_class(y_true, y_pred, *, labels=None, sample_weight=None):
     )
 
 
-def _per_class_mae(y_true, y_pred, *, labels=None, sample_weight=None):
+def _per_class_mae(
+    y_true: NDArray,
+    y_pred: NDArray,
+    *,
+    labels: Optional[ArrayLike] = None,
+    sample_weight: Optional[ArrayLike] = None,
+) -> NDArray[np.float64]:
     """Return per-class mean absolute error as a 1-D float64 ndarray.
 
     Drops rows of the confusion matrix with no support (zero true
@@ -169,7 +187,12 @@ def _per_class_mae(y_true, y_pred, *, labels=None, sample_weight=None):
     return errors[non_zero].sum(axis=1) / support[non_zero]
 
 
-def average_mean_absolute_error(y_true, y_pred, *, sample_weight=None):
+def average_mean_absolute_error(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Calculate the Average MAE.
 
     Mean of the MAE metric among classes.
@@ -194,14 +217,19 @@ def average_mean_absolute_error(y_true, y_pred, *, sample_weight=None):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> average_mean_absolute_error(y_true, y_pred)
-    np.float64(0.125)
+    0.125
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
-    return _per_class_mae(y_true, y_pred, sample_weight=sample_weight).mean()
+    return float(_per_class_mae(y_true, y_pred, sample_weight=sample_weight).mean())
 
 
-def geometric_mean(y_true, y_pred, *, sample_weight=None):
+def geometric_mean(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Calculate the Geometric mean of the sensitivity (accuracy) for each class.
 
     Parameters
@@ -224,7 +252,7 @@ def geometric_mean(y_true, y_pred, *, sample_weight=None):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> geometric_mean(y_true, y_pred)
-    np.float64(0.8408964152537145)
+    0.8408964152537145
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
@@ -233,10 +261,15 @@ def geometric_mean(y_true, y_pred, *, sample_weight=None):
     with np.errstate(divide="ignore", invalid="ignore"):
         sensitivities = np.diag(cm) / sum_by_class.astype("double")
     sensitivities[sum_by_class == 0] = 1
-    return pow(np.prod(sensitivities), 1.0 / cm.shape[0])
+    return float(pow(np.prod(sensitivities), 1.0 / cm.shape[0]))
 
 
-def gmsec(y_true, y_pred, *, sample_weight=None):
+def gmsec(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Compute the Geometric Mean of the Sensitivity of the Extreme Classes (GMSEC).
 
     Proposed in (:footcite:t:`vargas2024improving`) to assess the classification
@@ -262,15 +295,20 @@ def gmsec(y_true, y_pred, *, sample_weight=None):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> gmsec(y_true, y_pred)
-    np.float64(0.7071067811865476)
+    0.7071067811865476
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
     sensitivities = _recall_per_class(y_true, y_pred, sample_weight=sample_weight)
-    return np.sqrt(sensitivities[0] * sensitivities[-1])
+    return float(np.sqrt(sensitivities[0] * sensitivities[-1]))
 
 
-def maximum_mean_absolute_error(y_true, y_pred, *, sample_weight=None):
+def maximum_mean_absolute_error(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Calculate the Maximum Mean Absolute Error.
 
     MAE value of the class with higher distance from the true values to the predicted
@@ -296,14 +334,19 @@ def maximum_mean_absolute_error(y_true, y_pred, *, sample_weight=None):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> maximum_mean_absolute_error(y_true, y_pred)
-    np.float64(0.5)
+    0.5
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
-    return _per_class_mae(y_true, y_pred, sample_weight=sample_weight).max()
+    return float(_per_class_mae(y_true, y_pred, sample_weight=sample_weight).max())
 
 
-def minimum_sensitivity(y_true, y_pred, *, sample_weight=None):
+def minimum_sensitivity(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Calculate the Minimum Sensitivity.
 
     Lowest percentage of patterns correctly predicted as belonging to each class, with
@@ -329,15 +372,20 @@ def minimum_sensitivity(y_true, y_pred, *, sample_weight=None):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> minimum_sensitivity(y_true, y_pred)
-    np.float64(0.5)
+    0.5
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
     sensitivities = _recall_per_class(y_true, y_pred, sample_weight=sample_weight)
-    return np.min(sensitivities)
+    return float(np.min(sensitivities))
 
 
-def mean_zero_one_error(y_true, y_pred, *, sample_weight=None):
+def mean_zero_one_error(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Calculate the Mean Zero-one Error.
 
     Better known as error rate, is the complementary measure of CCR.
@@ -362,15 +410,15 @@ def mean_zero_one_error(y_true, y_pred, *, sample_weight=None):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> mean_zero_one_error(y_true, y_pred)
-    np.float64(0.2857142857142857)
+    0.2857142857142857
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
     cm = confusion_matrix(y_true, y_pred, sample_weight=sample_weight)
-    return 1 - np.diagonal(cm).sum() / cm.sum()
+    return float(1 - np.diagonal(cm).sum() / cm.sum())
 
 
-def kendalls_tau(y_true, y_pred):
+def kendalls_tau(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Calculate Kendall's tau.
 
     A statistic used to measure the association between two measured quantities. It is
@@ -396,15 +444,20 @@ def kendalls_tau(y_true, y_pred):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> kendalls_tau(y_true, y_pred)
-    np.float64(0.8140915784106943)
+    0.8140915784106943
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
     corr, _ = scipy.stats.kendalltau(y_true, y_pred)
-    return corr
+    return float(corr)
 
 
-def weighted_kappa(y_true, y_pred, *, sample_weight=None):
+def weighted_kappa(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Calculate the Weighted Kappa.
 
     A modified version of the Kappa statistic calculated to allow assigning
@@ -430,7 +483,7 @@ def weighted_kappa(y_true, y_pred, *, sample_weight=None):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> weighted_kappa(y_true, y_pred)
-    np.float64(0.7586206896551724)
+    0.7586206896551724
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
@@ -447,10 +500,10 @@ def weighted_kappa(y_true, y_pred, *, sample_weight=None):
     Ex = r.reshape(-1, 1) * s
     po = (x * f).sum()
     pe = (Ex * f).sum()
-    return (po - pe) / (1 - pe)
+    return float((po - pe) / (1 - pe))
 
 
-def spearmans_rho(y_true, y_pred):
+def spearmans_rho(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Calculate the Spearman's rank correlation coefficient.
 
     A non-parametric measure of statistical dependence between two variables.
@@ -475,7 +528,7 @@ def spearmans_rho(y_true, y_pred):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 3, 0, 1])
     >>> spearmans_rho(y_true, y_pred)
-    np.float64(0.9165444688834581)
+    0.9165444688834581
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
@@ -485,11 +538,16 @@ def spearmans_rho(y_true, y_pred):
     div = np.sqrt((y_true_centered**2).sum() * (y_pred_centered**2).sum())
 
     if num == 0:
-        return 0
-    return num / div
+        return 0.0
+    return float(num / div)
 
 
-def ranked_probability_score(y_true, y_proba, *, sample_weight=None):
+def ranked_probability_score(
+    y_true: ArrayLike,
+    y_proba: ArrayLike,
+    *,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Compute the ranked probability score.
 
     As presented in :footcite:t:`janitza2016random`.
@@ -518,7 +576,7 @@ def ranked_probability_score(y_true, y_proba, *, sample_weight=None):
     ...      [0.5, 0.05, 0.1, 0.35],
     ...      [0.1, 0.05, 0.65, 0.2]])
     >>> ranked_probability_score(y_true, y_pred)
-    np.float64(0.5068750000000001)
+    0.5068750000000001
 
     """
     y_true, y_proba = _check_proba_inputs(y_true, y_proba)
@@ -537,10 +595,16 @@ def ranked_probability_score(y_true, y_proba, *, sample_weight=None):
     per_sample[~in_range] = 1.0
 
     weights = None if sample_weight is None else np.asarray(sample_weight, dtype=float)
-    return np.average(per_sample, weights=weights)
+    return float(np.average(per_sample, weights=weights))
 
 
-def accuracy_off1(y_true, y_pred, *, labels=None, sample_weight=None):
+def accuracy_off1(
+    y_true: ArrayLike,
+    y_pred: ArrayLike,
+    *,
+    labels: Optional[ArrayLike] = None,
+    sample_weight: Optional[ArrayLike] = None,
+) -> float:
     """Computes the accuracy of the predictions.
 
     Allows errors if they occur in an adjacent class.
@@ -568,7 +632,7 @@ def accuracy_off1(y_true, y_pred, *, labels=None, sample_weight=None):
     >>> y_true = np.array([0, 0, 1, 2, 3, 0, 0])
     >>> y_pred = np.array([0, 1, 1, 2, 0, 0, 1])
     >>> accuracy_off1(y_true, y_pred)
-    np.float64(0.8571428571428571)
+    0.8571428571428571
 
     """
     y_true, y_pred = _check_metric_inputs(y_true, y_pred)
@@ -582,7 +646,7 @@ def accuracy_off1(y_true, y_pred, *, labels=None, sample_weight=None):
     mask = np.eye(n, n) + np.eye(n, n, k=1), +np.eye(n, n, k=-1)
     correct = mask * conf_mat
 
-    return 1.0 * np.sum(correct) / np.sum(conf_mat)
+    return float(np.sum(correct) / np.sum(conf_mat))
 
 
 def ccr(y_true, y_pred):
