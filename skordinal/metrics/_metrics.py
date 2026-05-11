@@ -643,7 +643,7 @@ def accuracy_off1(
         y_true, y_pred, labels=labels, sample_weight=sample_weight
     )
     n = conf_mat.shape[0]
-    mask = np.eye(n, n) + np.eye(n, n, k=1), +np.eye(n, n, k=-1)
+    mask = np.eye(n, n) + np.eye(n, n, k=1) + np.eye(n, n, k=-1)
     correct = mask * conf_mat
 
     return float(np.sum(correct) / np.sum(conf_mat))
