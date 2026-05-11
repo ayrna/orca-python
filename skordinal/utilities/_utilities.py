@@ -81,7 +81,7 @@ class Utilities:
             If the parameters for base_classifier must be list.
 
         """
-        self._results = Results(self.general_conf["output_folder"])
+        self._results = Results(Path(self.general_conf["output_folder"]))
 
         self._check_dataset_list()
 

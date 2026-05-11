@@ -17,7 +17,7 @@ from skordinal.results import Results
 
 @pytest.fixture
 def results():
-    return Results("my_runs/")
+    return Results(Path("my_runs/"))
 
 
 def test_add_record(results):

@@ -16,7 +16,7 @@ class Results:
 
     Parameters
     ----------
-    output_folder : str
+    output_folder : Path
         Base directory for storing experimental results.
 
     Attributes
@@ -27,7 +27,7 @@ class Results:
 
     """
 
-    def __init__(self, output_folder):
+    def __init__(self, output_folder: Path):
         # Getting experiment's folder name
         folder_name = (
             "exp-"
@@ -36,7 +36,7 @@ class Results:
             + datetime.now().strftime("%H-%M-%S")
         )
 
-        self._experiment_folder = Path(output_folder) / folder_name
+        self._experiment_folder = output_folder / folder_name
 
     def add_record(
         self, partition, best_params, best_model, configuration, metrics, predictions
