@@ -193,22 +193,32 @@ def average_mean_absolute_error(
     *,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Calculate the Average MAE.
+    """Compute the average per-class mean absolute error.
 
-    Mean of the MAE metric among classes.
+    For each class with at least one ground-truth sample, the mean
+    absolute error is computed using the class label as the numerical
+    score. The per-class errors are then averaged with equal weight,
+    which makes the metric robust to class imbalance.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to the confusion matrix.
 
     Returns
     -------
-    average_mean_absolute_error : float
-        Average mean absolute error.
+    score : float
+        Average per-class mean absolute error.
+
+    Notes
+    -----
+    Classes with no ground-truth samples are excluded from the average.
 
     Examples
     --------
@@ -230,20 +240,34 @@ def geometric_mean(
     *,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Calculate the Geometric mean of the sensitivity (accuracy) for each class.
+    """Compute the geometric mean of per-class sensitivities.
+
+    Sensitivity (recall) is computed for every class from the confusion
+    matrix and the result is the geometric mean across classes. The
+    metric penalises poor performance on minority classes more strongly
+    than a simple average.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to the confusion matrix.
 
     Returns
     -------
-    geometric_mean : float
-        Geometric mean of the sensitivities.
+    score : float
+        Geometric mean of the per-class sensitivities.
+
+    Notes
+    -----
+    Classes with no ground-truth samples are treated as sensitivity 1,
+    leaving them out of the geometric mean. This avoids collapsing the
+    score to zero when a class has no support.
 
     Examples
     --------
@@ -270,23 +294,32 @@ def gmsec(
     *,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Compute the Geometric Mean of the Sensitivity of the Extreme Classes (GMSEC).
+    """Geometric mean of the sensitivities of the extreme ordinal classes.
 
-    Proposed in (:footcite:t:`vargas2024improving`) to assess the classification
-    performance for the first and the last classes.
+    Proposed in :footcite:t:`vargas2024improving` to assess the
+    classification performance on the first and the last classes of an
+    ordinal scale. Returns the geometric mean of the recall of the
+    lowest and the highest classes that appear in ``y_true``.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to ``recall_score``.
 
     Returns
     -------
-    gmsec : float
+    score : float
         Geometric mean of the sensitivities of the extreme classes.
+
+    References
+    ----------
+    .. footbibliography::
 
     Examples
     --------
@@ -309,23 +342,31 @@ def maximum_mean_absolute_error(
     *,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Calculate the Maximum Mean Absolute Error.
+    """Compute the maximum per-class mean absolute error.
 
-    MAE value of the class with higher distance from the true values to the predicted
-    ones.
+    Returns the largest per-class MAE across classes with at least one
+    ground-truth sample. Useful for monitoring the worst-performing
+    class under imbalance.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to the confusion matrix.
 
     Returns
     -------
-    maximum_mean_absolute_error : float
-        Maximum mean absolute error.
+    score : float
+        Maximum per-class mean absolute error.
+
+    Notes
+    -----
+    Classes with no ground-truth samples are excluded from the maximum.
 
     Examples
     --------
@@ -347,23 +388,27 @@ def minimum_sensitivity(
     *,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Calculate the Minimum Sensitivity.
+    """Lowest per-class sensitivity.
 
-    Lowest percentage of patterns correctly predicted as belonging to each class, with
-    respect to the total number of examples in the corresponding class.
+    Returns the minimum recall across all classes present in
+    ``y_true``. The metric flags the class on which the classifier
+    performs worst regardless of class prevalence.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to ``recall_score``.
 
     Returns
     -------
-    minimum_sensitivity : float
-        Minimum sensitivity.
+    score : float
+        Minimum per-class sensitivity.
 
     Examples
     --------
@@ -386,21 +431,25 @@ def mean_zero_one_error(
     *,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Calculate the Mean Zero-one Error.
+    """Fraction of misclassified samples (error rate).
 
-    Better known as error rate, is the complementary measure of CCR.
+    Equivalent to ``1 - accuracy``; the complementary measure of the
+    Correct Classification Rate.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to the confusion matrix.
 
     Returns
     -------
-    mean_zero_one_error : float
+    score : float
         Mean zero-one error.
 
     Examples
@@ -419,23 +468,29 @@ def mean_zero_one_error(
 
 
 def kendalls_tau(y_true: ArrayLike, y_pred: ArrayLike) -> float:
-    """Calculate Kendall's tau.
+    """Kendall's tau rank correlation coefficient.
 
-    A statistic used to measure the association between two measured quantities. It is
-    a measure of rank correlation.
+    Measures the ordinal association between ``y_true`` and ``y_pred``
+    using the number of concordant minus discordant pairs. Computed via
+    :func:`scipy.stats.kendalltau`.
 
     Parameters
     ----------
-    y_true : np.ndarray
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
 
     Returns
     -------
-    kendalls_tau : float
-        Kendall's tau.
+    score : float
+        Kendall's tau in the range [-1, 1].
+
+    Notes
+    -----
+    Does not accept ``sample_weight`` because the underlying scipy
+    backend does not support it.
 
     Examples
     --------
@@ -458,23 +513,28 @@ def weighted_kappa(
     *,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Calculate the Weighted Kappa.
+    """Weighted Cohen's kappa with linear ordinal weights.
 
-    A modified version of the Kappa statistic calculated to allow assigning
-    different weights to different levels of aggregation between two variables.
+    A version of the kappa statistic that assigns different weights to
+    different levels of disagreement, so off-by-one errors penalise the
+    score less than far-off ones. The current implementation uses
+    linear weights ``w_{ij} = |i - j|``.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to the confusion matrix.
 
     Returns
     -------
-    weighted_kappa : float
-        Weighted Kappa.
+    score : float
+        Weighted kappa in the range [-1, 1].
 
     Examples
     --------
@@ -504,22 +564,30 @@ def weighted_kappa(
 
 
 def spearmans_rho(y_true: ArrayLike, y_pred: ArrayLike) -> float:
-    """Calculate the Spearman's rank correlation coefficient.
+    """Spearman's rank correlation coefficient between two ordinal vectors.
 
-    A non-parametric measure of statistical dependence between two variables.
+    A non-parametric measure of monotonic association computed from
+    label values directly (treated as numerical scores). Returns ``0.0`` when one
+    of the inputs is constant.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
 
     Returns
     -------
-    spearmans_rho : float
-        Spearman rank correlation coefficient.
+    score : float
+        Spearman's rho in the range [-1, 1].
+
+    Notes
+    -----
+    Does not accept ``sample_weight``: weighted Spearman is not
+    implemented in scipy and the rank correlation has no canonical
+    weighted definition.
 
     Examples
     --------
@@ -548,22 +616,39 @@ def ranked_probability_score(
     *,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Compute the ranked probability score.
+    """Ranked probability score for ordinal class probabilities.
 
-    As presented in :footcite:t:`janitza2016random`.
+    Quadratic distance between the cumulative ground-truth indicator
+    function and the cumulative predicted distribution, averaged over
+    samples. The lower the value, the better. Defined for ordinal
+    targets in :footcite:t:`janitza2016random`.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
-        Ground truth labels.
+    y_true : array-like of shape (n_samples,)
+        Ground truth labels encoded as 0-based integer indices.
 
-    y_proba : np.ndarray, shape (n_samples, n_classes)
-        Predicted probability distribution across different classes.
+    y_proba : array-like of shape (n_samples, n_classes)
+        Predicted class probability distribution. Each row must sum to
+        approximately ``1`` (``atol=1e-6``); otherwise ``ValueError`` is
+        raised.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to :func:`numpy.average`.
 
     Returns
     -------
-    ranked_probability_score : float
-        The ranked probability score.
+    score : float
+        Ranked probability score; lower is better.
+
+    Notes
+    -----
+    Samples whose ``y_true`` falls outside ``[0, n_classes)`` are
+    counted with a per-sample contribution of ``1.0``.
+
+    References
+    ----------
+    .. footbibliography::
 
     Examples
     --------
@@ -605,25 +690,35 @@ def accuracy_off1(
     labels: Optional[ArrayLike] = None,
     sample_weight: Optional[ArrayLike] = None,
 ) -> float:
-    """Computes the accuracy of the predictions.
+    """1-off accuracy: predictions in adjacent classes count as correct.
 
-    Allows errors if they occur in an adjacent class.
+    A prediction is counted as correct when it lies within one class
+    of the ground truth, on either side of the ordinal scale.
 
     Parameters
     ----------
-    y_true : np.ndarray, shape (n_samples,)
+    y_true : array-like of shape (n_samples,)
         Ground truth labels.
 
-    y_pred : np.ndarray, shape (n_samples,)
+    y_pred : array-like of shape (n_samples,)
         Predicted labels.
 
-    labels : np.ndarray, shape (n_classes,) or None, default=None
-        Labels of the classes. If None, the labels are inferred from the data.
+    labels : array-like of shape (n_classes,), default=None
+        Labels of the classes used to index the confusion matrix. If
+        ``None``, the labels are inferred from ``y_true``.
+
+    sample_weight : array-like of shape (n_samples,), default=None
+        Sample weights forwarded to the confusion matrix.
 
     Returns
     -------
-    acc : float
-        1-off accuracy.
+    score : float
+        1-off accuracy in the range [0, 1].
+
+    Notes
+    -----
+    Both adjacent diagonals are counted: a prediction one class above
+    or one class below the truth contributes to the score.
 
     Examples
     --------
