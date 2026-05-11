@@ -60,14 +60,12 @@ All dependencies are managed through `pyproject.toml` and include:
    pip install -e .[dev]
    ```
 
-> **Note:** The editable mode is required for running tests due to automatic dependency resolution.
-
 ### Testing Installation
 
 Test your installation with the provided example:
 
 ```bash
-python config.py with skordinal/configurations/full_functionality_test.json
+python config.py skordinal/configurations/full_functionality_test.json
 ```
 
 ## Quick Start
@@ -113,7 +111,7 @@ skordinal includes sample datasets with pre-partitioned train/test splits using 
 
 **Run the experiment:**
 ```bash
-python config.py with my_experiment.json
+python config.py my_experiment.json
 ```
 
 Results are saved in `results/` folder with performance metrics for each dataset-classifier combination. The framework automatically performs cross-validation, hyperparameter tuning, and evaluation on test sets.
@@ -131,7 +129,8 @@ Controls global experiment parameters.
 - **`datasets`**: name of datasets that will be experimented with. A subfolder with the same name must exist inside `basedir`.
 
 **Optional parameters:**
-- **`hyperparam_cv_folds`**: number of folds used while cross-validating.
+
+- **`hyperparam_cv_nfolds`**: number of folds used while cross-validating.
 - **`jobs`**: number of jobs used for GridSearchCV during cross-validation.
 - **`input_preprocessing`**: data preprocessing (`"std"` for standardization, `"norm"` for normalization, `""` for none)
 - **`output_folder`**: name of the folder where all experiment results will be stored.
@@ -150,7 +149,7 @@ Defines classifiers and their hyperparameters for GridSearchCV. Each configurati
 ### Basic Usage
 
 ```bash
-python config.py with experiment_file.json
+python config.py experiment_file.json
 ```
 
 ### Example Output
