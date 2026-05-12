@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from skordinal.classifiers import SVOREX
-from skordinal.utils._testing import make_balance_scale_split
+from skordinal.utils._testing import _make_balance_scale_split_pinned
 
 PREDICTIONS_DIR = Path(__file__).parent / "data" / "SVOREX"
 
@@ -36,12 +36,12 @@ def y():
 )
 def test_svorex_predict_matches_expected(kernel):
     """Test that predictions match expected values."""
-    X_train, X_test, y_train, _ = make_balance_scale_split()
+    X_train, X_test, y_train, _ = _make_balance_scale_split_pinned()
 
     classifier = SVOREX(C=0.5, kernel=kernel, degree=4, tol=0.002, gamma=0.1)
     classifier.fit(X_train, y_train)
     y_pred = classifier.predict(X_test)
-    y_expected = np.loadtxt(PREDICTIONS_DIR / f"predictions_{kernel}.csv", dtype=int)
+    y_expected = np.loadtxt(PREDICTIONS_DIR / f"predictions_{kernel}_v2.csv", dtype=int)
 
     npt.assert_equal(
         y_pred, y_expected, "The prediction doesnt match with the desired values"
