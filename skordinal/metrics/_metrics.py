@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import warnings
-from typing import Optional
 
 import numpy as np
 import scipy.stats
@@ -105,8 +104,8 @@ def _recall_per_class(
     y_true: NDArray,
     y_pred: NDArray,
     *,
-    labels: Optional[ArrayLike] = None,
-    sample_weight: Optional[ArrayLike] = None,
+    labels: ArrayLike | None = None,
+    sample_weight: ArrayLike | None = None,
 ) -> NDArray[np.float64]:
     """Return per-class recall as a 1-D float64 ndarray.
 
@@ -150,8 +149,8 @@ def _per_class_mae(
     y_true: NDArray,
     y_pred: NDArray,
     *,
-    labels: Optional[ArrayLike] = None,
-    sample_weight: Optional[ArrayLike] = None,
+    labels: ArrayLike | None = None,
+    sample_weight: ArrayLike | None = None,
 ) -> NDArray[np.float64]:
     """Return per-class mean absolute error as a 1-D float64 ndarray.
 
@@ -191,7 +190,7 @@ def average_mean_absolute_error(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
-    sample_weight: Optional[ArrayLike] = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """Compute the average per-class mean absolute error.
 
@@ -238,7 +237,7 @@ def geometric_mean(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
-    sample_weight: Optional[ArrayLike] = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """Compute the geometric mean of per-class sensitivities.
 
@@ -292,7 +291,7 @@ def gmsec(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
-    sample_weight: Optional[ArrayLike] = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """Geometric mean of the sensitivities of the extreme ordinal classes.
 
@@ -340,7 +339,7 @@ def maximum_mean_absolute_error(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
-    sample_weight: Optional[ArrayLike] = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """Compute the maximum per-class mean absolute error.
 
@@ -386,7 +385,7 @@ def minimum_sensitivity(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
-    sample_weight: Optional[ArrayLike] = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """Lowest per-class sensitivity.
 
@@ -429,7 +428,7 @@ def mean_zero_one_error(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
-    sample_weight: Optional[ArrayLike] = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """Fraction of misclassified samples (error rate).
 
@@ -511,7 +510,7 @@ def weighted_kappa(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
-    sample_weight: Optional[ArrayLike] = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """Weighted Cohen's kappa with linear ordinal weights.
 
@@ -614,7 +613,7 @@ def ranked_probability_score(
     y_true: ArrayLike,
     y_proba: ArrayLike,
     *,
-    sample_weight: Optional[ArrayLike] = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """Ranked probability score for ordinal class probabilities.
 
@@ -687,8 +686,8 @@ def accuracy_off1(
     y_true: ArrayLike,
     y_pred: ArrayLike,
     *,
-    labels: Optional[ArrayLike] = None,
-    sample_weight: Optional[ArrayLike] = None,
+    labels: ArrayLike | None = None,
+    sample_weight: ArrayLike | None = None,
 ) -> float:
     """1-off accuracy: predictions in adjacent classes count as correct.
 
@@ -744,7 +743,7 @@ def accuracy_off1(
     return float(np.sum(correct) / np.sum(conf_mat))
 
 
-def ccr(y_true, y_pred):
+def ccr(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`accuracy_score`."""
     warnings.warn(
         "ccr is deprecated, use accuracy_score instead",
@@ -754,7 +753,7 @@ def ccr(y_true, y_pred):
     return accuracy_score(y_true, y_pred)
 
 
-def amae(y_true, y_pred):
+def amae(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`average_mean_absolute_error`."""
     warnings.warn(
         "amae is deprecated, use average_mean_absolute_error instead",
@@ -764,7 +763,7 @@ def amae(y_true, y_pred):
     return average_mean_absolute_error(y_true, y_pred)
 
 
-def gm(y_true, y_pred):
+def gm(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`geometric_mean`."""
     warnings.warn(
         "gm is deprecated, use geometric_mean instead",
@@ -774,7 +773,7 @@ def gm(y_true, y_pred):
     return geometric_mean(y_true, y_pred)
 
 
-def mae(y_true, y_pred):
+def mae(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`mean_absolute_error`."""
     warnings.warn(
         "mae is deprecated, use mean_absolute_error instead",
@@ -784,7 +783,7 @@ def mae(y_true, y_pred):
     return mean_absolute_error(y_true, y_pred)
 
 
-def mmae(y_true, y_pred):
+def mmae(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`maximum_mean_absolute_error`."""
     warnings.warn(
         "mmae is deprecated, use maximum_mean_absolute_error instead",
@@ -794,7 +793,7 @@ def mmae(y_true, y_pred):
     return maximum_mean_absolute_error(y_true, y_pred)
 
 
-def ms(y_true, y_pred):
+def ms(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`minimum_sensitivity`."""
     warnings.warn(
         "ms is deprecated, use minimum_sensitivity instead",
@@ -804,7 +803,7 @@ def ms(y_true, y_pred):
     return minimum_sensitivity(y_true, y_pred)
 
 
-def mze(y_true, y_pred):
+def mze(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`mean_zero_one_error`."""
     warnings.warn(
         "mze is deprecated, use mean_zero_one_error instead",
@@ -814,7 +813,7 @@ def mze(y_true, y_pred):
     return mean_zero_one_error(y_true, y_pred)
 
 
-def tkendall(y_true, y_pred):
+def tkendall(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`kendalls_tau`."""
     warnings.warn(
         "tkendall is deprecated, use kendalls_tau instead",
@@ -824,7 +823,7 @@ def tkendall(y_true, y_pred):
     return kendalls_tau(y_true, y_pred)
 
 
-def wkappa(y_true, y_pred):
+def wkappa(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`weighted_kappa`."""
     warnings.warn(
         "wkappa is deprecated, use weighted_kappa instead",
@@ -834,7 +833,7 @@ def wkappa(y_true, y_pred):
     return weighted_kappa(y_true, y_pred)
 
 
-def spearman(y_true, y_pred):
+def spearman(y_true: ArrayLike, y_pred: ArrayLike) -> float:
     """Deprecated alias for :func:`spearmans_rho`."""
     warnings.warn(
         "spearman is deprecated, use spearmans_rho instead",
@@ -844,7 +843,7 @@ def spearman(y_true, y_pred):
     return spearmans_rho(y_true, y_pred)
 
 
-def rps(y_true, y_proba):
+def rps(y_true: ArrayLike, y_proba: ArrayLike) -> float:
     """Deprecated alias for :func:`ranked_probability_score`."""
     warnings.warn(
         "rps is deprecated, use ranked_probability_score instead",

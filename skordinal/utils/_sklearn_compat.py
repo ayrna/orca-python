@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from typing import Any, overload
+
+import numpy as np
+from numpy.typing import ArrayLike
+
 try:
     from sklearn.utils.validation import validate_data as _sk_validate_data
 
@@ -10,7 +15,36 @@ except ImportError:  # scikit-learn < 1.6
     _HAS_VALIDATE_DATA = False
 
 
-def validate_data(estimator, X, y=None, *, reset=True, **check_params):
+@overload
+def validate_data(
+    estimator: Any,
+    X: ArrayLike,
+    y: None = ...,
+    *,
+    reset: bool = ...,
+    **check_params: Any,
+) -> np.ndarray: ...
+
+
+@overload
+def validate_data(
+    estimator: Any,
+    X: ArrayLike,
+    y: ArrayLike,
+    *,
+    reset: bool = ...,
+    **check_params: Any,
+) -> tuple[np.ndarray, np.ndarray]: ...
+
+
+def validate_data(
+    estimator: Any,
+    X: ArrayLike,
+    y: ArrayLike | None = None,
+    *,
+    reset: bool = True,
+    **check_params: Any,
+) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
     """Validate ``X`` (and optionally ``y``) for a scikit-learn estimator.
 
     Thin wrapper around the API split introduced in scikit-learn 1.6.

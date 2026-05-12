@@ -1,5 +1,7 @@
 """Utility functions for datasets."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +11,7 @@ from sklearn.model_selection import train_test_split
 import skordinal.datasets.data
 
 
-def get_data_path():
+def get_data_path() -> Path:
     """Get the absolute path of the skordinal.datasets.data module.
 
     Returns
@@ -27,7 +29,7 @@ def get_data_path():
     return Path(skordinal.datasets.data.__file__).parent
 
 
-def dataset_exists(dataset_name, data_path):
+def dataset_exists(dataset_name: str, data_path: Path) -> bool:
     """Check if the dataset directory exists within the data path.
 
     Parameters
@@ -35,7 +37,7 @@ def dataset_exists(dataset_name, data_path):
     dataset_name : str
         Name of the dataset.
 
-    data_path : str or path
+    data_path : Path
         Root directory containing dataset files.
 
     Returns
@@ -55,11 +57,10 @@ def dataset_exists(dataset_name, data_path):
     False
 
     """
-    data_path = Path(data_path)
     return data_path.is_dir() and (data_path / dataset_name).is_dir()
 
 
-def is_undivided(dataset_name, data_path):
+def is_undivided(dataset_name: str, data_path: Path) -> bool:
     """Check if there is a dataset file with no train/test split.
 
     Parameters
@@ -67,7 +68,7 @@ def is_undivided(dataset_name, data_path):
     dataset_name : str
         Name for the specific dataset.
 
-    data_path : str or path
+    data_path : Path
         Root directory containing dataset files.
 
     Returns
@@ -85,12 +86,11 @@ def is_undivided(dataset_name, data_path):
     False
 
     """
-    data_path = Path(data_path)
     file_path = data_path / dataset_name / f"{dataset_name}.csv"
     return file_path.exists()
 
 
-def has_unseeded_split(dataset_name, data_path):
+def has_unseeded_split(dataset_name: str, data_path: Path) -> bool:
     """Check if the dataset has train/test split files without a seed.
 
     Parameters
@@ -98,7 +98,7 @@ def has_unseeded_split(dataset_name, data_path):
     dataset_name : str
         Name for the specific dataset.
 
-    data_path : str or path
+    data_path : Path
         Root directory containing dataset files.
 
     Returns
@@ -116,14 +116,13 @@ def has_unseeded_split(dataset_name, data_path):
     False
 
     """
-    data_path = Path(data_path)
     return any(
         (data_path / dataset_name / f"{split}_{dataset_name}.csv").exists()
         for split in ["train", "test"]
     )
 
 
-def has_seeded_split(dataset_name, seed, data_path):
+def has_seeded_split(dataset_name: str, seed: int, data_path: Path) -> bool:
     """Check if the dataset has train/test split files with a specific seed.
 
     Parameters
@@ -134,7 +133,7 @@ def has_seeded_split(dataset_name, seed, data_path):
     seed : int
         Numerical seed ensuring reproducible randomization.
 
-    data_path : str or path
+    data_path : Path
         Root directory containing dataset files.
 
     Returns
@@ -154,14 +153,15 @@ def has_seeded_split(dataset_name, seed, data_path):
     False
 
     """
-    data_path = Path(data_path)
     return any(
         (data_path / dataset_name / f"{split}_{dataset_name}_{seed}.csv").exists()
         for split in ["train", "test"]
     )
 
 
-def check_ambiguity(dataset_name, data_path, seed=None):
+def check_ambiguity(
+    dataset_name: str, data_path: Path, seed: int | None = None
+) -> None:
     """Check for ambiguity in dataset format.
 
     Parameters
@@ -169,7 +169,7 @@ def check_ambiguity(dataset_name, data_path, seed=None):
     dataset_name : str
         Name for the specific dataset.
 
-    data_path : str or path
+    data_path : Path
         Root directory containing dataset files.
 
     seed: int, optional
@@ -190,7 +190,6 @@ def check_ambiguity(dataset_name, data_path, seed=None):
     >>> check_ambiguity("nonexistent_dataset", data_path, seed=0)
 
     """
-    data_path = Path(data_path)
     undivided = is_undivided(dataset_name, data_path)
     unseeded = has_unseeded_split(dataset_name, data_path)
     seeded = seed is not None and has_seeded_split(dataset_name, seed, data_path)
@@ -208,7 +207,12 @@ def check_ambiguity(dataset_name, data_path, seed=None):
         )
 
 
-def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
+def load_datafile(
+    dataset_name: str,
+    split: str = "undivided",
+    data_path: Path | None = None,
+    seed: int | None = None,
+) -> tuple[np.ndarray, np.ndarray] | tuple[None, None]:
     """Load a dataset file based on split type and seed.
 
     Parameters
@@ -219,7 +223,7 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
     split : str, default='undivided'
         Data division type ('undivided', 'train' or 'test').
 
-    data_path : str or path, optional
+    data_path : Path, optional
         Root directory containing dataset files. If None, defaults to the skordinal
         datasets path.
 
@@ -250,7 +254,7 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
     ((38, 54), (38,))
 
     """
-    data_path = Path(data_path or get_data_path()).expanduser()
+    data_path = (data_path or get_data_path()).expanduser()
 
     if not dataset_exists(dataset_name, data_path):
         raise FileNotFoundError(
@@ -269,7 +273,11 @@ def load_datafile(dataset_name, split="undivided", data_path=None, seed=None):
         return None, None
 
 
-def load_dataset(dataset_name, data_path=None, seed=None):
+def load_dataset(
+    dataset_name: str,
+    data_path: Path | None = None,
+    seed: int | None = None,
+) -> tuple[np.ndarray | None, np.ndarray | None, np.ndarray | None, np.ndarray | None]:
     """Load a dataset from the specified directory.
 
     The dataset can be stored in one of three formats:
@@ -288,7 +296,7 @@ def load_dataset(dataset_name, data_path=None, seed=None):
     dataset_name : str
         Name of the dataset.
 
-    data_path : str or path, optional
+    data_path : Path, optional
         Root directory containing dataset files. If None, defaults to the skordinal
         datasets path.
 
@@ -322,7 +330,7 @@ def load_dataset(dataset_name, data_path=None, seed=None):
     ((1296, 21), (1296,), (432, 21), (432,))
 
     """
-    data_path = Path(data_path or get_data_path()).expanduser()
+    data_path = (data_path or get_data_path()).expanduser()
 
     if not dataset_exists(dataset_name, data_path):
         raise FileNotFoundError(
@@ -349,7 +357,14 @@ def load_dataset(dataset_name, data_path=None, seed=None):
     return X_train, y_train, X_test, y_test
 
 
-def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
+def shuffle_data(
+    X_train: np.ndarray | None,
+    y_train: np.ndarray | None,
+    X_test: np.ndarray | None,
+    y_test: np.ndarray | None,
+    seed: int,
+    train_size: float = 0.75,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Shuffle data by combining train and test sets and splitting them again.
 
     Handles cases where either train or test set may be None.
@@ -430,8 +445,9 @@ def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
         )
         y_test = np.empty(0)
 
+    assert y_train is not None and y_test is not None
     X_full = np.vstack((X_train, X_test))
-    y_full = np.concatenate((y_train, y_test))
+    y_full: np.ndarray = np.concatenate((y_train, y_test))
 
     if X_train.size > 0 and X_test.size > 0:
         train_size = len(X_train) / (len(X_train) + len(X_test))

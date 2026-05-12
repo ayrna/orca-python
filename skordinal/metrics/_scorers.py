@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from sklearn.metrics import accuracy_score, make_scorer, mean_absolute_error
 

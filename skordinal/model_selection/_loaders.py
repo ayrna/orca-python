@@ -1,7 +1,13 @@
 """Model selection and estimator loading utilities."""
 
-from importlib import import_module
+from __future__ import annotations
 
+from collections.abc import Callable
+from importlib import import_module
+from typing import Any
+
+import numpy as np
+from sklearn.base import BaseEstimator
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
 from skordinal.metrics import get_ordinal_scorer
@@ -27,7 +33,7 @@ _SKLEARN_CLASSIFIERS = {
 _CLASSIFIERS = {**_SKORDINAL_CLASSIFIERS, **_SKLEARN_CLASSIFIERS}
 
 
-def get_classifier_by_name(classifier_name):
+def get_classifier_by_name(classifier_name: str) -> type[BaseEstimator]:
     """Return a classifier not instantiated matching a given input name.
 
     Parameters
@@ -65,13 +71,13 @@ def get_classifier_by_name(classifier_name):
 
 
 def load_classifier(
-    classifier_name,
-    random_state=None,
-    n_jobs=1,
-    cv_n_folds=3,
-    cv_metric="mae",
-    param_grid=None,
-):
+    classifier_name: str,
+    random_state: int | np.random.RandomState | None = None,
+    n_jobs: int = 1,
+    cv_n_folds: int = 3,
+    cv_metric: str | Callable[..., Any] = "mae",
+    param_grid: dict[str, Any] | None = None,
+) -> BaseEstimator | GridSearchCV:
     """Return a fully configured classifier, optionally with cross-validation.
 
     This function loads a classifier, configures its parameters, and optionally

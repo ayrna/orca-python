@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 _VALID_DECOMPOSITIONS = (
     "ordered_partitions",
@@ -13,9 +14,9 @@ _VALID_DECOMPOSITIONS = (
 
 
 def ordinal_to_binary_cumulative(
-    y,
-    classes,
-):
+    y: ArrayLike,
+    classes: ArrayLike,
+) -> np.ndarray:
     """Encode ordinal targets into K-1 binary cumulative problems.
 
     Column ``k`` represents the binary problem
@@ -67,9 +68,9 @@ def ordinal_to_binary_cumulative(
 
 
 def binary_cumulative_to_ordinal(
-    binary_preds,
-    classes,
-):
+    binary_preds: ArrayLike,
+    classes: ArrayLike,
+) -> np.ndarray:
     """Decode K-1 binary predictions back to ordinal class labels.
 
     Accepts either hard ``{0, 1}`` predictions or continuous
@@ -125,9 +126,9 @@ def binary_cumulative_to_ordinal(
 
 
 def build_coding_matrix(
-    n_classes,
-    decomposition,
-):
+    n_classes: int,
+    decomposition: str,
+) -> np.ndarray:
     """Return the coding matrix for an ordinal decomposition strategy.
 
     The resulting matrix has one row per class and one column per

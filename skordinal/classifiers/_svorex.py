@@ -1,8 +1,11 @@
 """Support Vector for Ordinal Regression (Explicit constraints) (SVOREX)."""
 
+from __future__ import annotations
+
 from numbers import Integral, Real
 
 import numpy as np
+from numpy.typing import ArrayLike
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_is_fitted
@@ -69,7 +72,14 @@ class SVOREX(ClassifierMixin, BaseEstimator):
         "gamma": [Interval(Real, 0.0, None, closed="neither")],
     }
 
-    def __init__(self, C=1.0, kernel="rbf", degree=2, tol=0.001, gamma=1):
+    def __init__(
+        self,
+        C: float = 1.0,
+        kernel: str = "rbf",
+        degree: int = 2,
+        tol: float = 0.001,
+        gamma: float = 1,
+    ) -> None:
         self.C = C
         self.kernel = kernel
         self.degree = degree
@@ -77,7 +87,7 @@ class SVOREX(ClassifierMixin, BaseEstimator):
         self.gamma = gamma
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y):
+    def fit(self, X: ArrayLike, y: ArrayLike) -> SVOREX:
         """Fit the model with the training data.
 
         Parameters
@@ -116,7 +126,7 @@ class SVOREX(ClassifierMixin, BaseEstimator):
         self.model_ = svorex.fit((y_encoded + 1).tolist(), X.tolist(), options)
         return self
 
-    def predict(self, X):
+    def predict(self, X: ArrayLike) -> np.ndarray:
         """Perform classification on samples in X.
 
         Parameters
