@@ -1,23 +1,27 @@
 """Utility class for running experiments."""
 
+from __future__ import annotations
+
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
 from time import time
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
+from sklearn.base import BaseEstimator
 from sklearn.model_selection import GridSearchCV
 
 from skordinal.model_selection import load_classifier
 from skordinal.results import Results
 
 
-def _compute_metric(metric_name, y_true, y_pred):
+def _compute_metric(metric_name: str, y_true: np.ndarray, y_pred: np.ndarray) -> float:
     from skordinal.metrics import get_ordinal_scorer
 
-    scorer = get_ordinal_scorer(metric_name.strip())
+    scorer = cast(Any, get_ordinal_scorer(metric_name.strip()))
     return scorer._score_func(y_true, y_pred, **scorer._kwargs)
 
 
@@ -54,12 +58,17 @@ class Utilities:
 
     """
 
-    def __init__(self, general_conf, configurations, verbose=True):
+    def __init__(
+        self,
+        general_conf: dict[str, Any],
+        configurations: dict[str, Any],
+        verbose: bool = True,
+    ) -> None:
         self.general_conf = deepcopy(general_conf)
         self.configurations = deepcopy(configurations)
         self.verbose = verbose
 
-    def run_experiment(self):
+    def run_experiment(self) -> None:
         """Run an experiment. Main method of this framework.
 
         Loads all datasets, which can be fragmented in partitions. Builds a model per
@@ -148,8 +157,8 @@ class Utilities:
                     elapsed = np.nan
                     if "test_outputs" in partition:
                         start = time()
-                        test_predicted_y = optimal_estimator.predict(
-                            partition["test_inputs"]
+                        test_predicted_y = np.asarray(
+                            optimal_estimator.predict(partition["test_inputs"])
                         )
                         elapsed = time() - start
 
@@ -168,6 +177,7 @@ class Utilities:
                         # Get test scores
                         test_metrics[metric_name.strip() + "_test"] = np.nan
                         if "test_outputs" in partition:
+                            assert test_predicted_y is not None
                             test_score = _compute_metric(
                                 metric_name, partition["test_outputs"], test_predicted_y
                             )
@@ -203,7 +213,7 @@ class Utilities:
                         {"train": train_predicted_y, "test": test_predicted_y},
                     )
 
-    def _load_dataset(self, dataset_path):
+    def _load_dataset(self, dataset_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """Load all dataset's files, divided into train and test.
 
         Parameters
@@ -227,12 +237,12 @@ class Utilities:
 
         """
 
-        def get_partition_index(filename):
+        def get_partition_index(filename: str) -> str:
             # Extracts the index between the last "_" and ".csv"
             return filename.rsplit("_", 1)[-1].replace(".csv", "")
 
         try:
-            partition_list = {
+            partition_list: dict[str, dict[str, Any]] = {
                 get_partition_index(filename.name): {}
                 for filename in dataset_path.iterdir()
                 if filename.name.startswith("train_")
@@ -261,14 +271,14 @@ class Utilities:
             )
 
         # Saving partitions as a sorted list of (index, partition) tuples
-        partition_list = sorted(
+        sorted_list: list[tuple[str, dict[str, Any]]] = sorted(
             partition_list.items(),
             key=lambda t: int(t[0]) if t[0].lstrip("-").isdigit() else t[0],
         )
 
-        return partition_list
+        return sorted_list
 
-    def _read_file(self, filename):
+    def _read_file(self, filename: Path) -> tuple[np.ndarray, np.ndarray]:
         """Read a CSV containing partitions, or full datasets.
 
         Train and test files must be previously divided for the experiment to run.
@@ -295,7 +305,7 @@ class Utilities:
 
         return inputs, outputs
 
-    def _check_dataset_list(self):
+    def _check_dataset_list(self) -> None:
         """Check if there is some inconsistency in the dataset list.
 
         It also simplifies running all datasets inside one folder.
@@ -323,7 +333,9 @@ class Utilities:
         self.general_conf["basedir"] = str(base_path)
         self.general_conf["datasets"] = dataset_list
 
-    def _normalize_data(self, train_data, test_data):
+    def _normalize_data(
+        self, train_data: np.ndarray, test_data: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Normalize the data.
 
         Test data normalization will be based on train data.
@@ -349,7 +361,9 @@ class Utilities:
 
         return mm_scaler.transform(train_data), mm_scaler.transform(test_data)
 
-    def _standardize_data(self, train_data, test_data):
+    def _standardize_data(
+        self, train_data: np.ndarray, test_data: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Standardize the data.
 
         Test data standardization will be based on train data.
@@ -376,8 +390,12 @@ class Utilities:
         return std_scaler.transform(train_data), std_scaler.transform(test_data)
 
     def _get_optimal_estimator(
-        self, train_inputs, train_outputs, classifier_name, parameters
-    ):
+        self,
+        train_inputs: np.ndarray,
+        train_outputs: np.ndarray,
+        classifier_name: str,
+        parameters: dict[str, Any],
+    ) -> BaseEstimator | GridSearchCV:
         """Perform cross-validation over one dataset and configuration.
 
         Each configuration consists of one classifier and none, one or multiple
@@ -418,7 +436,7 @@ class Utilities:
         """
         estimator = load_classifier(
             classifier_name=classifier_name,
-            random_state=np.random.get_state()[1][0],
+            random_state=int(cast(tuple, np.random.get_state())[1][0]),
             n_jobs=self.general_conf.get("jobs", 1),
             cv_n_folds=self.general_conf.get("hyperparam_cv_nfolds", 3),
             cv_metric=self.general_conf.get("cv_metric", "mae"),
@@ -436,7 +454,7 @@ class Utilities:
 
         return estimator
 
-    def write_report(self):
+    def write_report(self) -> None:
         """Save summarized information about experiment through Results class."""
         if self.verbose:
             print("\nSaving Results...")

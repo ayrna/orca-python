@@ -1,11 +1,18 @@
 """Data scaling functions."""
 
+from __future__ import annotations
+
+import numpy as np
+from numpy.typing import ArrayLike
 from scipy import sparse
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.utils.validation import check_array
 
 
-def _validate_and_align(X_train, X_test):
+def _validate_and_align(
+    X_train: ArrayLike,
+    X_test: ArrayLike | None,
+) -> tuple[np.ndarray, np.ndarray | None]:
     """Validate arrays as numeric 2D matrices and ensure matching feature counts.
 
     Parameters
@@ -27,17 +34,29 @@ def _validate_and_align(X_train, X_test):
         If X_test has different number of features than X_train.
 
     """
-    X_train = check_array(X_train, accept_sparse=True, dtype="numeric")
+    X_train_valid: np.ndarray = check_array(
+        X_train, accept_sparse=True, dtype="numeric"
+    )
+    X_test_valid: np.ndarray | None = None
     if X_test is not None:
-        X_test = check_array(X_test, accept_sparse=True, dtype="numeric")
-        if X_test.shape[1] != X_train.shape[1]:
+        X_test_valid = check_array(X_test, accept_sparse=True, dtype="numeric")
+        if X_test_valid.shape[1] != X_train_valid.shape[1]:
             raise ValueError(
-                f"X_test has {X_test.shape[1]} features but X_train has {X_train.shape[1]}."
+                f"X_test has {X_test_valid.shape[1]} features but "
+                f"X_train has {X_train_valid.shape[1]}."
             )
-    return X_train, X_test
+    return X_train_valid, X_test_valid
 
 
-def apply_scaling(X_train, X_test=None, method=None, return_transformer=False):
+def apply_scaling(
+    X_train: ArrayLike,
+    X_test: ArrayLike | None = None,
+    method: str | None = None,
+    return_transformer: bool = False,
+) -> (
+    tuple[np.ndarray, np.ndarray | None]
+    | tuple[np.ndarray, np.ndarray | None, MinMaxScaler | StandardScaler | None]
+):
     """Apply normalization or standardization to the input data.
 
     The preprocessing is fit on the training data and then applied to both
@@ -93,6 +112,7 @@ def apply_scaling(X_train, X_test=None, method=None, return_transformer=False):
 
     """
     if method is None:
+        X_train, X_test = _validate_and_align(X_train, X_test)
         return (X_train, X_test, None) if return_transformer else (X_train, X_test)
 
     if not isinstance(method, str):
@@ -109,7 +129,14 @@ def apply_scaling(X_train, X_test=None, method=None, return_transformer=False):
         )
 
 
-def minmax_scale(X_train, X_test=None, return_transformer=False):
+def minmax_scale(
+    X_train: ArrayLike,
+    X_test: ArrayLike | None = None,
+    return_transformer: bool = False,
+) -> (
+    tuple[np.ndarray, np.ndarray | None]
+    | tuple[np.ndarray, np.ndarray | None, MinMaxScaler]
+):
     """Scale features to a fixed range between 0 and 1.
 
     Fits scaling parameters on training data and applies the same transformation
@@ -163,7 +190,14 @@ def minmax_scale(X_train, X_test=None, return_transformer=False):
         return X_train_scaled, X_test_scaled
 
 
-def standardize(X_train, X_test=None, return_transformer=False):
+def standardize(
+    X_train: ArrayLike,
+    X_test: ArrayLike | None = None,
+    return_transformer: bool = False,
+) -> (
+    tuple[np.ndarray, np.ndarray | None]
+    | tuple[np.ndarray, np.ndarray | None, StandardScaler]
+):
     """Standardize features to have zero mean and unit variance.
 
     Fits scaling parameters on training data and applies the same transformation

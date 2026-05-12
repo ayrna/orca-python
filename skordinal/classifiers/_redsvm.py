@@ -1,8 +1,11 @@
 """Reduction from ordinal regression to binary SVM (REDSVM)."""
 
+from __future__ import annotations
+
 from numbers import Integral, Real
 
 import numpy as np
+from numpy.typing import ArrayLike
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.validation import check_is_fitted
@@ -110,15 +113,15 @@ class REDSVM(ClassifierMixin, BaseEstimator):
 
     def __init__(
         self,
-        C=1,
-        kernel="rbf",
-        degree=3,
-        gamma="auto",
-        coef0=0,
-        shrinking=True,
-        tol=0.001,
-        cache_size=100,
-    ):
+        C: float = 1,
+        kernel: str = "rbf",
+        degree: int = 3,
+        gamma: float | str = "auto",
+        coef0: float = 0,
+        shrinking: bool = True,
+        tol: float = 0.001,
+        cache_size: float = 100,
+    ) -> None:
         self.C = C
         self.kernel = kernel
         self.degree = degree
@@ -129,7 +132,7 @@ class REDSVM(ClassifierMixin, BaseEstimator):
         self.cache_size = cache_size
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y):
+    def fit(self, X: ArrayLike, y: ArrayLike) -> REDSVM:
         """Fit the model with the training data.
 
         Parameters
@@ -191,7 +194,7 @@ class REDSVM(ClassifierMixin, BaseEstimator):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: ArrayLike) -> np.ndarray:
         """Perform classification on samples in X.
 
         Parameters

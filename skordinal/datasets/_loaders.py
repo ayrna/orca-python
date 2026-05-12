@@ -29,7 +29,7 @@ def get_data_path() -> Path:
     return Path(skordinal.datasets.data.__file__).parent
 
 
-def dataset_exists(dataset_name, data_path: Path):
+def dataset_exists(dataset_name: str, data_path: Path) -> bool:
     """Check if the dataset directory exists within the data path.
 
     Parameters
@@ -60,7 +60,7 @@ def dataset_exists(dataset_name, data_path: Path):
     return data_path.is_dir() and (data_path / dataset_name).is_dir()
 
 
-def is_undivided(dataset_name, data_path: Path):
+def is_undivided(dataset_name: str, data_path: Path) -> bool:
     """Check if there is a dataset file with no train/test split.
 
     Parameters
@@ -90,7 +90,7 @@ def is_undivided(dataset_name, data_path: Path):
     return file_path.exists()
 
 
-def has_unseeded_split(dataset_name, data_path: Path):
+def has_unseeded_split(dataset_name: str, data_path: Path) -> bool:
     """Check if the dataset has train/test split files without a seed.
 
     Parameters
@@ -122,7 +122,7 @@ def has_unseeded_split(dataset_name, data_path: Path):
     )
 
 
-def has_seeded_split(dataset_name, seed, data_path: Path):
+def has_seeded_split(dataset_name: str, seed: int, data_path: Path) -> bool:
     """Check if the dataset has train/test split files with a specific seed.
 
     Parameters
@@ -159,7 +159,9 @@ def has_seeded_split(dataset_name, seed, data_path: Path):
     )
 
 
-def check_ambiguity(dataset_name, data_path: Path, seed=None):
+def check_ambiguity(
+    dataset_name: str, data_path: Path, seed: int | None = None
+) -> None:
     """Check for ambiguity in dataset format.
 
     Parameters
@@ -206,8 +208,11 @@ def check_ambiguity(dataset_name, data_path: Path, seed=None):
 
 
 def load_datafile(
-    dataset_name, split="undivided", data_path: Path | None = None, seed=None
-):
+    dataset_name: str,
+    split: str = "undivided",
+    data_path: Path | None = None,
+    seed: int | None = None,
+) -> tuple[np.ndarray, np.ndarray] | tuple[None, None]:
     """Load a dataset file based on split type and seed.
 
     Parameters
@@ -268,7 +273,11 @@ def load_datafile(
         return None, None
 
 
-def load_dataset(dataset_name, data_path: Path | None = None, seed=None):
+def load_dataset(
+    dataset_name: str,
+    data_path: Path | None = None,
+    seed: int | None = None,
+) -> tuple[np.ndarray | None, np.ndarray | None, np.ndarray | None, np.ndarray | None]:
     """Load a dataset from the specified directory.
 
     The dataset can be stored in one of three formats:
@@ -348,7 +357,14 @@ def load_dataset(dataset_name, data_path: Path | None = None, seed=None):
     return X_train, y_train, X_test, y_test
 
 
-def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
+def shuffle_data(
+    X_train: np.ndarray | None,
+    y_train: np.ndarray | None,
+    X_test: np.ndarray | None,
+    y_test: np.ndarray | None,
+    seed: int,
+    train_size: float = 0.75,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Shuffle data by combining train and test sets and splitting them again.
 
     Handles cases where either train or test set may be None.
@@ -429,8 +445,9 @@ def shuffle_data(X_train, y_train, X_test, y_test, seed, train_size=0.75):
         )
         y_test = np.empty(0)
 
+    assert y_train is not None and y_test is not None
     X_full = np.vstack((X_train, X_test))
-    y_full = np.concatenate((y_train, y_test))
+    y_full: np.ndarray = np.concatenate((y_train, y_test))
 
     if X_train.size > 0 and X_test.size > 0:
         train_size = len(X_train) / (len(X_train) + len(X_test))

@@ -16,7 +16,7 @@ __all__ = [
 
 
 def check_ordinal_targets(
-    y,
+    y: ArrayLike,
 ) -> tuple[NDArray, NDArray[np.intp]]:
     """Validate an ordinal target vector and return its integer encoding.
 

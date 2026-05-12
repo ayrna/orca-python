@@ -1,10 +1,13 @@
 """Neural Network with Ordered Partitions (NNOP)."""
 
+from __future__ import annotations
+
 import math as math
 from numbers import Integral, Real
 
 import numpy as np
 import scipy
+from numpy.typing import ArrayLike
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils import check_random_state
 from sklearn.utils._param_validation import Interval
@@ -120,8 +123,13 @@ class NNOP(ClassifierMixin, BaseEstimator):
     }
 
     def __init__(
-        self, epsilon_init=0.5, n_hidden=50, max_iter=500, alpha=0.01, random_state=None
-    ):
+        self,
+        epsilon_init: float = 0.5,
+        n_hidden: int = 50,
+        max_iter: int = 500,
+        alpha: float = 0.01,
+        random_state: int | np.random.RandomState | None = None,
+    ) -> None:
         self.epsilon_init = epsilon_init
         self.n_hidden = n_hidden
         self.max_iter = max_iter
@@ -129,7 +137,7 @@ class NNOP(ClassifierMixin, BaseEstimator):
         self.random_state = random_state
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y):
+    def fit(self, X: ArrayLike, y: ArrayLike) -> NNOP:
         """Fit the model to data matrix X and target(s) y.
 
         Parameters
@@ -216,7 +224,7 @@ class NNOP(ClassifierMixin, BaseEstimator):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: ArrayLike) -> np.ndarray:
         """Perform classification on samples in X.
 
         Parameters
@@ -259,7 +267,13 @@ class NNOP(ClassifierMixin, BaseEstimator):
 
         return y_pred
 
-    def _unpack_parameters(self, nn_params, n_features, n_hidden, n_classes):
+    def _unpack_parameters(
+        self,
+        nn_params: np.ndarray,
+        n_features: int,
+        n_hidden: int,
+        n_classes: int,
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Get theta1 and theta2 back from nn_params.
 
         Parameters
@@ -299,7 +313,12 @@ class NNOP(ClassifierMixin, BaseEstimator):
 
         return theta1, theta2
 
-    def _rand_initialize_weights(self, L_in, L_out, rng):
+    def _rand_initialize_weights(
+        self,
+        L_in: int,
+        L_out: int,
+        rng: np.random.RandomState,
+    ) -> np.ndarray:
         """Initialize layer weights randomly.
 
         Randomly initialize the weights of a layer with L_in incoming connections and
@@ -327,8 +346,15 @@ class NNOP(ClassifierMixin, BaseEstimator):
         return W
 
     def _nnop_cost_function(
-        self, nn_params, n_features, n_hidden, n_classes, X, Y, alpha
-    ):
+        self,
+        nn_params: np.ndarray,
+        n_features: int,
+        n_hidden: int,
+        n_classes: int,
+        X: np.ndarray,
+        Y: np.ndarray,
+        alpha: float,
+    ) -> tuple[float, np.ndarray]:
         """Implement the cost function and obtain the corresponding derivatives.
 
         Parameters

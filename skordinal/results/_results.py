@@ -1,12 +1,16 @@
 """Results handling for storing and managing experiment results."""
 
+from __future__ import annotations
+
 import pickle
 from collections import OrderedDict
 from datetime import date, datetime
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
+from sklearn.base import BaseEstimator
 
 
 class Results:
@@ -27,7 +31,7 @@ class Results:
 
     """
 
-    def __init__(self, output_folder: Path):
+    def __init__(self, output_folder: Path) -> None:
         # Getting experiment's folder name
         folder_name = (
             "exp-"
@@ -36,11 +40,17 @@ class Results:
             + datetime.now().strftime("%H-%M-%S")
         )
 
-        self._experiment_folder = output_folder / folder_name
+        self._experiment_folder = Path(output_folder) / folder_name
 
     def add_record(
-        self, partition, best_params, best_model, configuration, metrics, predictions
-    ):
+        self,
+        partition: str,
+        best_params: dict[str, Any],
+        best_model: BaseEstimator,
+        configuration: dict[str, str],
+        metrics: dict[str, dict[str, Any]],
+        predictions: dict[str, np.ndarray | None],
+    ) -> None:
         """Store information obtained from the run of one partition.
 
         Parameters
@@ -105,16 +115,19 @@ class Results:
         pred_filename = (
             configuration["dataset"] + "-" + configuration["config"] + "." + partition
         )
-        np.savetxt(
-            predictions_folder / f"train_{pred_filename}",
-            predictions["train"],
-            fmt="%d",
-        )
+        train_pred = predictions["train"]
+        if train_pred is not None:
+            np.savetxt(
+                predictions_folder / f"train_{pred_filename}",
+                train_pred,
+                fmt="%d",
+            )
 
-        if predictions["test"] is not None:
+        test_pred = predictions["test"]
+        if test_pred is not None:
             np.savetxt(
                 predictions_folder / f"test_{pred_filename}",
-                predictions["test"],
+                test_pred,
                 fmt="%d",
             )
 
@@ -149,7 +162,7 @@ class Results:
         # Saving DataFrame to file
         df.to_csv(df_path)
 
-    def save_summaries(self, metrics_names):
+    def save_summaries(self, metrics_names: list[str]) -> None:
         """Create an experiment summary.
 
         Each dataset-configuration will be represented as a single row of data, which
@@ -190,7 +203,12 @@ class Results:
         train_summary.to_csv(self._experiment_folder / "train_summary.csv")
         test_summary.to_csv(self._experiment_folder / "test_summary.csv")
 
-    def _create_summary(self, df, avg_index, std_index):
+    def _create_summary(
+        self,
+        df: pd.DataFrame,
+        avg_index: list[str],
+        std_index: list[str],
+    ) -> tuple[pd.Series, pd.Series]:
         """Summarize information from a DataFrame into a single row.
 
         Parameters

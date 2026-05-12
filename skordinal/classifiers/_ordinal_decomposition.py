@@ -1,6 +1,11 @@
 """OrdinalDecomposition ensemble."""
 
+from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
+from numpy.typing import ArrayLike
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
 from sklearn.utils._param_validation import StrOptions
 from sklearn.utils.validation import check_is_fitted
@@ -108,18 +113,18 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
     def __init__(
         self,
-        dtype="ordered_partitions",
-        decision_method="frank_hall",
-        base_classifier="LogisticRegression",
-        parameters=None,
-    ):
+        dtype: str = "ordered_partitions",
+        decision_method: str = "frank_hall",
+        base_classifier: str = "LogisticRegression",
+        parameters: dict[str, Any] | None = None,
+    ) -> None:
         self.dtype = dtype
         self.decision_method = decision_method
         self.base_classifier = base_classifier
         self.parameters = parameters
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y):
+    def fit(self, X: ArrayLike, y: ArrayLike) -> OrdinalDecomposition:
         """Fit underlying estimators to data matrix X and target(s) y.
 
         Parameters
@@ -180,7 +185,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: ArrayLike) -> np.ndarray:
         """Perform classification on samples in X.
 
         Parameters
@@ -248,7 +253,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         return y_pred
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: ArrayLike) -> np.ndarray:
         """Probability estimates.
 
         The returned estimates for all classes are ordered by label of classes.
@@ -330,7 +335,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         return y_proba
 
-    def _coding_matrix(self, dtype, n_classes):
+    def _coding_matrix(self, dtype: str, n_classes: int) -> np.ndarray:
         """Return the coding matrix for a given dataset.
 
         Parameters
@@ -378,7 +383,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         return coding_matrix.astype(int)
 
-    def _get_predictions(self, X):
+    def _get_predictions(self, X: np.ndarray) -> np.ndarray:
         """Return the probability of positive class membership.
 
         For each pattern inside the dataset X, this method returns the probability for
@@ -402,7 +407,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
 
         return predictions
 
-    def _exponential_loss(self, predictions):
+    def _exponential_loss(self, predictions: np.ndarray) -> np.ndarray:
         """Compute the exponential losses for each label.
 
         Computation of the exponential losses for each label of the original ordinal
@@ -426,7 +431,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
         e_losses = np.exp(-M * C).sum(axis=2)
         return e_losses
 
-    def _hinge_loss(self, predictions):
+    def _hinge_loss(self, predictions: np.ndarray) -> np.ndarray:
         """Compute the Hinge losses for each label.
 
         Computation of the Hinge losses for each label of the original ordinal
@@ -450,7 +455,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
         h_losses = np.maximum(0.0, 1.0 - C * M).sum(axis=2)
         return h_losses
 
-    def _logarithmic_loss(self, predictions):
+    def _logarithmic_loss(self, predictions: np.ndarray) -> np.ndarray:
         """Compute the logarithmic losses for each label.
 
         Computation of the logarithmic losses for each label of the original ordinal
@@ -474,7 +479,7 @@ class OrdinalDecomposition(ClassifierMixin, BaseEstimator):
         l_losses = np.log1p(np.exp(-2.0 * C * M)).sum(axis=2)
         return l_losses
 
-    def _frank_hall_method(self, predictions):
+    def _frank_hall_method(self, predictions: np.ndarray) -> np.ndarray:
         """Calculate probability of each pattern belonging to each target.
 
         Returns the probability for each pattern of dataset to belong to each one of

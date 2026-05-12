@@ -1,13 +1,16 @@
 """Parameter grid preparation and validation utilities for model selection."""
 
+from __future__ import annotations
+
 from ast import literal_eval
 from copy import deepcopy
 from itertools import product
+from typing import Any, cast
 
 import numpy as np
 
 
-def check_for_random_state(estimator):
+def check_for_random_state(estimator: type) -> bool:
     """Check if the estimator accepts a random_state parameter.
 
     Parameters
@@ -39,7 +42,7 @@ def check_for_random_state(estimator):
         return False
 
 
-def is_ensemble(param_grid):
+def is_ensemble(param_grid: dict[str, Any]) -> bool:
     """Check if the given parameters correspond to an ensemble method.
 
     Parameters
@@ -66,7 +69,7 @@ def is_ensemble(param_grid):
     return isinstance(param_grid, dict) and "base_classifier" in param_grid
 
 
-def is_searchcv(param_grid):
+def is_searchcv(param_grid: dict[str, Any]) -> bool:
     """Check if the given parameters require cross-validation search.
 
     Parameters
@@ -105,7 +108,11 @@ def is_searchcv(param_grid):
     return has_search_params
 
 
-def prepare_param_grid(estimator, param_grid, random_state=None):
+def prepare_param_grid(
+    estimator: type,
+    param_grid: dict[str, Any],
+    random_state: int | np.random.RandomState | None = None,
+) -> dict[str, Any]:
     """This function processes parameter grids to ensure compatibility with
     scikit-learn's GridSearchCV and handles special cases like ensemble methods and
     random state injection.
@@ -155,7 +162,7 @@ def prepare_param_grid(estimator, param_grid, random_state=None):
         raise ValueError("param_grid must be a dictionary")
 
     if random_state is None:
-        random_state = np.random.get_state()[1][0]
+        random_state = int(cast(tuple, np.random.get_state())[1][0])
 
     param_grid = deepcopy(param_grid)
     param_grid = _add_random_state(estimator, param_grid, random_state)
@@ -176,7 +183,11 @@ def prepare_param_grid(estimator, param_grid, random_state=None):
     return param_grid
 
 
-def _add_random_state(estimator, param_grid, random_state):
+def _add_random_state(
+    estimator: type,
+    param_grid: dict[str, Any],
+    random_state: int | np.random.RandomState,
+) -> dict[str, Any]:
     """Add random_state to param_grid if the estimator accepts it and it's
     not already present.
 
@@ -203,7 +214,7 @@ def _add_random_state(estimator, param_grid, random_state):
     return param_grid
 
 
-def _normalize_param_grid(param_grid):
+def _normalize_param_grid(param_grid: dict[str, Any]) -> dict[str, list[Any]]:
     """Ensure all values in param_grid are lists (for grid search compatibility).
 
     Parameters
@@ -217,7 +228,7 @@ def _normalize_param_grid(param_grid):
         Dictionary with all values as lists.
 
     """
-    normalized = {}
+    normalized: dict[str, list[Any]] = {}
     for k, v in param_grid.items():
         if isinstance(v, list):
             normalized[k] = v
@@ -226,7 +237,10 @@ def _normalize_param_grid(param_grid):
     return normalized
 
 
-def _prepare_parameters_for_ensemble(param_grid, random_state=None):
+def _prepare_parameters_for_ensemble(
+    param_grid: dict[str, Any],
+    random_state: int | np.random.RandomState | None = None,
+) -> dict[str, Any]:
     """Process the parameters for ensemble methods.
 
     Parameters
