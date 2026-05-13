@@ -11,9 +11,7 @@ TEST_RANDOM_STATE = 0
 _BALANCE_SCALE_TEST_IDX_FILE = Path(__file__).parent / "_balance_scale_test_idx.csv"
 
 
-def _make_balance_scale_split_pinned() -> tuple[
-    np.ndarray, np.ndarray, np.ndarray, np.ndarray
-]:
+def make_balance_scale_split() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Return a pinned train/test split of the Balance Scale dataset.
 
     Test indices are frozen in ``_balance_scale_test_idx.csv`` (one integer
@@ -35,8 +33,8 @@ def _make_balance_scale_split_pinned() -> tuple[
 
     Examples
     --------
-    >>> from skordinal.utils._testing import _make_balance_scale_split_pinned
-    >>> X_train, X_test, y_train, y_test = _make_balance_scale_split_pinned()
+    >>> from skordinal.utils._testing import make_balance_scale_split
+    >>> X_train, X_test, y_train, y_test = make_balance_scale_split()
     >>> X_train.shape, X_test.shape
     ((437, 4), (188, 4))
     """
