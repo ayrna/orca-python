@@ -52,7 +52,12 @@ def experiment_conf(tmp_path, partition_dataset):
         "hyperparam_cv_nfolds": 3,
         "jobs": 1,
         "output_folder": str(tmp_path / "runs"),
-        "metrics": ["accuracy_score", "mean_absolute_error", "average_mean_absolute_error", "mean_zero_one_error"],
+        "metrics": [
+            "accuracy",
+            "mean_absolute_error",
+            "average_mean_absolute_error",
+            "mean_zero_one_error",
+        ],
         "cv_metric": "mean_absolute_error",
     }
 
