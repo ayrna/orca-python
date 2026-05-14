@@ -1,25 +1,17 @@
-"""Datasets module."""
+"""Bundled ordinal classification datasets."""
 
 from ._loaders import (
-    check_ambiguity,
-    dataset_exists,
-    get_data_path,
-    has_seeded_split,
-    has_unseeded_split,
-    is_undivided,
-    load_datafile,
-    load_dataset,
-    shuffle_data,
+    load_balance_scale,
+    load_era,
+    load_esl,
+    load_lev,
+    load_swd,
 )
 
 __all__ = [
-    "check_ambiguity",
-    "dataset_exists",
-    "get_data_path",
-    "has_seeded_split",
-    "has_unseeded_split",
-    "is_undivided",
-    "load_datafile",
-    "load_dataset",
-    "shuffle_data",
+    "load_balance_scale",
+    "load_era",
+    "load_esl",
+    "load_lev",
+    "load_swd",
 ]

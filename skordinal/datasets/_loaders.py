@@ -1,464 +1,464 @@
-"""Utility functions for datasets."""
+"""Loaders for bundled ordinal classification datasets."""
 
-from __future__ import annotations
-
-from pathlib import Path
+import csv
+from importlib import resources
 
 import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.utils import Bunch
+from sklearn.utils._param_validation import validate_params
 
-import skordinal.datasets.data
+DATA_MODULE = "skordinal.datasets.data"
+DESCR_MODULE = "skordinal.datasets.descr"
 
 
-def get_data_path() -> Path:
-    """Get the absolute path of the skordinal.datasets.data module.
+def _load_csv_data(data_file_name, *, descr_file_name):
+    """Load a sklearn-style CSV with metadata header and a description file.
 
-    Returns
-    -------
-    data_path : path
-        skordinal datasets path.
-
-    Examples
-    --------
-    >>> from skordinal.datasets import get_data_path
-    >>> get_data_path()
-    PosixPath('/path/to/skordinal/datasets/data')
-
+    The CSV's first row stores ``n_samples,n_features,target_name_0,...``;
+    subsequent rows store ``feature_0,...,feature_d-1,target_int``.  Targets
+    are read as zero-indexed integers.
     """
-    return Path(skordinal.datasets.data.__file__).parent
-
-
-def dataset_exists(dataset_name: str, data_path: Path) -> bool:
-    """Check if the dataset directory exists within the data path.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Name of the dataset.
-
-    data_path : Path
-        Root directory containing dataset files.
-
-    Returns
-    -------
-    is_dir : bool
-        True if both `data_path` and the dataset directory exist, False otherwise.
-
-    Examples
-    --------
-    >>> from skordinal.datasets import dataset_exists, get_data_path
-    >>> data_path = get_data_path()
-    >>> dataset_exists("car", data_path)
-    True
-    >>> dataset_exists("tae", data_path)
-    True
-    >>> dataset_exists("nonexistent_dataset", data_path)
-    False
-
-    """
-    return data_path.is_dir() and (data_path / dataset_name).is_dir()
-
-
-def is_undivided(dataset_name: str, data_path: Path) -> bool:
-    """Check if there is a dataset file with no train/test split.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Name for the specific dataset.
-
-    data_path : Path
-        Root directory containing dataset files.
-
-    Returns
-    -------
-    is_undivided : bool
-        True if the full dataset file exists, False otherwise.
-
-    Examples
-    --------
-    >>> from skordinal.datasets import is_undivided, get_data_path
-    >>> data_path = get_data_path()
-    >>> is_undivided("tae", data_path)
-    False
-    >>> is_undivided("nonexistent_dataset", data_path)
-    False
-
-    """
-    file_path = data_path / dataset_name / f"{dataset_name}.csv"
-    return file_path.exists()
-
-
-def has_unseeded_split(dataset_name: str, data_path: Path) -> bool:
-    """Check if the dataset has train/test split files without a seed.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Name for the specific dataset.
-
-    data_path : Path
-        Root directory containing dataset files.
-
-    Returns
-    -------
-    is_unseeded : bool
-        True if train and/or test files without a seed exist, False otherwise.
-
-    Examples
-    --------
-    >>> from skordinal.datasets import has_unseeded_split, get_data_path
-    >>> data_path = get_data_path()
-    >>> has_unseeded_split("tae", data_path)
-    False
-    >>> has_unseeded_split("nonexistent_dataset", data_path)
-    False
-
-    """
-    return any(
-        (data_path / dataset_name / f"{split}_{dataset_name}.csv").exists()
-        for split in ["train", "test"]
+    data_path = resources.files(DATA_MODULE) / data_file_name
+    with data_path.open("r", encoding="utf-8") as csv_file:
+        reader = csv.reader(csv_file)
+        header = next(reader)
+        n_samples = int(header[0])
+        n_features = int(header[1])
+        target_names = np.array(header[2:])
+        data = np.empty((n_samples, n_features), dtype=np.float64)
+        target = np.empty((n_samples,), dtype=np.int64)
+        for i, row in enumerate(reader):
+            data[i] = np.asarray(row[:-1], dtype=np.float64)
+            target[i] = int(row[-1])
+    descr = (resources.files(DESCR_MODULE) / descr_file_name).read_text(
+        encoding="utf-8"
     )
+    return data, target, target_names, descr
 
 
-def has_seeded_split(dataset_name: str, seed: int, data_path: Path) -> bool:
-    """Check if the dataset has train/test split files with a specific seed.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Name for the specific dataset.
-
-    seed : int
-        Numerical seed ensuring reproducible randomization.
-
-    data_path : Path
-        Root directory containing dataset files.
-
-    Returns
-    -------
-    is_seeded : bool
-        True if train and/or test files with the specified seed exist, False otherwise.
-
-    Examples
-    --------
-    >>> from skordinal.datasets import has_seeded_split, get_data_path
-    >>> data_path = get_data_path()
-    >>> has_seeded_split("tae", 0, data_path)
-    True
-    >>> has_seeded_split("tae", 99, data_path)
-    False
-    >>> has_seeded_split("nonexistent_dataset", 0, data_path)
-    False
-
-    """
-    return any(
-        (data_path / dataset_name / f"{split}_{dataset_name}_{seed}.csv").exists()
-        for split in ["train", "test"]
-    )
-
-
-def check_ambiguity(
-    dataset_name: str, data_path: Path, seed: int | None = None
-) -> None:
-    """Check for ambiguity in dataset format.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Name for the specific dataset.
-
-    data_path : Path
-        Root directory containing dataset files.
-
-    seed: int, optional
-        Numerical seed ensuring reproducible randomization.
-
-    Raises
-    ------
-    ValueError
-        If an ambiguity exists, such as both full dataset and split files in the
-        directory, or if both seeded and unseeded split files are present.
-
-    Examples
-    --------
-    >>> from skordinal.datasets import check_ambiguity, get_data_path
-    >>> data_path = get_data_path()
-    >>> check_ambiguity("tae", data_path)
-    >>> check_ambiguity("tae", data_path, seed=0)
-    >>> check_ambiguity("nonexistent_dataset", data_path, seed=0)
-
-    """
-    undivided = is_undivided(dataset_name, data_path)
-    unseeded = has_unseeded_split(dataset_name, data_path)
-    seeded = seed is not None and has_seeded_split(dataset_name, seed, data_path)
-
-    if undivided and (unseeded or seeded):
-        raise ValueError(
-            f"Ambiguity detected: Both a undivided dataset '{dataset_name}.csv' and"
-            " split files are present. Please ensure only one format is used."
-        )
-
-    if unseeded and seeded:
-        raise ValueError(
-            "Ambiguity detected: Split files with and without seed are both present"
-            f" for '{dataset_name}'. Please remove one type to avoid conflict."
-        )
-
-
-def load_datafile(
-    dataset_name: str,
-    split: str = "undivided",
-    data_path: Path | None = None,
-    seed: int | None = None,
-) -> tuple[np.ndarray, np.ndarray] | tuple[None, None]:
-    """Load a dataset file based on split type and seed.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Name for the specific dataset.
-
-    split : str, default='undivided'
-        Data division type ('undivided', 'train' or 'test').
-
-    data_path : Path, optional
-        Root directory containing dataset files. If None, defaults to the skordinal
-        datasets path.
-
-    seed : int, optional
-        Numerical seed ensuring reproducible randomization.
-
-    Returns
-    -------
-    X, y : array or None
-        Feature and target arrays. Both may be None if the file does not exist.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the dataset file does not exist.
-
-    Examples
-    --------
-    >>> from skordinal.datasets import load_datafile, get_data_path
-    >>> X_train, y_train = load_datafile("tae", split="train", seed=None)
-    >>> X_train is None, y_train is None
-    (True, True)
-    >>> X_train, y_train = load_datafile("tae", split="train", seed=1)
-    >>> X_train.shape, y_train.shape
-    ((113, 54), (113,))
-    >>> X_test, y_test = load_datafile("tae", split="test", seed=1)
-    >>> X_test.shape, y_test.shape
-    ((38, 54), (38,))
-
-    """
-    data_path = (data_path or get_data_path()).expanduser()
-
-    if not dataset_exists(dataset_name, data_path):
-        raise FileNotFoundError(
-            f"No dataset found for '{dataset_name}' in '{data_path}'."
-        )
-
-    split_str = f"{split + '_' if split and split != 'undivided' else ''}"
-    seed_str = f"{'_' + str(seed) if seed is not None else ''}"
-    file_name = f"{split_str}{dataset_name}{seed_str}.csv"
-    file_path = data_path / dataset_name / file_name
-
+def _convert_data_dataframe(caller_name, data, target, feature_names, target_columns):
+    """Combine ``data`` and ``target`` into a pandas frame for ``as_frame=True``."""
     try:
-        df = pd.read_csv(file_path, header=None, engine="python")
-        return df.iloc[:, :-1].to_numpy(), df.iloc[:, -1].to_numpy()
-    except (FileNotFoundError, pd.errors.EmptyDataError, pd.errors.ParserError):
-        return None, None
+        import pandas as pd
+    except (
+        ImportError
+    ) as exc:  # pragma: no cover - exercised in environments without pandas
+        raise ImportError(f"{caller_name} with as_frame=True requires pandas.") from exc
+    data_df = pd.DataFrame(data, columns=feature_names, copy=False)
+    target_df = pd.DataFrame(target, columns=target_columns)
+    combined_df = pd.concat([data_df, target_df], axis=1)
+    X = combined_df[feature_names]
+    y = combined_df[target_columns]
+    if y.shape[1] == 1:  # pragma: no branch
+        y = y.iloc[:, 0]
+    return combined_df, X, y
 
 
-def load_dataset(
-    dataset_name: str,
-    data_path: Path | None = None,
-    seed: int | None = None,
-) -> tuple[np.ndarray | None, np.ndarray | None, np.ndarray | None, np.ndarray | None]:
-    """Load a dataset from the specified directory.
-
-    The dataset can be stored in one of three formats:
-        1. **Undivided dataset**: A single file `[dataset_name].csv` containing both
-           features and target.
-        2. **Train/Test split**: Two separate files, `train_[dataset_name].csv` and
-           `test_[dataset_name].csv`.
-        3. **Train/Test split with seed**: Seed-specific files,
-           `train_[dataset_name]_[seed].csv` and
-           `test_[dataset_name]_[seed].csv`.
-
-    The function automatically detects the format and loads the data accordingly.
-
-    Parameters
-    ----------
-    dataset_name : str
-        Name of the dataset.
-
-    data_path : Path, optional
-        Root directory containing dataset files. If None, defaults to the skordinal
-        datasets path.
-
-    seed : int, optional
-        Numerical seed ensuring reproducible randomization.
-
-    Returns
-    -------
-    X_train, y_train, X_test, y_test: array or None
-        - If the dataset is undivided: X and y are returned, test data is None.
-        - If the dataset has a split: train and test data arrays are returned. Any
-        value may be None if not available.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the data path does not exist.
-
-    ValueError
-        If an ambiguity exists, such as both full dataset and split files in the
-        directory.
-
-    Examples
-    --------
-    >>> from skordinal.datasets import load_dataset
-    >>> X_train, y_train, X_test, y_test = load_dataset("tae", seed=0)
-    >>> X_train.shape, y_train.shape, X_test.shape, y_test.shape
-    ((113, 54), (113,), (38, 54), (38,))
-    >>> X_train, y_train, X_test, y_test = load_dataset("car", seed=0)
-    >>> X_train.shape, y_train.shape, X_test.shape, y_test.shape
-    ((1296, 21), (1296,), (432, 21), (432,))
-
-    """
-    data_path = (data_path or get_data_path()).expanduser()
-
-    if not dataset_exists(dataset_name, data_path):
-        raise FileNotFoundError(
-            f"No dataset found for '{dataset_name}' in '{data_path}'."
+def _bundle(
+    data,
+    target,
+    target_names,
+    descr,
+    feature_names,
+    filename,
+    *,
+    return_X_y,
+    as_frame,
+    caller_name,
+):
+    """Common return path for the public loaders."""
+    frame = None
+    if as_frame:
+        frame, data, target = _convert_data_dataframe(
+            caller_name, data, target, feature_names, ["target"]
         )
-
-    check_ambiguity(dataset_name, data_path, seed)
-
-    X_train, y_train, X_test, y_test = None, None, None, None
-
-    if is_undivided(dataset_name, data_path):
-        X_train, y_train = load_datafile(dataset_name, "undivided", data_path)
-    elif has_unseeded_split(dataset_name, data_path):
-        X_train, y_train = load_datafile(dataset_name, "train", data_path)
-        X_test, y_test = load_datafile(dataset_name, "test", data_path)
-    elif seed is not None and has_seeded_split(dataset_name, seed, data_path):
-        X_train, y_train = load_datafile(dataset_name, "train", data_path, seed)
-        X_test, y_test = load_datafile(dataset_name, "test", data_path, seed)
-    else:
-        raise FileNotFoundError(
-            f"No dataset found for '{dataset_name}' in '{data_path}'."
-        )
-
-    return X_train, y_train, X_test, y_test
-
-
-def shuffle_data(
-    X_train: np.ndarray | None,
-    y_train: np.ndarray | None,
-    X_test: np.ndarray | None,
-    y_test: np.ndarray | None,
-    seed: int,
-    train_size: float = 0.75,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Shuffle data by combining train and test sets and splitting them again.
-
-    Handles cases where either train or test set may be None.
-
-    Parameters
-    ----------
-    X_train : np.ndarray or None
-        Feature matrix used specifically for model training.
-
-    y_train : np.ndarray or None
-        Target vector relative to X_train.
-
-    X_test : np.ndarray or None
-        Feature matrix for model evaluation and prediction.
-
-    y_test : np.ndarray or None
-        Target vector relative to X_test.
-
-    seed : int
-        Numerical seed ensuring reproducible randomization.
-
-    train_size : float, default=0.75
-        Proportion of the dataset to allocate to training. Default is 0.75.
-
-    Returns
-    -------
-    X_train, y_train, X_test, y_test : array or None
-        Shuffled training and test sets. All are arrays.
-
-    Raises
-    ------
-    ValueError
-        - If both training and test sets are None.
-        - If X and y dimensions don't match.
-        - If train_size is not between 0 and 1.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from skordinal.datasets import load_dataset, shuffle_data
-    >>> X_train, y_train, X_test, y_test = load_dataset("tae", seed=0)
-    >>> X_train.shape, y_train.shape, X_test.shape, y_test.shape
-    ((113, 54), (113,), (38, 54), (38,))
-    >>> X_train_sh, y_train_sh, X_test_sh, y_test_sh = shuffle_data(
-    ...     X_train, y_train, X_test, y_test, seed=1)
-    >>> X_train_sh.shape, y_train_sh.shape, X_test_sh.shape, y_test_sh.shape
-    ((113, 54), (113,), (38, 54), (38,))
-    >>> # Verify data is redistributed by comparing first rows
-    >>> np.array_equal(X_train[:5], X_train_sh[:5])
-    False
-
-    """
-    if train_size <= 0 or train_size >= 1:
-        raise ValueError("train_size must be between 0 and 1")
-
-    if X_train is None and X_test is None:
-        raise ValueError("No data provided for shuffling")
-
-    if X_train is not None and y_train is not None and len(X_train) != len(y_train):
-        raise ValueError(
-            f"X_train and y_train dimensions don't match: {X_train.shape[0]} vs {len(y_train)}"
-        )
-
-    if X_test is not None and y_test is not None and len(X_test) != len(y_test):
-        raise ValueError(
-            f"X_test and y_test dimensions don't match: {X_test.shape[0]} vs {len(y_test)}"
-        )
-
-    if X_train is None:
-        X_train = (
-            np.empty((0, X_test.shape[1])) if X_test is not None else np.empty((0, 0))
-        )
-        y_train = np.empty(0)
-
-    if X_test is None:
-        X_test = (
-            np.empty((0, X_train.shape[1])) if X_train is not None else np.empty((0, 0))
-        )
-        y_test = np.empty(0)
-
-    assert y_train is not None and y_test is not None
-    X_full = np.vstack((X_train, X_test))
-    y_full: np.ndarray = np.concatenate((y_train, y_test))
-
-    if X_train.size > 0 and X_test.size > 0:
-        train_size = len(X_train) / (len(X_train) + len(X_test))
-
-    stratify_param = y_full if len(np.unique(y_full)) > 1 else None
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_full,
-        y_full,
-        train_size=train_size,
-        random_state=seed,
-        stratify=stratify_param,
+    if return_X_y:
+        return data, target
+    return Bunch(
+        data=data,
+        target=target,
+        frame=frame,
+        target_names=target_names,
+        DESCR=descr,
+        feature_names=feature_names,
+        filename=filename,
+        data_module=DATA_MODULE,
     )
 
-    return X_train, y_train, X_test, y_test
+
+@validate_params(
+    {"return_X_y": ["boolean"], "as_frame": ["boolean"]},
+    prefer_skip_nested_validation=True,
+)
+def load_era(*, return_X_y=False, as_frame=False):
+    """Load and return the ERA dataset (ordinal classification).
+
+    Four ordinal input attributes describing job candidates; the target is
+    an overall acceptance level on a 1-9 scale (9 ordered classes).
+
+    =================   ==============
+    Classes                          9
+    Samples total                 1000
+    Dimensionality                   4
+    Features                  ordinal
+    =================   ==============
+
+    Parameters
+    ----------
+    return_X_y : bool, default=False
+        If True, returns ``(data, target)`` instead of a Bunch object.
+
+    as_frame : bool, default=False
+        If True, the data is a pandas DataFrame including columns with
+        appropriate dtypes (numeric). The target is a pandas Series. If
+        ``return_X_y`` is True, then ``(data, target)`` will be a pandas
+        DataFrame and Series.
+
+    Returns
+    -------
+    data : :class:`~sklearn.utils.Bunch`
+        Dictionary-like object with the following attributes.
+
+        data : {ndarray, dataframe} of shape (1000, 4)
+            The data matrix. If ``as_frame=True``, ``data`` is a DataFrame.
+        target : {ndarray, Series} of shape (1000,)
+            Ordinal target labels, zero-indexed (``0`` to ``8``).
+        feature_names : list of str
+            ``["in1", "in2", "in3", "in4"]``.
+        target_names : ndarray of str
+            ``["1", "2", "3", "4", "5", "6", "7", "8", "9"]``.
+        frame : DataFrame of shape (1000, 5) or None
+            ``None`` if ``as_frame=False``; otherwise a DataFrame
+            combining ``data`` and ``target``.
+        DESCR : str
+            Full description of the dataset.
+        filename : str
+            Name of the CSV file inside the data module.
+        data_module : str
+            Python module path used by :func:`importlib.resources` to
+            locate the data file.
+
+    (data, target) : tuple if ``return_X_y`` is True
+        A tuple of two ndarrays. The first contains a 2D array of shape
+        ``(1000, 4)`` with each row representing one sample and each
+        column representing a feature. The second array of shape ``(1000,)``
+        contains the ordinal target labels.
+
+    Examples
+    --------
+    >>> from skordinal.datasets import load_era
+    >>> bunch = load_era()
+    >>> bunch.data.shape
+    (1000, 4)
+    >>> int(bunch.target.min()), int(bunch.target.max())
+    (0, 8)
+
+    References
+    ----------
+    .. [1] A. Ben-David, "Automatic generation of symbolic multiattribute
+           ordinal knowledge-based DSSs: methodology and applications",
+           Decision Sciences, vol. 23, no. 6, pp. 1357-1372, 1992.
+
+    """
+    filename = "era.csv"
+    data, target, target_names, descr = _load_csv_data(
+        filename, descr_file_name="era.rst"
+    )
+    feature_names = [f"in{i + 1}" for i in range(4)]
+    return _bundle(
+        data,
+        target,
+        target_names,
+        descr,
+        feature_names,
+        filename,
+        return_X_y=return_X_y,
+        as_frame=as_frame,
+        caller_name="load_era",
+    )
+
+
+@validate_params(
+    {"return_X_y": ["boolean"], "as_frame": ["boolean"]},
+    prefer_skip_nested_validation=True,
+)
+def load_esl(*, return_X_y=False, as_frame=False):
+    """Load and return the ESL dataset (ordinal classification).
+
+    Four ordinal psychometric scores assigned to industrial-job candidates
+    by expert psychologists; the target is an overall fitness rating on a
+    1-9 scale (9 ordered classes).
+
+    =================   ==============
+    Classes                          9
+    Samples total                  488
+    Dimensionality                   4
+    Features                  ordinal
+    =================   ==============
+
+    Parameters
+    ----------
+    return_X_y : bool, default=False
+        If True, returns ``(data, target)`` instead of a Bunch object.
+
+    as_frame : bool, default=False
+        If True, the data is a pandas DataFrame including columns with
+        appropriate dtypes (numeric). The target is a pandas Series. If
+        ``return_X_y`` is True, then ``(data, target)`` will be a pandas
+        DataFrame and Series.
+
+    Returns
+    -------
+    data : :class:`~sklearn.utils.Bunch`
+        See :func:`load_era` for the field layout. ``data`` has shape
+        ``(488, 4)``; ``target_names`` are ``["1", ..., "9"]``.
+
+    (data, target) : tuple if ``return_X_y`` is True
+        A tuple of two ndarrays; see :func:`load_era` for details.
+
+    Examples
+    --------
+    >>> from skordinal.datasets import load_esl
+    >>> load_esl().data.shape
+    (488, 4)
+
+    References
+    ----------
+    .. [1] A. Ben-David, "Automatic generation of symbolic multiattribute
+           ordinal knowledge-based DSSs: methodology and applications",
+           Decision Sciences, vol. 23, no. 6, pp. 1357-1372, 1992.
+
+    """
+    filename = "esl.csv"
+    data, target, target_names, descr = _load_csv_data(
+        filename, descr_file_name="esl.rst"
+    )
+    feature_names = [f"in{i + 1}" for i in range(4)]
+    return _bundle(
+        data,
+        target,
+        target_names,
+        descr,
+        feature_names,
+        filename,
+        return_X_y=return_X_y,
+        as_frame=as_frame,
+        caller_name="load_esl",
+    )
+
+
+@validate_params(
+    {"return_X_y": ["boolean"], "as_frame": ["boolean"]},
+    prefer_skip_nested_validation=True,
+)
+def load_lev(*, return_X_y=False, as_frame=False):
+    """Load and return the LEV dataset (ordinal classification).
+
+    Four ordinal student-rating attributes collected in anonymous university
+    course evaluations; the target is an overall lecturer rating on a
+    1-5 scale (5 ordered classes).
+
+    =================   ==============
+    Classes                          5
+    Samples total                 1000
+    Dimensionality                   4
+    Features                  ordinal
+    =================   ==============
+
+    Parameters
+    ----------
+    return_X_y : bool, default=False
+        If True, returns ``(data, target)`` instead of a Bunch object.
+
+    as_frame : bool, default=False
+        If True, the data is a pandas DataFrame including columns with
+        appropriate dtypes (numeric). The target is a pandas Series. If
+        ``return_X_y`` is True, then ``(data, target)`` will be a pandas
+        DataFrame and Series.
+
+    Returns
+    -------
+    data : :class:`~sklearn.utils.Bunch`
+        See :func:`load_era` for the field layout. ``data`` has shape
+        ``(1000, 4)``; ``target_names`` are ``["1", ..., "5"]``.
+
+    (data, target) : tuple if ``return_X_y`` is True
+        A tuple of two ndarrays; see :func:`load_era` for details.
+
+    Examples
+    --------
+    >>> from skordinal.datasets import load_lev
+    >>> load_lev().data.shape
+    (1000, 4)
+
+    References
+    ----------
+    .. [1] A. Ben-David, "Automatic generation of symbolic multiattribute
+           ordinal knowledge-based DSSs: methodology and applications",
+           Decision Sciences, vol. 23, no. 6, pp. 1357-1372, 1992.
+
+    """
+    filename = "lev.csv"
+    data, target, target_names, descr = _load_csv_data(
+        filename, descr_file_name="lev.rst"
+    )
+    feature_names = [f"in{i + 1}" for i in range(4)]
+    return _bundle(
+        data,
+        target,
+        target_names,
+        descr,
+        feature_names,
+        filename,
+        return_X_y=return_X_y,
+        as_frame=as_frame,
+        caller_name="load_lev",
+    )
+
+
+@validate_params(
+    {"return_X_y": ["boolean"], "as_frame": ["boolean"]},
+    prefer_skip_nested_validation=True,
+)
+def load_swd(*, return_X_y=False, as_frame=False):
+    """Load and return the SWD dataset (ordinal classification).
+
+    Ten ordinal risk-assessment attributes filled in by qualified social
+    workers for child-safety cases; the target is the ordinal risk level
+    used in family-court decisions, on a 1-4 scale (4 ordered classes).
+
+    =================   ==============
+    Classes                          4
+    Samples total                 1000
+    Dimensionality                  10
+    Features                  ordinal
+    =================   ==============
+
+    Parameters
+    ----------
+    return_X_y : bool, default=False
+        If True, returns ``(data, target)`` instead of a Bunch object.
+
+    as_frame : bool, default=False
+        If True, the data is a pandas DataFrame including columns with
+        appropriate dtypes (numeric). The target is a pandas Series. If
+        ``return_X_y`` is True, then ``(data, target)`` will be a pandas
+        DataFrame and Series.
+
+    Returns
+    -------
+    data : :class:`~sklearn.utils.Bunch`
+        See :func:`load_era` for the field layout. ``data`` has shape
+        ``(1000, 10)``; ``target_names`` are ``["1", "2", "3", "4"]``.
+
+    (data, target) : tuple if ``return_X_y`` is True
+        A tuple of two ndarrays; see :func:`load_era` for details.
+
+    Examples
+    --------
+    >>> from skordinal.datasets import load_swd
+    >>> load_swd().data.shape
+    (1000, 10)
+
+    References
+    ----------
+    .. [1] A. Ben-David, "Automatic generation of symbolic multiattribute
+           ordinal knowledge-based DSSs: methodology and applications",
+           Decision Sciences, vol. 23, no. 6, pp. 1357-1372, 1992.
+
+    """
+    filename = "swd.csv"
+    data, target, target_names, descr = _load_csv_data(
+        filename, descr_file_name="swd.rst"
+    )
+    feature_names = [f"in{i + 1}" for i in range(10)]
+    return _bundle(
+        data,
+        target,
+        target_names,
+        descr,
+        feature_names,
+        filename,
+        return_X_y=return_X_y,
+        as_frame=as_frame,
+        caller_name="load_swd",
+    )
+
+
+@validate_params(
+    {"return_X_y": ["boolean"], "as_frame": ["boolean"]},
+    prefer_skip_nested_validation=True,
+)
+def load_balance_scale(*, return_X_y=False, as_frame=False):
+    """Load and return the Balance Scale dataset (ordinal classification).
+
+    A synthetic dataset modelling Piaget-style balance-scale experiments.
+    Each sample describes the weight and distance of objects placed on the
+    left and right pans; the ordinal target indicates which way the scale
+    tips: ``L`` (left), ``B`` (balanced), ``R`` (right).
+
+    =================   ==============
+    Classes                          3
+    Samples per class     [288, 49, 288]
+    Samples total                  625
+    Dimensionality                   4
+    Features            integer 1..5
+    =================   ==============
+
+    Parameters
+    ----------
+    return_X_y : bool, default=False
+        If True, returns ``(data, target)`` instead of a Bunch object.
+
+    as_frame : bool, default=False
+        If True, the data is a pandas DataFrame including columns with
+        appropriate dtypes (numeric). The target is a pandas Series. If
+        ``return_X_y`` is True, then ``(data, target)`` will be a pandas
+        DataFrame and Series.
+
+    Returns
+    -------
+    data : :class:`~sklearn.utils.Bunch`
+        See :func:`load_era` for the field layout. ``feature_names`` are
+        ``["left_weight", "left_distance", "right_weight",
+        "right_distance"]``; ``target_names`` are ``["L", "B", "R"]``.
+
+    (data, target) : tuple if ``return_X_y`` is True
+        A tuple of two ndarrays; see :func:`load_era` for details.
+
+    Examples
+    --------
+    >>> from skordinal.datasets import load_balance_scale
+    >>> bunch = load_balance_scale()
+    >>> bunch.data.shape
+    (625, 4)
+    >>> bunch.target_names.tolist()
+    ['L', 'B', 'R']
+
+    References
+    ----------
+    .. [1] R. S. Siegler, "Three aspects of cognitive development",
+           Cognitive Psychology, vol. 8, pp. 481-520, 1976.
+
+    """
+    filename = "balance_scale.csv"
+    data, target, target_names, descr = _load_csv_data(
+        filename, descr_file_name="balance_scale.rst"
+    )
+    feature_names = [
+        "left_weight",
+        "left_distance",
+        "right_weight",
+        "right_distance",
+    ]
+    return _bundle(
+        data,
+        target,
+        target_names,
+        descr,
+        feature_names,
+        filename,
+        return_X_y=return_X_y,
+        as_frame=as_frame,
+        caller_name="load_balance_scale",
+    )

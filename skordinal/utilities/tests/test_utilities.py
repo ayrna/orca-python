@@ -1,7 +1,6 @@
 """Tests for the experiment utilities module."""
 
 from pathlib import Path
-from shutil import rmtree
 
 import numpy as np
 import numpy.testing as npt
@@ -23,6 +22,102 @@ def create_csv(path, filename):
     """Create a csv file with sample data."""
     sample_data = "1,2,3,0\n4,5,6,1"
     (path / filename).write_text(sample_data)
+
+
+def _write_partition_csv(directory, filename, n_per_class=10):
+    rng = np.random.default_rng(0)
+    n_rows = n_per_class * 3
+    features = rng.integers(1, 6, size=(n_rows, 4))
+    labels = np.repeat([0, 1, 2], n_per_class).reshape(-1, 1)
+    data = np.hstack([features, labels])
+    np.savetxt(directory / filename, data, delimiter=",", fmt="%d")
+
+
+@pytest.fixture
+def partition_dataset(tmp_path):
+    dataset_dir = tmp_path / "data" / "balance"
+    dataset_dir.mkdir(parents=True)
+    for i in range(2):
+        _write_partition_csv(dataset_dir, f"train_balance_{i}.csv")
+        _write_partition_csv(dataset_dir, f"test_balance_{i}.csv")
+    return tmp_path / "data"
+
+
+@pytest.fixture
+def experiment_conf(tmp_path, partition_dataset):
+    return {
+        "basedir": partition_dataset,
+        "datasets": ["balance"],
+        "input_preprocessing": "std",
+        "hyperparam_cv_nfolds": 3,
+        "jobs": 1,
+        "output_folder": str(tmp_path / "runs"),
+        "metrics": [
+            "accuracy",
+            "mean_absolute_error",
+            "average_mean_absolute_error",
+            "mean_zero_one_error",
+        ],
+        "cv_metric": "mean_absolute_error",
+    }
+
+
+@pytest.fixture
+def svm_conf():
+    return {
+        "SVM": {
+            "classifier": "SVC",
+            "parameters": {"C": [0.1, 1.0], "gamma": [0.1]},
+        },
+    }
+
+
+def test_run_experiment(tmp_path, experiment_conf, svm_conf):
+    """End-to-end test: run_experiment and write_report complete without error
+    and produce the expected output structure and metrics files.
+    """
+    util = Utilities(experiment_conf, svm_conf, verbose=False)
+    util.run_experiment()
+    util.write_report()
+
+    runs_dir = Path(experiment_conf["output_folder"])
+    assert runs_dir.exists()
+
+    exp_dirs = list(runs_dir.iterdir())
+    npt.assert_equal(len(exp_dirs), 1)
+    exp_dir = exp_dirs[0]
+
+    svm_dir = exp_dir / "balance-SVM"
+    assert svm_dir.exists()
+
+    metrics_csv = svm_dir / "balance-SVM.csv"
+    df = pd.read_csv(metrics_csv, index_col=0)
+    npt.assert_equal(df.shape[0], 2)
+    metric_block = df.iloc[:, -12:]
+    npt.assert_equal(metric_block.shape, (2, 12))
+    npt.assert_equal(
+        all(metric_block[c].dtype == np.float64 for c in metric_block.columns), True
+    )
+
+    models = list((svm_dir / "models").iterdir())
+    npt.assert_equal(len(models), 2)
+
+    predictions = list((svm_dir / "predictions").iterdir())
+    npt.assert_equal(len(predictions), 4)
+
+    train_summary = pd.read_csv(exp_dir / "train_summary.csv")
+    npt.assert_equal(train_summary.shape, (1, 13))
+    npt.assert_equal(
+        all(train_summary[c].dtype == np.float64 for c in train_summary.columns[1:]),
+        True,
+    )
+
+    test_summary = pd.read_csv(exp_dir / "test_summary.csv")
+    npt.assert_equal(test_summary.shape, (1, 13))
+    npt.assert_equal(
+        all(test_summary[c].dtype == np.float64 for c in test_summary.columns[1:]),
+        True,
+    )
 
 
 def test_load_complete_dataset(tmp_path, util):
@@ -116,113 +211,3 @@ def test_standardize_data(util):
     # Test verification
     npt.assert_almost_equal(np.mean(std_X_train), 0)
     npt.assert_almost_equal(np.std(std_X_train), 1)
-
-
-@pytest.fixture
-def main_folder():
-    return Path(__file__).parent.parent.parent
-
-
-@pytest.fixture
-def dataset_folder(main_folder):
-    return main_folder / "datasets" / "data"
-
-
-@pytest.fixture
-def general_conf(dataset_folder):
-    return {
-        "basedir": dataset_folder,
-        "datasets": ["tae", "contact-lenses"],
-        "input_preprocessing": "std",
-        "hyperparam_cv_nfolds": 3,
-        "jobs": 10,
-        "output_folder": "my_runs/",
-        "metrics": [
-            "accuracy",
-            "mean_absolute_error",
-            "average_mean_absolute_error",
-            "mean_zero_one_error",
-        ],
-        "cv_metric": "neg_mean_absolute_error",
-    }
-
-
-@pytest.fixture
-def configurations():
-    return {
-        "SVM": {
-            "classifier": "SVC",
-            "parameters": {"C": [0.001, 0.1, 1, 10, 100], "gamma": [0.1, 1, 10]},
-        },
-        "SVMOP": {
-            "classifier": "OrdinalDecomposition",
-            "parameters": {
-                "dtype": "ordered_partitions",
-                "decision_method": "frank_hall",
-                "base_classifier": "SVC",
-                "parameters": {
-                    "C": [0.01, 0.1, 1, 10],
-                    "gamma": [0.01, 0.1, 1, 10],
-                    "probability": ["True"],
-                },
-            },
-        },
-    }
-
-
-def test_run_experiment(main_folder, general_conf, configurations):
-    """To test the main method, a configuration will be run until the end.
-    Next we will check that every expected result file has been created,
-    having all of them the proper dimensions and types.
-
-    """
-    # Declaring Utilities object and running the experiment
-    util = Utilities(general_conf, configurations, verbose=False)
-    util.run_experiment()
-    # Saving results information
-    util.write_report()
-
-    # Checking if all outputs have been generated and are correct
-    outputs_folder = Path("my_runs")
-    npt.assert_equal(outputs_folder.exists(), True)
-
-    experiment_folder = sorted(outputs_folder.iterdir())
-    experiment_folder = outputs_folder / experiment_folder[-1].name
-
-    for dataset in util.general_conf["datasets"]:
-        for conf_name, _ in util.configurations.items():
-            # Check if the folder for that dataset-configurations exists
-            conf_folder = experiment_folder / f"{dataset}-{conf_name}"
-            npt.assert_equal(conf_folder.exists(), True)
-
-            # Checking CSV containning all metrics for that configuration
-            metrics_csv = pd.read_csv(conf_folder / f"{dataset}-{conf_name}.csv")
-            metrics_csv = metrics_csv.iloc[:, -12:]
-
-            npt.assert_equal(metrics_csv.shape, (30, 12))
-            npt.assert_equal(all(str(c) == "float64" for c in metrics_csv.dtypes), True)
-
-            # Checking that all models have been saved
-            models_folder = conf_folder / "models"
-            npt.assert_equal(models_folder.exists(), True)
-            npt.assert_equal(len(list(models_folder.iterdir())), 30)
-
-            # Checking that all predictions have been saved
-            predictions_folder = conf_folder / "predictions"
-            npt.assert_equal(predictions_folder.exists(), True)
-            npt.assert_equal(len(list(predictions_folder.iterdir())), 60)
-
-    # Checking if summaries are correct
-    train_summary = pd.read_csv(experiment_folder / "train_summary.csv")
-    npt.assert_equal(train_summary.shape, (4, 13))
-    npt.assert_equal(
-        all(str(c) == "float64" for c in train_summary.dtypes.iloc[1:]), True
-    )
-
-    test_summary = pd.read_csv(experiment_folder / "test_summary.csv")
-    npt.assert_equal(test_summary.shape, (4, 13))
-    npt.assert_equal(
-        all(str(c) == "float64" for c in test_summary.dtypes.iloc[1:]), True
-    )
-
-    rmtree(outputs_folder)

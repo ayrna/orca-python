@@ -64,7 +64,9 @@ exclude = ["*.tests"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"skordinal.datasets" = ["data/*/*.csv"]
+"skordinal.datasets.data" = ["*.csv"]
+"skordinal.datasets.descr" = ["*.rst"]
+"skordinal.utils" = ["*.csv"]
 
 [tool.setuptools]
 ext-modules = [
