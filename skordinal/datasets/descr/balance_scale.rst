@@ -26,7 +26,7 @@ The class is determined by comparing the products of left_weight ×
 left_distance and right_weight × right_distance.  The target is treated
 as an ordinal target in the ordinal-classification literature, following
 the convention of the AYRNA group (Gutiérrez et al. 2016) and the
-TOC-UCO repository (Ayllón-Gavilán et al. 2025), with the order
+TOC-UCO repository (Ayllón-Gavilán et al. 2026), with the order
 ``L < B < R`` along the tilt axis.  Outside the ordinal-classification
 community Balance Scale is more often treated as nominal.
 
@@ -43,5 +43,7 @@ References
   Navarro, F., & Hervás-Martínez, C. (2016). Ordinal regression methods:
   survey and experimental study.  IEEE Transactions on Knowledge and Data
   Engineering, 28(1), 127-146.
-- Ayllón-Gavilán, R. et al. (2025). TOC-UCO: a benchmark for tabular
-  ordinal classification.  arXiv:2507.17348.
+- Ayllón-Gavilán, R., Guijo-Rubio, D., Gómez-Orellana, A. M.,
+  Bérchez-Moreno, F., Vargas, V. M., & Gutiérrez, P. A. (2026).
+  TOC-UCO: a comprehensive repository of tabular ordinal classification
+  datasets.  Neurocomputing, 133528.

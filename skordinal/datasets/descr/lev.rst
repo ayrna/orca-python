@@ -27,7 +27,7 @@ Holon Institute of Technology, HIT) and distributed as
 ``datasets-arie_ben_david.tar.gz`` through the WEKA project
 (https://waikato.github.io/weka-wiki/datasets/). The four datasets are
 mirrored on OpenML (ESL: d/1027, ERA: d/1030, LEV: d/1029, SWD: d/1028).
-The TOC-UCO repository (Ayllón-Gavilán et al. 2025,
+The TOC-UCO repository (Ayllón-Gavilán et al. 2026,
 https://github.com/ayrna/tocuco) curates this family among its 46
 tabular ordinal-classification benchmarks.
 
