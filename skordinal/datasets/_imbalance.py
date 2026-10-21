@@ -25,7 +25,8 @@ def _class_imbalance_ratios(class_counts: dict[object, int]) -> list[float]:
     total_samples = sum(class_counts.values())
     n_classes = len(class_counts)
     return [
-        (total_samples - count) / (n_classes * count) for count in class_counts.values()
+        (total_samples - count) / ((n_classes - 1) * count)
+        for count in class_counts.values()
     ]
 
 
@@ -33,10 +34,11 @@ def _class_imbalance_ratios(class_counts: dict[object, int]) -> list[float]:
 def compute_dataset_air(y) -> float:
     """Compute the Average Imbalance Ratio (AIR) from class labels.
 
-    For each class :math:`i`, its imbalance ratio is
-    ``(N - n_i) / (K * n_i)``, where ``N`` is the number of target values,
-    ``n_i`` is the count for class ``i``, and ``K`` is the number of classes.
-    AIR is the mean of these per-class ratios.
+    For each class :math:`j`, its imbalance ratio is
+    ``(N - n_j) / ((K - 1) * n_j)``, where ``N`` is the number of target
+    values, ``n_j`` is the count for class ``j``, and ``K`` is the number of
+    classes. AIR is the mean of these per-class ratios, so a balanced dataset
+    has AIR equal to 1.
 
     Parameters
     ----------
@@ -71,11 +73,9 @@ def compute_dataset_air(y) -> float:
 def compute_dataset_mir(y) -> float:
     """Compute the Maximum Imbalance Ratio (MIR) from class labels.
 
-    For each class :math:`i`, its imbalance ratio is
-    ``(N - n_i) / (K * n_i)``, where ``N`` is the number of target values,
-    ``n_i`` is the count for class ``i``, and ``K`` is the number of classes.
-    MIR is the maximum per-class ratio divided by the minimum. A perfectly
-    balanced dataset has MIR equal to 1.
+    MIR is the number of samples in the majority class divided by the number
+    of samples in the minority class. A perfectly balanced dataset has MIR
+    equal to 1.
 
     Parameters
     ----------
@@ -87,8 +87,7 @@ def compute_dataset_mir(y) -> float:
     Returns
     -------
     mir : float
-        Maximum per-class imbalance ratio divided by the minimum per-class
-        imbalance ratio.
+        Ratio of the majority-class count to the minority-class count.
 
     Raises
     ------
@@ -103,5 +102,4 @@ def compute_dataset_mir(y) -> float:
     >>> mir = compute_dataset_mir(dataset.target)
     """
     class_counts = _class_counts(y)
-    class_irs = _class_imbalance_ratios(class_counts)
-    return max(class_irs) / min(class_irs)
+    return max(class_counts.values()) / min(class_counts.values())

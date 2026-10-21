@@ -18,7 +18,9 @@ prefetches the whole collection, and
 
 The :func:`~skordinal.datasets.compute_dataset_air` and
 :func:`~skordinal.datasets.compute_dataset_mir` functions calculate class
-imbalance from a one-dimensional target array. To use a dataset loaded by
+imbalance from a one-dimensional target array. AIR averages the per-class
+imbalance ratios and is 1 for a balanced dataset; MIR is the majority-class
+count divided by the minority-class count. To use a dataset loaded by
 :func:`~skordinal.datasets.load_dataset`, pass its ``target`` attribute; the
 same functions work with labels from any other source.
 
