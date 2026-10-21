@@ -40,6 +40,11 @@ def compute_dataset_air(y) -> float:
     classes. AIR is the mean of these per-class ratios, so a balanced dataset
     has AIR equal to 1.
 
+    The unnormalized per-class ratio was introduced for ordinal class
+    imbalance by Pérez-Ortiz et al. [1]_. The normalization by ``K - 1``,
+    which makes the ratio equal to 1 for a balanced dataset, follows the
+    later formulation in Vargas et al. [2]_.
+
     Parameters
     ----------
     y : array-like of shape (n_samples,)
@@ -57,6 +62,19 @@ def compute_dataset_air(y) -> float:
     ValueError
         If ``y`` is not one-dimensional or contains fewer than two distinct
         classes.
+
+    References
+    ----------
+    .. [1] M. Pérez-Ortiz, A. Sáez, J. Sánchez-Monedero, P. A. Gutiérrez,
+           and C. Hervás-Martínez, "Tackling the ordinal and imbalance nature
+           of a melanoma image classification problem," 2016 International
+           Joint Conference on Neural Networks (IJCNN), pp. 2156-2163, 2016.
+           https://doi.org/10.1109/IJCNN.2016.7727466
+    .. [2] V. M. Vargas, D. Guijo-Rubio, R. Ayllón-Gavilán, A. M.
+           Gómez-Orellana, P. A. Gutiérrez, and C. Hervás-Martínez,
+           "Soft labelling for deep ordinal classification: an experimental
+           review," IEEE Transactions on Knowledge and Data Engineering,
+           2026. https://doi.org/10.1109/TKDE.2026.3681678
 
     Examples
     --------
@@ -77,6 +95,10 @@ def compute_dataset_mir(y) -> float:
     of samples in the minority class. A perfectly balanced dataset has MIR
     equal to 1.
 
+    The majority-to-minority count ratio is a standard class-imbalance measure.
+    It has been used in the context of multi-class problems, where
+    Ortigosa-Hernández et al. [1]_ discuss its use and limitations.
+
     Parameters
     ----------
     y : array-like of shape (n_samples,)
@@ -94,6 +116,13 @@ def compute_dataset_mir(y) -> float:
     ValueError
         If ``y`` is not one-dimensional or contains fewer than two distinct
         classes.
+
+    References
+    ----------
+    .. [1] J. Ortigosa-Hernández, I. Inza, and J. A. Lozano, "Measuring the
+           class-imbalance extent of multi-class problems," Pattern
+           Recognition Letters, vol. 98, pp. 32-38, 2017.
+           https://doi.org/10.1016/j.patrec.2017.08.002
 
     Examples
     --------
