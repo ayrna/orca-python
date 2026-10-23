@@ -79,6 +79,12 @@ class SVOR(ClassifierMixin, BaseEstimator):
     model_ : dict
         Model state returned by the C backend after fitting.
 
+    Notes
+    -----
+    If the SMO ends with the KKT conditions of a threshold violated by more than
+    ``tol``, or with disordered thresholds, a ``ConvergenceWarning`` is raised and
+    ``fit`` still returns the model, with non-decreasing thresholds.
+
     References
     ----------
     .. [1] P.A. Gutiérrez, M. Pérez-Ortiz, J. Sánchez-Monedero, F. Fernández-Navarro
@@ -169,7 +175,7 @@ class SVOR(ClassifierMixin, BaseEstimator):
             arg, mode, str(self.tol), str(gamma_value), str(self.C)
         )
         self.model_ = svor.fit((y_encoded + 1).tolist(), X.tolist(), options)
-        if self.model_.get("convergence_failed", False):
+        if self.model_["convergence_failed"]:
             warnings.warn(
                 self.model_["convergence_message"],
                 ConvergenceWarning,

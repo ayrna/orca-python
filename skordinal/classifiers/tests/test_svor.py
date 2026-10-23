@@ -22,25 +22,6 @@ PREDICTIONS_DIR = {
 CONSTRAINTS = ["explicit", "implicit"]
 
 
-def test_svor_nonconvergence_warns_and_returns_model(monkeypatch):
-    """Non-converged backend training emits a ConvergenceWarning."""
-    import skordinal.classifiers._svor as svor_module
-
-    class Backend:
-        @staticmethod
-        def fit(labels, features, options):
-            return {
-                "convergence_failed": 1,
-                "convergence_message": "KKT conditions were not satisfied",
-                "biasj": [0.0],
-            }
-
-    monkeypatch.setattr(svor_module, "svor", Backend)
-    classifier = SVOR(constraints="explicit")
-    with pytest.warns(ConvergenceWarning, match="KKT conditions"):
-        assert classifier.fit([[0.0], [1.0]], [0, 1]) is classifier
-
-
 @pytest.fixture
 def X():
     """Create sample feature patterns for testing."""
@@ -259,6 +240,19 @@ def test_svor_gamma_scale_zero_variance(X, y):
         classifier = SVOR(gamma="scale", kernel="rbf").fit(X_constant, y)
 
     assert set(classifier.predict(X_constant)).issubset(set(classifier.classes_))
+
+
+def test_svor_convergence_warning(X, y):
+    """Only an unconverged SMO warns, and fit still returns the model."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ConvergenceWarning)
+        SVOR().fit(X, y)
+
+    # The SMO stops on these points with a KKT gap above tol, as in #175
+    X_unconverged = np.array([[3], [2], [1], [3], [1], [0], [3], [3]])
+    y_unconverged = np.array([3, 2, 3, 0, 0, 0, 0, 1])
+    with pytest.warns(ConvergenceWarning, match="KKT conditions of thresholds_"):
+        SVOR(kernel="linear", constraints="explicit").fit(X_unconverged, y_unconverged)
 
 
 @pytest.mark.parametrize("constraints", CONSTRAINTS)

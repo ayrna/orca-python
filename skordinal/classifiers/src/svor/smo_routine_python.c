@@ -8,6 +8,14 @@
 #include <sys/timeb.h>
 #include "smo.h"
 
+static void Record_Convergence_Failure (smo_Settings * settings, const char * message)
+{
+	if (TRUE == settings->convergence_failed)
+		return ;
+	settings->convergence_failed = TRUE ;
+	snprintf(settings->convergence_message, sizeof(settings->convergence_message), "%s", message) ;
+}
+
 BOOL smo_ordinal_Python (smo_Settings * settings)
 {
     char buffer[1024];//For error messages
@@ -178,10 +186,8 @@ BOOL smo_ordinal_Python (smo_Settings * settings)
 		{
 			if (settings->bj_low[loop-1] - settings->bj_up[loop-1]>TOL)
 			{
-				snprintf(buffer, sizeof(buffer), "Warning: KKT conditions are violated on bias!!! %f with C=%.3f K=%.3f", settings->bj_low[loop-1] + settings->bj_up[loop-1], VC, KAPPA);
-			settings->convergence_failed = TRUE;
-			if (settings->convergence_message[0] == '\0')
-				snprintf(settings->convergence_message, sizeof(settings->convergence_message), "%s", buffer);
+				snprintf(buffer, sizeof(buffer), "SVOR did not converge: the KKT conditions of thresholds_[%lu] are violated by %g, more than tol=%g.", loop-1, settings->bj_low[loop-1] - settings->bj_up[loop-1], TOL);
+				Record_Convergence_Failure(settings, buffer);
 			}
 
 			settings->biasj[loop-1] = (settings->bj_low[loop-1] + settings->bj_up[loop-1])/2.0 ;
@@ -190,10 +196,8 @@ BOOL smo_ordinal_Python (smo_Settings * settings)
 		{
 		if (settings->bmu_low[loop-1] - settings->bmu_up[loop-1]>TOL)
 		{
-			snprintf(buffer, sizeof(buffer), "Warning: KKT conditions are violated on bias!!! %f with C=%.3f K=%.3f", settings->bmu_low[loop-1] + settings->bmu_up[loop-1], VC, KAPPA);
-				settings->convergence_failed = TRUE;
-				if (settings->convergence_message[0] == '\0')
-					snprintf(settings->convergence_message, sizeof(settings->convergence_message), "%s", buffer);
+			snprintf(buffer, sizeof(buffer), "SVOR did not converge: the KKT conditions of thresholds_[%lu] are violated by %g, more than tol=%g.", loop-1, settings->bmu_low[loop-1] - settings->bmu_up[loop-1], TOL);
+			Record_Convergence_Failure(settings, buffer);
 		}
 
 		settings->biasj[loop-1] = (settings->bmu_low[loop-1] + settings->bmu_up[loop-1])/2.0 ;
@@ -203,9 +207,8 @@ BOOL smo_ordinal_Python (smo_Settings * settings)
 		{
 			if (settings->biasj[loop-1]+TOL<settings->biasj[loop-2])
 			{
-				snprintf(buffer, sizeof(buffer), "Warning: thresholds %lu : %f < thresholds %lu : %f", loop, settings->biasj[loop-1], loop-1, settings->biasj[loop-2]);
-                PyErr_SetString(PyExc_ValueError, buffer);
-                return FALSE;
+				snprintf(buffer, sizeof(buffer), "SVOR did not converge: thresholds_[%lu] was below thresholds_[%lu] by %g, more than tol=%g, and was raised to it.", loop-1, loop-2, settings->biasj[loop-2] - settings->biasj[loop-1], TOL);
+				Record_Convergence_Failure(settings, buffer);
 			}
 			if (settings->biasj[loop-1]<settings->biasj[loop-2])
 				settings->biasj[loop-1] = settings->biasj[loop-2] ;
