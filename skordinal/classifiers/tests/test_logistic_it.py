@@ -1,12 +1,13 @@
 """Tests for the LogisticIT classifier."""
 
 import inspect
+import warnings
 
 import numpy as np
 import pandas as pd
 import pytest
 import scipy.optimize
-from sklearn.exceptions import NotFittedError
+from sklearn.exceptions import ConvergenceWarning, NotFittedError
 from sklearn.utils.class_weight import compute_class_weight
 
 from skordinal.classifiers import LogisticIT
@@ -238,7 +239,7 @@ def test_logistic_it_proba_and_cumproba_well_formed(ordinal_data):
     assert np.all(cumproba >= 0.0) and np.all(cumproba <= 1.0)
     assert np.all(np.diff(cumproba, axis=1) >= 0)
 
-    expected_pred = clf.classes_[proba.argmax(axis=1)]
+    expected_pred = clf.classes_[(cumproba < 0.5).sum(axis=1)]
     np.testing.assert_array_equal(clf.predict(X), expected_pred)
 
 
@@ -348,6 +349,20 @@ def test_logistic_it_large_magnitude_x_finite_probabilities():
     np.testing.assert_allclose(proba.sum(axis=1), 1.0, atol=1e-12)
 
 
+def test_logistic_it_convergence_warning(ordinal_data):
+    """Only an exhausted max_iter warns, naming n_iter_, and fit still sets loss_."""
+    X, y = ordinal_data
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ConvergenceWarning)
+        LogisticIT().fit(X, y)
+
+    with pytest.warns(ConvergenceWarning, match="failed to converge") as record:
+        clf = LogisticIT(max_iter=1).fit(X, y)
+
+    assert f"after {clf.n_iter_} iteration(s)" in str(record[0].message)
+    assert np.isfinite(clf.loss_)
+
+
 def test_logistic_it_projection_well_formed(ordinal_data):
     """predict_projection is well-formed and consistent with predict."""
     X, y = ordinal_data
@@ -359,6 +374,12 @@ def test_logistic_it_projection_well_formed(ordinal_data):
 
     order = np.argsort(projection)
     assert np.all(np.diff(clf.predict(X)[order]) >= 0)
+
+    # stronger than monotonicity: catches a rescaled or shifted projection
+    n_exceeded = (projection[:, np.newaxis] > clf.thresholds_[np.newaxis, :]).sum(
+        axis=1
+    )
+    np.testing.assert_array_equal(clf.predict(X), clf.classes_[n_exceeded])
 
 
 def test_logistic_it_projection_linear_in_convex_combination(ordinal_data):

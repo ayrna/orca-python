@@ -1,17 +1,16 @@
 """Immediate-Threshold logistic ordinal classifier (LogisticIT)."""
 
-import warnings
 from numbers import Integral, Real
 
 import numpy as np
 import scipy.optimize
 import scipy.special
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
-from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.utils.validation import check_is_fitted, validate_data
 
+from skordinal.utils._optimize import _check_optimize_result
 from skordinal.utils.extmath import (
     cumproba_to_proba,
     params_to_thresholds,
@@ -44,8 +43,9 @@ class LogisticIT(ClassifierMixin, BaseEstimator):
         Maximum number of L-BFGS-B iterations.
 
     tol : float, default=1e-5
-        Convergence tolerance forwarded to L-BFGS-B as both ``ftol`` and
-        ``gtol``.  Must be strictly positive.
+        Convergence tolerance forwarded to L-BFGS-B as ``gtol``, so the
+        solver stops once the projected gradient max-norm falls below it.
+        Must be strictly positive.
 
     class_weight : dict, "balanced", or None, default=None
         Per-class weights applied to each sample's loss contribution.
@@ -95,19 +95,18 @@ class LogisticIT(ClassifierMixin, BaseEstimator):
                   + \\frac{\\alpha}{2n} \\|w\\|^2
 
     The formula is shown unweighted; ``class_weight`` multiplies each
-    sample's term.  The threshold gradient is sparse: each sample
-    contributes only to the two threshold bins adjacent to its class.
-    L-BFGS-B optimises the packed vector ``[w; t]`` where ``b[0] = t[0]``,
-    ``b[k] = t[0] + t[1]^2 + ... + t[k]^2`` for ``k >= 1``.
+    sample's term.  L-BFGS-B optimises the packed vector ``[w; t]`` where
+    ``t`` is the unconstrained representation of the thresholds;
+    ``b[0] = t[0]``, ``b[k] = t[0] + t[1]^2 + ... + t[k]^2`` for
+    ``k >= 1``.
 
     Standardising features (zero mean, unit variance) is recommended;
     extreme feature scales can degrade the fit under the fixed solver
     tolerance.
 
-    ``predict`` returns the most probable class,
-    ``classes_[argmax(predict_proba(X), axis=1)]``.  Because the loss is a
-    0-1 surrogate, this mode is also the risk-minimising decision, so
-    ``predict`` and the training objective agree.
+    ``predict`` uses the cumulative-median rule, which is not in general
+    equal to the modal prediction ``classes_[argmax(predict_proba(X),
+    axis=1)]``; see ``predict`` for the exact rule and its rationale.
 
     References
     ----------
@@ -187,22 +186,14 @@ class LogisticIT(ClassifierMixin, BaseEstimator):
             jac=True,
             options={
                 "maxiter": self.max_iter,
-                "ftol": self.tol,
+                "ftol": 64 * np.finfo(float).eps,
                 "gtol": self.tol,
             },
         )
 
-        if not result.success:
-            warnings.warn(
-                f"LogisticIT failed to converge after {self.max_iter} "
-                "iterations. Increase max_iter or set alpha > 0.",
-                ConvergenceWarning,
-                stacklevel=2,
-            )
-
+        self.n_iter_ = _check_optimize_result("lbfgs", result, self.max_iter)
         self.coef_ = result.x[:n_features]
         self.thresholds_ = params_to_thresholds(result.x[n_features:])
-        self.n_iter_ = int(result.nit)
         self.loss_ = float(result.fun)
 
         return self
@@ -266,6 +257,15 @@ class LogisticIT(ClassifierMixin, BaseEstimator):
     def predict(self, X):
         """Predict ordinal class labels for patterns in X.
 
+        The predicted class follows the cumulative-median rule: the number
+        of fitted thresholds the projection ``f(x) = w^T x`` exceeds,
+        equivalently the first class whose cumulative probability
+        ``P(Y <= k | x)`` reaches 0.5.  This median inverts the training
+        objective directly, since the Immediate-Threshold loss places
+        ``f(x_i)`` between ``b_{y_i - 1}`` and ``b_{y_i}``, and unlike the
+        mode (``argmax(predict_proba(X))``) it can differ when adjacent
+        thresholds are close.
+
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -283,8 +283,9 @@ class LogisticIT(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self)
         X = validate_data(self, X, reset=False, dtype=np.float64)
-        proba = cumproba_to_proba(self._cumproba(X), repair=True)
-        return self.classes_[proba.argmax(axis=1)]
+        f = self._project(X)
+        labels_enc = (f[:, np.newaxis] > self.thresholds_[np.newaxis, :]).sum(axis=1)
+        return self.classes_[labels_enc]
 
     def predict_projection(self, X):
         """Return the raw latent projection for each sample.
@@ -362,17 +363,17 @@ class LogisticIT(ClassifierMixin, BaseEstimator):
             + (self.alpha / (2 * n)) * (w @ w)
         )
 
-        s_left = -scipy.special.expit(-m_left)
-        s_right = -scipy.special.expit(-m_right)
-        grad_f = sample_weight * (s_left - s_right) / n
+        sigma_left = scipy.special.expit(-m_left)
+        sigma_right = scipy.special.expit(-m_right)
+        grad_f = sample_weight * (sigma_right - sigma_left) / n
         grad_w = X.T @ grad_f + (self.alpha / n) * w
 
         # Sparse scatter: each sample touches only its adjacent threshold bins
         grad_b = np.zeros(K - 1)
         mask_l = y_enc > 0
         mask_r = y_enc < K - 1
-        np.add.at(grad_b, y_enc[mask_l] - 1, -s_left[mask_l] * sample_weight[mask_l])
-        np.add.at(grad_b, y_enc[mask_r], s_right[mask_r] * sample_weight[mask_r])
+        np.add.at(grad_b, y_enc[mask_l] - 1, sigma_left[mask_l] * sample_weight[mask_l])
+        np.add.at(grad_b, y_enc[mask_r], -sigma_right[mask_r] * sample_weight[mask_r])
         grad_b /= n
 
         grad_t = thresholds_grad(t, grad_b)

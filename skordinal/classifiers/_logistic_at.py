@@ -1,17 +1,16 @@
 """All-Threshold logistic ordinal classifier (LogisticAT)."""
 
-import warnings
 from numbers import Integral, Real
 
 import numpy as np
 import scipy.optimize
 import scipy.special
 from sklearn.base import BaseEstimator, ClassifierMixin, _fit_context
-from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils._param_validation import Interval, StrOptions
 from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.utils.validation import check_is_fitted, validate_data
 
+from skordinal.utils._optimize import _check_optimize_result
 from skordinal.utils.extmath import (
     cumproba_to_proba,
     params_to_thresholds,
@@ -43,8 +42,9 @@ class LogisticAT(ClassifierMixin, BaseEstimator):
         Maximum number of L-BFGS-B iterations.
 
     tol : float, default=1e-5
-        Convergence tolerance forwarded to L-BFGS-B as both ``ftol`` and
-        ``gtol``.  Must be strictly positive.
+        Convergence tolerance forwarded to L-BFGS-B as ``gtol``, so the
+        solver stops once the projected gradient max-norm falls below it.
+        Must be strictly positive.
 
     class_weight : dict, "balanced", or None, default=None
         Per-class weights applied to each sample's loss contribution.
@@ -183,22 +183,14 @@ class LogisticAT(ClassifierMixin, BaseEstimator):
             jac=True,
             options={
                 "maxiter": self.max_iter,
-                "ftol": self.tol,
+                "ftol": 64 * np.finfo(float).eps,
                 "gtol": self.tol,
             },
         )
 
-        if not result.success:
-            warnings.warn(
-                f"LogisticAT failed to converge after {self.max_iter} "
-                "iterations. Increase max_iter or set alpha > 0.",
-                ConvergenceWarning,
-                stacklevel=2,
-            )
-
+        self.n_iter_ = _check_optimize_result("lbfgs", result, self.max_iter)
         self.coef_ = result.x[:n_features]
         self.thresholds_ = params_to_thresholds(result.x[n_features:])
-        self.n_iter_ = int(result.nit)
         self.loss_ = float(result.fun)
 
         return self
